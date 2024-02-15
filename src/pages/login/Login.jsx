@@ -1,9 +1,9 @@
 /* eslint-disable react/no-unknown-property */
 import * as React from "react";
 // import api from "../../service/api";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-import logotipo from "../../assets/logotipo.png";
+import logo_slogan from "../../assets/logo_slogan.png";
 
 import { UserTypeContext } from "../../contexts/UserTypeContext";
 
@@ -23,7 +23,7 @@ const Login = () => {
   // eslint-disable-next-line
   const context = React.useContext(UserTypeContext);
   //   const [loading, setLoading] = useState(false);
-  //   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = React.useState(false);
 
   //   useEffect(() => {
@@ -36,6 +36,10 @@ const Login = () => {
   const [password, setPassword] = React.useState("");
 
   console.log(email, password);
+
+  const forgetPassword = () => {
+    navigate("/forget-password");
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -96,15 +100,17 @@ const Login = () => {
       <div className={styles.container}>
         <main className={styles.subContainer}>
           <div className={styles.logo}>
-            <img src={logotipo} alt={"logo-principal"} />
+            <img src={logo_slogan} alt={"logo-principal"} />
           </div>
+          <h3 className={styles.title}>Bem-vindo ao Ecore Web 2.0</h3>
+          <h4 className={styles.title}>Entre na sua conta</h4>
           <form onSubmit={(e) => handleSubmit(e)} className={styles.formLogin}>
             <div className={styles.inputs}>
               <TextField
                 sx={{
                   width: "100%",
                 }}
-                label="Email"
+                label="E-mail"
                 variant="outlined"
                 type="email"
                 name="email"
@@ -151,6 +157,9 @@ const Login = () => {
                   ),
                 }}
               />
+            </div>
+            <div className={styles.link}>
+              <label onClick={forgetPassword}>Esqueceu a senha?</label>
             </div>
             <input type="submit" value="Entrar" position="right center" />
           </form>
