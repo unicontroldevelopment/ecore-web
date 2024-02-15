@@ -1,68 +1,151 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+* {
+  margin: 0;
+  border: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* body {
+  background-image: url(./assets/banner-principal.png);
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  background-color: #035d84;
+} */
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+/*Removendo barra de rolar*/
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+.link {
+  text-decoration: none;
+  color: #11101d;
 }
 
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  text-decoration: none;
 }
 
-body {
+/* Removendo seletor lateral do tipo number no chrome e outros navegadores */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+}
+/* Removendo seletor lateral do tipo number no firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+input[type="file"] {
+  display: none;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/*Animação de opacidade e aumento*/
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
   }
-  a:hover {
-    color: #747bff;
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1175px) {
+  .row {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Removendo bordas IOS */
+textarea,
+input[type="text"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="search"] {
+  -webkit-appearance: none;
+  border-radius: 5px;
+}
+
+/* Removendo style do Material UI */
+
+.MuiTableCell-root {
+  border: none !important;
+  box-shadow: 0px 1px 0px 0px #e7e7e7 !important;
+}
+
+.MuiTableContainer-root {
+  box-shadow: none !important;
+}
+
+.css-kk1bwy-MuiButtonBase-root-MuiMenuItem-root.Mui-selected {
+  background-color: #1875d13e !important;
+}
+
+.css-1km1ehz.Mui-selected {
+  background-color: #1875d13e !important;
+}
+
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #fff inset !important;
+}
+
+.rec.rec-dot {
+  background-color: #e0e0e0d6;
+  content: "";
+  height: 10px;
+  width: 10px;
+  box-shadow: none;
+  border-radius: 50%;
+  outline: none;
+}
+
+.rec.rec-dot_active {
+  background-color: #a1a1a1d6;
+}
+
+button.rec-dot:hover,
+button.rec-dot:active,
+button.rec-dot:focus {
+  box-shadow: none;
+}
+
+@media (max-width: 1175px) {
+  .card-introducao {
+    width: 90vw;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    background-size: 250% auto;
   }
 }

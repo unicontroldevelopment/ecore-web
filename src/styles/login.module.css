@@ -1,0 +1,76 @@
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.container {
+  background-image: url(../assets/banner-principal.png);
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  min-width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subContainer {
+  background: white;
+  padding: 4rem;
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  animation: fadein 0.5s;
+}
+
+.formLogin {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputs:first-child {
+  margin-bottom: 1rem;
+}
+
+.inputs {
+  display: flex;
+  justify-content: center;
+}
+
+.formLogin input[type="submit"] {
+  margin-top: 2rem;
+  padding: 0.4rem;
+  background: #055f89;
+  cursor: pointer;
+  color: white;
+  font-size: 1rem;
+  font-weight: 300;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.formLogin input[type="submit"]:hover {
+  background: #0187c6;
+}
+
+.error-login {
+  margin-top: 20px;
+  text-align: center;
+  color: rgb(255, 68, 68);
+}
+
+.logo {
+  display: flex;
+  justify-content: center;
+}
+
+.logo img {
+  width: 187px;
+  height: 73px;
+  margin-bottom: 28px;
+}
