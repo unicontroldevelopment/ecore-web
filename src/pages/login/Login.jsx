@@ -16,8 +16,10 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
+import { Row, Col, Button } from "antd";
 
-import styles from "../../styles/login.module.css";
+// import styles from "../../styles/login.module.css";
+import { Subtitle, Title, CenteredDiv, LeftDiv, RightDiv } from "./styles";
 
 const Login = () => {
   // eslint-disable-next-line
@@ -97,15 +99,14 @@ const Login = () => {
   return (
     <>
       {/* {loading ? <LoadingRocket /> : null} */}
-      <div className={styles.container}>
-        <main className={styles.subContainer}>
-          <div className={styles.logo}>
-            <img src={logo_slogan} alt={"logo-principal"} />
-          </div>
-          <h3 className={styles.title}>Bem-vindo ao Ecore Web 2.0</h3>
-          <h4 className={styles.title}>Entre na sua conta</h4>
-          <form onSubmit={(e) => handleSubmit(e)} className={styles.formLogin}>
-            <div className={styles.inputs}>
+      <LeftDiv>
+        <CenteredDiv>
+          <Row gutter={[16, 12]}>
+            <Col span={24}>
+              <Title>Bem-vindo ao Ecore Web 2.0</Title>
+              <Subtitle>Entre na sua conta</Subtitle>
+            </Col>
+            <Col span={24}>
               <TextField
                 sx={{
                   width: "100%",
@@ -118,8 +119,8 @@ const Login = () => {
                 size="small"
                 onChange={(e) => setEmail(e.target.value)}
               />
-            </div>
-            <div className={styles.inputs}>
+            </Col>
+            <Col span={24}>
               <TextField
                 sx={{
                   width: "100%",
@@ -157,14 +158,19 @@ const Login = () => {
                   ),
                 }}
               />
-            </div>
-            <div className={styles.link}>
+            </Col>
+            <Col span={24}>
               <label onClick={forgetPassword}>Esqueceu a senha?</label>
-            </div>
-            <input type="submit" value="Entrar" position="right center" />
-          </form>
-        </main>
-      </div>
+            </Col>
+            <Col span={8}>
+              <Button type="primary">Entrar</Button>
+            </Col>
+          </Row>
+        </CenteredDiv>
+      </LeftDiv>
+      <RightDiv>
+        <img src={logo_slogan} alt="logo" />
+      </RightDiv>
     </>
   );
 };
