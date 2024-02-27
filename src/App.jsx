@@ -4,8 +4,12 @@ import { ConfigProvider } from "antd";
 import "react-toastify/dist/ReactToastify.css";
 
 import { UserTypeProvider } from "./contexts/UserTypeContext";
+import { AuthProvider } from "./contexts/Auth";
+
+import PrivatePage from "./utils/PrivatePage";
 
 import Login from "./pages/login/Login";
+import Dashboard from "./pages/dashboard/Dashboard";
 
 const App = () => {
   return (
@@ -22,14 +26,24 @@ const App = () => {
         },
       }}
     >
-      <UserTypeProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route exact path="/" element={<Login />} />
-          </Routes>
-        </BrowserRouter>
-        <ToastContainer />
-      </UserTypeProvider>
+      <BrowserRouter>
+        <UserTypeProvider>
+          <AuthProvider>
+            <Routes>
+              <Route exact path="/" element={<Login />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivatePage>
+                    <Dashboard />
+                  </PrivatePage>
+                }
+              />
+            </Routes>
+            <ToastContainer />
+          </AuthProvider>
+        </UserTypeProvider>
+      </BrowserRouter>
     </ConfigProvider>
   );
 };

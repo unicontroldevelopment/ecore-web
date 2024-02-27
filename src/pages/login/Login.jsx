@@ -1,15 +1,10 @@
-/* eslint-disable react/no-unknown-property */
+/* eslint-disable react-hooks/exhaustive-deps */
 import * as React from "react";
-// import api from "../../service/api";
 import { useNavigate } from "react-router-dom";
 
 import logo_slogan from "../../assets/logo_slogan.png";
-
-import { UserTypeContext } from "../../contexts/UserTypeContext";
-
-// import toastError from "../../utils/toastError";
-
-// import LoadingRocket from "../../components/animations/LoadingRocket";
+import { AuthContext } from "../../contexts/Auth";
+import Loading from "../../components/animations/Loading";
 
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -18,26 +13,22 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
 import { Row, Col, Button } from "antd";
 
-// import styles from "../../styles/login.module.css";
 import { Subtitle, Title, CenteredDiv, LeftDiv, RightDiv } from "./styles";
 
 const Login = () => {
-  // eslint-disable-next-line
-  const context = React.useContext(UserTypeContext);
-  //   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const [isVisible, setIsVisible] = React.useState(false);
+  const { loginAuth, logoutAuth } = React.useContext(AuthContext);
 
-  //   useEffect(() => {
-  //     if (cookies.jwt) {
-  //       navigate("/");
-  //     }
-  //   }, [cookies, navigate]);
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(false);
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
 
-  console.log(email, password);
+  React.useEffect(() => {
+    logoutAuth();
+  }, []);
 
   const forgetPassword = () => {
     navigate("/forget-password");
@@ -45,48 +36,10 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // setLoading(true);
-    // try {
-    //   const { data } = await api.post(
-    //     "/login",
-    //     {
-    //       ...values,
-    //     },
-    //     { withCredentials: true }
-    //   );
-    //   const id = data.user;
-    //   if (data) {
-    // api.post("/api/buscaCargoPorId", { id }).then((response) => {
-    //   context.setUserType(response.data);
-    //   localStorage.setItem("userType", response.data);
-    // });
-
-    // if (data.errors) {
-    //   const { email, password } = data.errors;
-    //   if (email) {
-    //     // toastError(email);
-    //     // setLoading(false);
-    //   } else if (password) {
-    //     // toastError(password);
-    //     // setLoading(false);
-    //   }
-    // } else {
-    //   //   process.env.REACT_APP_VERIFY_BRANCH
-    //   //     ? setCookie(
-    //   //         process.env.REACT_APP_NAME_COOKIE,
-    //   //         process.env.REACT_APP_SECRET_COOKIE
-    //   //       )
-    //   //     : setCookie();
-    //   //   setTimeout(() => {
-    //   //     setLoading(false);
-    //   //     navigate("/dashboard");
-    //   //   }, 500);
-    // }
+    setLoading(true);
+    await loginAuth(email, password);
+    setLoading(false);
   };
-  // } catch (ex) {
-  //   console.log(ex);
-  // }
-  //   };
 
   const handleClickShowPassword = () => {
     setIsVisible(!isVisible);
@@ -98,7 +51,7 @@ const Login = () => {
 
   return (
     <>
-      {/* {loading ? <LoadingRocket /> : null} */}
+      {loading ? <Loading /> : null}
       <LeftDiv>
         <CenteredDiv>
           <Row gutter={[16, 12]}>
@@ -163,7 +116,9 @@ const Login = () => {
               <label onClick={forgetPassword}>Esqueceu a senha?</label>
             </Col>
             <Col span={8}>
-              <Button type="primary">Entrar</Button>
+              <Button type="primary" onClick={handleSubmit}>
+                Entrar
+              </Button>
             </Col>
           </Row>
         </CenteredDiv>
