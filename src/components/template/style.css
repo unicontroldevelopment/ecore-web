@@ -1,0 +1,60 @@
+.trigger {
+  padding: 0 12px;
+  font-size: 18px;
+  line-height: 64px;
+  cursor: pointer;
+  transition: color 0.7s;
+}
+
+.trigger:hover {
+  color: #fff;
+}
+
+.custom-submenu .ant-menu-item {
+  background-color: #4168b0;
+  margin: 0;
+  border: "none";
+  width: 100%;
+  border-radius: 0;
+}
+
+.ant-layout-sider .ant-menu-dark .custom-submenu .ant-menu-submenu-title:hover {
+  background-color: #4168b0;
+}
+
+.ant-layout-sider .ant-menu-dark .custom-submenu .ant-menu-submenu-title {
+  background-color: #4168b0;
+}
+
+.ant-layout-sider .ant-menu-dark .custom-submenu .ant-menu-item-selected,
+.ant-layout-sider .ant-menu-dark .custom-submenu .ant-menu-item:hover {
+  background-color: #6b8ac3 !important;
+  color: #fff;
+}
+
+.ant-layout-sider .ant-menu-dark .ant-menu-item:hover {
+  background-color: #6b8ac3;
+  color: #fff;
+}
+
+.ant-layout-sider .ant-menu-dark .custom-submenu .ant-menu-submenu-title:hover {
+  background-color: #6b8ac3;
+  color: #fff;
+}
+
+.ant-layout-sider .ant-menu-dark .custom-submenu .ant-menu-item:hover {
+  background-color: #6b8ac3;
+  color: #fff;
+}
+
+/* Hover effect for top-level menu items and submenu titles */
+.ant-layout-sider .ant-menu-dark .ant-menu-item:hover {
+  background-color: #6b8ac3 !important;
+  color: #fff;
+}
+
+/* Hover effect for submenu items */
+.ant-layout-sider .ant-menu-dark .custom-submenu .ant-menu-item:hover {
+  background-color: #6b8ac3 !important;
+  color: #fff;
+}
