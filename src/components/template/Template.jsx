@@ -186,7 +186,8 @@ const Template = (props) => {
         width={230}
         style={{
           backgroundColor: "#4168b0",
-          height: "auto",
+          height: "100vh",
+          overflowY: "auto",
         }}
       >
         {collapsed ? (
@@ -223,7 +224,6 @@ const Template = (props) => {
           style={{
             backgroundColor: "#4168b0",
             color: "#fff",
-            height: "auto",
           }}
         >
           {menuItems.map((item) => {
@@ -297,8 +297,11 @@ const Template = (props) => {
             alignSelf: "center",
             justifySelf: "center",
             maxHeight: 30,
-            margin: 10,
-            padding: 0,
+            marginTop: 10,
+            padding: 5,
+            textAlign: "center",
+            width: "100%",
+            backgroundColor: "#fff",
           }}
         >
           Made with <HeartFilled /> by NewSis
