@@ -7,9 +7,11 @@ import { UserTypeProvider } from "./contexts/UserTypeContext";
 import { AuthProvider } from "./contexts/Auth";
 
 import PrivatePage from "./utils/PrivatePage";
+import Template from "./components/template/Template";
 
 import Login from "./pages/login/Login";
 import Dashboard from "./pages/dashboard/Dashboard";
+import CreateEmployee from "./pages/employees/createEmployee";
 
 const App = () => {
   return (
@@ -35,7 +37,19 @@ const App = () => {
                 path="/dashboard"
                 element={
                   <PrivatePage>
-                    <Dashboard />
+                    <Template>
+                      <Dashboard />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/employee/create"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <CreateEmployee />
+                    </Template>
                   </PrivatePage>
                 }
               />

@@ -9,6 +9,7 @@ import toastInfo from "../components/toasts/toastInfo";
 import { api } from "../services/api";
 import UserService from "../services/UserService";
 import { UserTypeContext } from "./UserTypeContext";
+import Loading from "../components/animations/Loading";
 
 const userService = new UserService();
 
@@ -21,16 +22,17 @@ export const AuthProvider = ({ children }) => {
   const context = React.useContext(UserTypeContext);
 
   React.useEffect(() => {
-    const recoveredUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-
-    if (recoveredUser && token) {
-      setUser(JSON.parse(recoveredUser));
-      context.setUserType(JSON.parse(recoveredUser).userType);
-      api.defaults.headers.Authorization = `Bearer ${token}`;
-    }
-
-    setLoading(false);
+    const handle = async () => {
+      const recoveredUser = await JSON.parse(localStorage.getItem("user"));
+      const token = localStorage.getItem("token");
+      if (recoveredUser && token) {
+        setUser(recoveredUser);
+        await context.setUserType(recoveredUser.role);
+        api.defaults.headers.Authorization = `Bearer ${token}`;
+      }
+      setLoading(false);
+    };
+    handle();
   }, []);
 
   const logoutAuth = () => {
@@ -63,11 +65,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  return (
-    <AuthContext.Provider
-      value={{ authenticated: !!user, user, loginAuth, loading, logoutAuth }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  if (loading) {
+    return <Loading />;
+  } else {
+    return (
+      <AuthContext.Provider
+        value={{ authenticated: !!user, user, loginAuth, loading, logoutAuth }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
+  }
 };
