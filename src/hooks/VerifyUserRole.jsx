@@ -9,7 +9,7 @@ export function VerifyUserRole(userRoles) {
   React.useEffect(() => {
     const verifyUser = () => {
       if (!userRoles.includes(userTypeContext.userType)) {
-        navigate("/acessoNegado");
+        navigate("/accessDenied");
       }
     };
     verifyUser();
