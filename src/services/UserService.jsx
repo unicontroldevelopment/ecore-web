@@ -9,4 +9,12 @@ export default class {
       return error;
     }
   }
+  async create(userData) {
+    try {
+      const response = await api.post("/user", userData);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }
