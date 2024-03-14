@@ -24,6 +24,7 @@ export function Input({
     <TextField
       sx={{
         width: "100%",
+        minHeight: 64,
       }}
       label={label}
       variant="outlined"

@@ -1,16 +1,25 @@
 export const companies = () => {
-        const list = ["Unicontrol", "Fitolog", "Corelog", "ECORE", "Labs", "Newsis"]
-        return list;
-    }
+  return ["Unicontrol", "Fitolog", "Corelog", "ECORE", "Labs", "Newsis"];
+};
 export const role = () => {
-        const list = ["Master", "RH", "Operacional", "Comercial", "Franqueado"]
-        return list;
-    }
+  return ["Master", "RH", "Operacional", "Comercial", "Franqueado"];
+};
 export const department = () => {
-        const list = ["Administrativo", "Biólogo", "Comercial", "Diretor", "Diversos", "Estagiário", "Fitolog", "Marketing", "Newsis", "Operacional", "RH", "TI"]
-        return list;
-    }
+  return [
+    "Administrativo",
+    "Biólogo",
+    "Comercial",
+    "Diretor",
+    "Diversos",
+    "Estagiário",
+    "Fitolog",
+    "Marketing",
+    "Newsis",
+    "Operacional",
+    "RH",
+    "TI",
+  ];
+};
 export const units = () => {
-        const list = ["Canoas", "Farroupilha", "Pelotas"]
-        return list;
-    }
+  return ["Canoas", "Farroupilha", "Pelotas"];
+};

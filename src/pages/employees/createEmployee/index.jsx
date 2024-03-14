@@ -5,7 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { CustomInput } from "../../../components/input/index";
 import toastInfo from "../../../components/toasts/toastInfo";
 import UserService from "../../../services/UserService";
-import { companies, department, role, units } from "../../../utils/ListCompanies";
+import {
+  companies,
+  department,
+  role,
+  units,
+} from "../../../utils/ListCompanies";
+import toastSuccess from "../../../components/toasts/toastSuccess";
+import toastError from "../../../components/toasts/toastError";
 
 export default function CreateEmployee() {
   const navigate = useNavigate();
@@ -43,27 +50,47 @@ export default function CreateEmployee() {
   });
 
   const handleChange = (event) => {
-    if(event.target.value !== ''){
-      setMessageError(prevState => ({ ...prevState, [event.target.name]: ""}));
+    setValues(prevState => {
+      const updatedValues = { ...prevState, [event.target.name]: event.target.value };
+      if (event.target.name === "password" || event.target.name === "passwordConfirmation") {
+        verifyPasswords(updatedValues.password, updatedValues.passwordConfirmation);
+      }
+      return updatedValues;
+    });
+  
+    if (event.target.value !== "") {
+      setMessageError((prevState) => ({
+        ...prevState,
+        [event.target.name]: "",
+      }));
     }
-    if(event.target.name === "passwordConfirmation"){
-      verifyPasswords(values.password, event.target.value);
-    }
-    setValues({ ...values, [event.target.name]: event.target.value });
-  }
+  };
 
   const verifyPasswords = (password, passwordConfirmation) => {
-    const errorMessage = "As senhas não conferem"
+    const errorMessage = "As senhas não conferem";
 
     if (password === passwordConfirmation) {
-      setMessageError(prevState => ({ ...prevState, password: "", passwordConfirmation: ""}));
+      setMessageError((prevState) => ({
+        ...prevState,
+        password: "",
+        passwordConfirmation: "",
+      }));
     } else {
-      setMessageError({...messageError, password: errorMessage,  passwordConfirmation: errorMessage});
+      setMessageError({
+        ...messageError,
+        password: errorMessage,
+        passwordConfirmation: errorMessage,
+      });
     }
   };
 
   const areRequiredFieldsFilled = () => {
-    const requiredFields = ['name', 'email', 'password', 'passwordConfirmation'];
+    const requiredFields = [
+      "name",
+      "email",
+      "password",
+      "passwordConfirmation",
+    ];
     let newErrors = {};
     let isAllFieldsFilled = true;
 
@@ -75,7 +102,7 @@ export default function CreateEmployee() {
         newErrors[field] = "";
       }
     }
-  
+
     setMessageError(newErrors);
     return isAllFieldsFilled;
   };
@@ -85,16 +112,24 @@ export default function CreateEmployee() {
     const emptyField = areRequiredFieldsFilled();
 
     if (!emptyField) {
-      toastInfo("Preencha os campos obrigatórios")
+      toastInfo("Preencha os campos obrigatórios!");
       return;
     }
 
-    await userRegister.create(values);
+    const response = await userRegister.create(values);
+
+    if (response.request.status === 500) {
+      toastError("Usuário já cadastrado!");
+      return;
+    } else {
+      toastSuccess("Colaborador cadastrado com sucesso!");
+      navigate("/dashboard");
+    }
   };
 
   return (
     <>
-      <h1>Funcionário</h1>
+      <h1 style={{ textAlign: "center" }}>Funcionário</h1>
       <Row gutter={[12, 12]}>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
@@ -108,11 +143,11 @@ export default function CreateEmployee() {
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Select
-          label="Selecione um cargo"
-          name="role"
-          value={values.role}
-          onChange={handleChange}
-          options={role()}
+            label="Selecione um cargo"
+            name="role"
+            value={values.role}
+            onChange={handleChange}
+            options={role()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -137,33 +172,33 @@ export default function CreateEmployee() {
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Select
-          label="Selecione um setor"
-          name="department"
-          value={values.department}
-          onChange={handleChange}
-          options={department()}
+            label="Selecione um setor"
+            name="department"
+            value={values.department}
+            onChange={handleChange}
+            options={department()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Select
-          label="Selecione uma empresa"
-          name="company"
-          value={values.company}
-          onChange={handleChange}
-          options={companies()}
+            label="Selecione uma empresa"
+            name="company"
+            value={values.company}
+            onChange={handleChange}
+            options={companies()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Select
-          label="Selecione uma unidade"
-          name="unit"
-          value={values.unit}
-          onChange={handleChange}
-          options={units()}
+            label="Selecione uma unidade"
+            name="unit"
+            value={values.unit}
+            onChange={handleChange}
+            options={units()}
           />
         </CustomInput.Root>
       </Row>
-      <h1>Contas do usuário</h1>
+      <h1 style={{ textAlign: "center" }}>Contas do usuário</h1>
       <Row gutter={[12, 12]}>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
@@ -231,7 +266,7 @@ export default function CreateEmployee() {
           />
         </CustomInput.Root>
       </Row>
-      <h1>Notebook</h1>
+      <h1 style={{ textAlign: "center" }}>Notebook</h1>
       <Row gutter={[12, 12]}>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
