@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import * as React from "react";
 import TextField from "@mui/material/TextField";
+import * as React from "react";
 
 export function Input({
   label,
@@ -24,6 +24,7 @@ export function Input({
     <TextField
       sx={{
         width: "100%",
+        minHeight: 64,
       }}
       label={label}
       variant="outlined"
