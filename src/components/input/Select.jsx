@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import * as React from "react";
 import {
   FormControl,
   FormHelperText,
@@ -6,6 +7,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
+
 export function CustomSelect({
   label,
   name,
@@ -14,7 +16,16 @@ export function CustomSelect({
   errorText,
   options,
 }) {
-  const hasError = Boolean(errorText);
+  const [error, setError] = React.useState(false);
+
+  React.useEffect(() => {
+    if (errorText) {
+      setError(true);
+    } else {
+      setError(false);
+    }
+  }, [errorText]);
+
   const upperCaseString = (text) =>
     text.charAt(0).toUpperCase() + text.slice(1);
 
@@ -26,17 +37,17 @@ export function CustomSelect({
       }}
       size="small"
       fullWidth
-      error={hasError}
+      error={error}
     >
       <InputLabel>{label}</InputLabel>
       <Select name={name} value={value} onChange={onChange} label={label}>
-        {options.map((option) => (
-          <MenuItem key={option} value={option}>
+        {options.map((option, index) => (
+          <MenuItem key={index} value={option}>
             {upperCaseString(option)}
           </MenuItem>
         ))}
       </Select>
-      {hasError && <FormHelperText>{errorText}</FormHelperText>}
+      {error && <FormHelperText>{errorText}</FormHelperText>}
     </FormControl>
   );
 }
