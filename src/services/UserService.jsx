@@ -17,4 +17,14 @@ export default class {
       return error;
     }
   }
+
+  async getUsers() {
+    try {
+      console.log("api");
+      const response = await api.get("/list")
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }

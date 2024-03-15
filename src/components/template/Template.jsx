@@ -9,9 +9,9 @@ import {
 } from "@ant-design/icons";
 import { Dropdown, Layout, Menu, Space } from "antd";
 import { useContext, useState } from "react";
-import { MdOutgoingMail, MdStarRate } from "react-icons/md";
-import { FaUserLock, FaUsersCog, FaFileExport, FaBoxes } from "react-icons/fa";
 import { AiFillDashboard } from "react-icons/ai";
+import { FaBoxes, FaFileExport, FaUserLock, FaUsersCog } from "react-icons/fa";
+import { MdOutgoingMail, MdStarRate } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/Auth";
 import "./style.css";
@@ -91,7 +91,7 @@ const Template = (props) => {
         },
         {
           key: "4-2",
-          label: <Link to="/dashboard">Listar</Link>,
+          label: <Link to="/employee/list">Listar</Link>,
         },
         {
           key: "4-3",
