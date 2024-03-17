@@ -1,7 +1,7 @@
 import { toast } from "react-toastify";
 
-const toastError = (message) => {
-  toast.error(message, {
+export const Info = (message) => {
+  toast.info(message, {
     theme: "light",
     position: "bottom-right",
     pauseOnFocusLoss: false,
@@ -9,5 +9,3 @@ const toastError = (message) => {
     toastId: "error",
   });
 };
-
-export default toastError;

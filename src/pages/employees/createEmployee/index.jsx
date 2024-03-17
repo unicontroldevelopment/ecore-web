@@ -1,18 +1,17 @@
-import { Button, Row } from "antd";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
+import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import { CustomInput } from "../../../components/input/index";
-import toastInfo from "../../../components/toasts/toastInfo";
-import toastSuccess from "../../../components/toasts/toastSuccess";
-import toastError from "../../../components/toasts/toastError";
-import FormDivider from "../../../components/FormDivider";
-import UserService from "../../../services/UserService";
+import { Form } from "../../../components/form";
+import { Toast } from "../../../components/toasts";
+import EmployeeService from "../../../services/EmployeeService";
 import { Options } from "../../../utils/options";
 
 export default function CreateEmployee() {
+  VerifyUserRole(["", "Administrador", "RH"]);
   const navigate = useNavigate();
-  const userRegister = new UserService();
+  const service = new EmployeeService();
 
   const [values, setValues] = React.useState({
     name: "",
@@ -115,25 +114,32 @@ export default function CreateEmployee() {
     const emptyField = areRequiredFieldsFilled();
 
     if (!emptyField) {
-      toastInfo("Preencha os campos obrigatórios!");
+      Toast.Info("Preencha os campos obrigatórios!");
       return;
     }
 
-    const response = await userRegister.create(values);
+    const response = await service.create(values);
 
     if (response.request.status === 500) {
-      toastError("Colaborador já cadastrado!");
+      Toast.Error("Colaborador já cadastrado!");
       return;
     } else {
-      toastSuccess("Colaborador cadastrado com sucesso!");
+      Toast.Success("Colaborador cadastrado com sucesso!");
       navigate("/dashboard");
     }
   };
 
+  const handleCancel = () => {
+    navigate("/dashboard");
+  };
+
   return (
-    <>
-      <FormDivider title="Dados do Colaborador" />
-      <Row gutter={[12, 12]}>
+    <Form.Root
+      title="Cadastrar Funcionário"
+      handleCancel={handleCancel}
+      handleSubmit={handleSubmit}
+    >
+      <Form.Fragment section="Dados do Colaborador">
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="Nome Completo"
@@ -171,9 +177,17 @@ export default function CreateEmployee() {
             options={Options.Units()}
           />
         </CustomInput.Root>
-      </Row>
-      <FormDivider title="Acesso Ecore Web" />
-      <Row gutter={[12, 12]}>
+      </Form.Fragment>
+      <Form.Fragment section="Acesso Ecore Web">
+        <CustomInput.Root columnSize={6}>
+          <CustomInput.Input
+            label="Usuário (E-mail)"
+            type="text"
+            name="user"
+            value={values.email}
+            disabled={true}
+          />
+        </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Select
             label="Perfil"
@@ -203,9 +217,8 @@ export default function CreateEmployee() {
             errorText={messageError.passwordConfirmation}
           />
         </CustomInput.Root>
-      </Row>
-      <FormDivider title="E-mail" />
-      <Row gutter={[12, 12]}>
+      </Form.Fragment>
+      <Form.Fragment section="E-mail">
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="E-mail"
@@ -227,9 +240,8 @@ export default function CreateEmployee() {
             }}
           />
         </CustomInput.Root>
-      </Row>
-      <FormDivider title="Acesso à rede" />
-      <Row gutter={[12, 12]}>
+      </Form.Fragment>
+      <Form.Fragment section="Acesso à rede">
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="Usuário rede"
@@ -252,9 +264,8 @@ export default function CreateEmployee() {
             }}
           />
         </CustomInput.Root>
-      </Row>
-      <FormDivider title="Discord" />
-      <Row gutter={[12, 12]}>
+      </Form.Fragment>
+      <Form.Fragment section="Discord">
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="E-mail discord"
@@ -277,9 +288,8 @@ export default function CreateEmployee() {
             }}
           />
         </CustomInput.Root>
-      </Row>
-      <FormDivider title="Notebook" />
-      <Row gutter={[12, 12]}>
+      </Form.Fragment>
+      <Form.Fragment section="Notebook">
         <CustomInput.Root columnSize={6}>
           <CustomInput.Select
             label="Marca Notebook"
@@ -340,13 +350,7 @@ export default function CreateEmployee() {
             options={Options.OSVersions()}
           />
         </CustomInput.Root>
-      </Row>
-      <Button type="primary" onClick={handleSubmit}>
-        Cadastrar
-      </Button>
-      <Button type="primary" onClick={() => navigate("/dashboard")}>
-        Cancelar
-      </Button>
-    </>
+      </Form.Fragment>
+    </Form.Root>
   );
 }

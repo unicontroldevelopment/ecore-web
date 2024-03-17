@@ -9,6 +9,7 @@ export function Input({
   value,
   onChange,
   errorText,
+  disabled,
 }) {
   const [error, setError] = React.useState(false);
 
@@ -36,6 +37,7 @@ export function Input({
       value={value}
       error={error}
       helperText={errorText}
+      disabled={disabled}
     />
   );
 }
