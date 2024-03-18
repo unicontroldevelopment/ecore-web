@@ -1,18 +1,19 @@
-import { Routes, Route, BrowserRouter } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
 import { ConfigProvider } from "antd";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import { UserTypeProvider } from "./contexts/UserTypeContext";
 import { AuthProvider } from "./contexts/Auth";
+import { UserTypeProvider } from "./contexts/UserTypeContext";
 
-import PrivatePage from "./utils/PrivatePage";
 import Template from "./components/template/Template";
+import PrivatePage from "./utils/PrivatePage";
 
-import Login from "./pages/login/Login";
 import Dashboard from "./pages/dashboard/Dashboard";
 import AccessDenied from "./pages/accessDenied";
 import CreateEmployee from "./pages/employees/createEmployee";
+import ListEmployee from "./pages/employees/listEmployee";
+import Login from "./pages/login/Login";
 
 const App = () => {
   return (
@@ -60,6 +61,16 @@ const App = () => {
                   <PrivatePage>
                     <Template>
                       <CreateEmployee />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/employee/list"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <ListEmployee />
                     </Template>
                   </PrivatePage>
                 }

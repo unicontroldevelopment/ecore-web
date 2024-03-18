@@ -11,7 +11,17 @@ export default class {
   }
   async create(userData) {
     try {
-      const response = await api.post("/user", userData);
+      const response = await api.post("/employee", userData);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async getUsers() {
+    try {
+      console.log("api");
+      const response = await api.get("/employees")
       return response;
     } catch (error) {
       return error;
