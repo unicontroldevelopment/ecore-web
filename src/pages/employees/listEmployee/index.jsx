@@ -1,130 +1,159 @@
+import { Modal } from "antd";
 import * as React from "react";
-import { FaRegEdit, FaRegEye, FaRegTrashAlt } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { Filter } from "../../../components/filter";
+import { Table } from "../../../components/table";
+import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import EmployeeService from "../../../services/EmployeeService";
-import { Button, ButtonContainer, Table } from "./styles";
+import { Options } from "../../../utils/options";
 
 export default function ListEmployee() {
-  const navigate = useNavigate();
-  const [usersPerPage] = React.useState(15);
+  VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
-  const [currentPage, setCurrentPage] = React.useState(0);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] =
-    React.useState(false);
+  const [filteredUsers, setFilteredUsers] = React.useState([])
+  const [selectUser, setSelectUser] = React.useState(null);
+  const [isModalVisible, setIsModalVisible] = React.useState(false);
+  const [filter, setFilter] = React.useState({
+    name: "",
+    role: "",
+    department: "",
+    company: "",
+    unit: "",
+  });
 
-  const quantityPages = Math.ceil(users.length / usersPerPage);
-  const firstUser = currentPage * usersPerPage;
-  const lastUser = firstUser + usersPerPage;
-  const currentUsers = users.slice(firstUser, lastUser);
-
-  const userList = new EmployeeService();
+  const service = new EmployeeService();
 
   React.useEffect(() => {
     const fetchUsers = async () => {
-      console.log("entrou");
-      const request = await userList.getUsers();
+      const request = await service.getUsers();
 
       setUsers(request.data.listUsers);
+      setFilteredUsers(request.data.listUsers);
     };
     fetchUsers();
   }, []);
 
-  //Botão de atualizar
-  const updateUser = async () => {
-    navigate("/");
+  const applyFilter = () => {
+    let filtered = users;
+
+    if (filter.name) {
+      filtered = filtered.filter(user => user.name.includes(filter.name));
+    }
+
+    if (filter.role) {
+      filtered = filtered.filter(user => user.role.includes(filter.role));
+    }
+
+    if (filter.department) {
+      filtered = filtered.filter(user => user.department.includes(filter.department));
+    }
+
+    if (filter.company) {
+      filtered = filtered.filter(user => user.company.includes(filter.company));
+    }
+
+    if (filter.unit) {
+      filtered = filtered.filter(user => user.unit.includes(filter.unit));
+    }
+
+    setFilteredUsers(filtered);
   };
 
-  //Botão de deletar que chama um modal para uma segunda confirmação do delete
-  const deleteModal = () => {
-    setShowDeleteConfirmation(true);
+  React.useEffect(() => {
+    applyFilter();
+  }, [filter, users]);
+
+  const handleChange = (event) => {
+    setFilter((prevState) => ({
+        ...prevState,
+        [event.target.name]: event.target.value, }
+    ));
   };
 
-  //Botão do modal caso o usuário não queria deletar
-  const hideDeleteModal = () => {
-    setShowDeleteConfirmation(false);
+  const confirmDelete = async (e) => {
+    try {
+      const response = await service.delete(e.id);
+
+      if (response.status === 200) {
+        setUsers(filteredUsers.filter((user) => user.id !== e.id));
+      }
+      return response;
+    } catch (error) {
+      return error;
+    }
+  };
+  const cancelDelete = () => {
+    return;
   };
 
-  //Botão do modal para confirmação caso o usuário realmente queira deletar
-  const confirmDelete = async () => {
-    alert("Usuário deletado com sucesso!");
-
-    hideDeleteModal();
-    window.location.reload();
+  const handleView = (user) => {
+    setSelectUser(user);
+    setIsModalVisible(true);
   };
 
   return (
-    <div>
-      <div>
-        <Table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Perfil</th>
-              <th>E-mail</th>
-              <th>Setor</th>
-              <th>Empresa</th>
-              <th>Unidade</th>
-              <th>Açôes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.length > 0 ? (
-              currentUsers.map((user, index) => (
-                <tr key={index}>
-                  <td>{user.name}</td>
-                  <td>{user.role}</td>
-                  <td>{user.email}</td>
-                  <td>{user.department}</td>
-                  <td>{user.company}</td>
-                  <td>{user.unit}</td>
-                  <td>
-                    <ButtonContainer>
-                    <Button view>
-                        <FaRegEye />
-                      </Button>
-                      <Button onClick={() => updateUser(user)}>
-                        <FaRegEdit color="white"/>
-                      </Button>
-                      <Button delete onClick={() => deleteModal(user)}>
-                        <FaRegTrashAlt color="white"/>
-                      </Button>
-                    </ButtonContainer>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <h3>Nenhum usuário encontrado</h3>
-            )}
-          </tbody>
-        </Table>
-      </div>
-      <div>
-        {showDeleteConfirmation && (
-          <div className="modal">
-            <div className="modal-content">
-              <p>Deseja realmente excluir o usuário?</p>
-              <button className="confirm" onClick={confirmDelete}>
-                Sim
-              </button>
-              <button className="cancel" onClick={hideDeleteModal}>
-                Não
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-      <footer>
-        {Array.from(Array(quantityPages), (_item, index) => (
-          <button
-            className="button-footer"
-            key={index}
-            value={index}
-            onClick={({ target }) => setCurrentPage(Number(target.value))}
-          >
-            {index + 1}
-          </button>
-        ))}
-      </footer>
-    </div>
+    <Table.Root title="Lista de funcionários" columnSize={6}>
+      <Filter.Fragment section="Filtro">
+        <Filter.CustomInput
+          label="Nome"
+          name="name"
+          value={filter.name}
+          onChange={handleChange}
+        />
+        <Filter.Select
+          label="Perfil"
+          name="role"
+          value={filter.role}
+          onChange={handleChange}
+          options={Options.Roles()}
+        />
+        <Filter.Select
+          label="Setor"
+          name="department"
+          value={filter.department}
+          onChange={handleChange}
+          options={Options.Departments()}
+        />
+        <Filter.Select
+          label="Empresas"
+          name="company"
+          value={filter.company}
+          onChange={handleChange}
+          options={Options.Companies()}
+        />
+        <Filter.Select
+          label="Unidade"
+          name="unit"
+          value={filter.unit}
+          onChange={handleChange}
+          options={Options.Units()}
+        />
+      </Filter.Fragment>
+      <Table.Table
+        data={filteredUsers}
+        onView={handleView}
+        confirm={confirmDelete}
+        cancel={cancelDelete}
+      />
+      {isModalVisible && (
+        <Modal
+          title="Detalhes do Usuário"
+          open={isModalVisible}
+          onOk={() => setIsModalVisible(false)}
+          onCancel={() => setIsModalVisible(false)}
+        >
+          <p>Nome: {selectUser?.name}</p>
+          <p>Senha: {selectUser?.password}</p>
+          <p>E-mail: {selectUser?.email}</p>
+          <p>Senha E-mail: {selectUser?.passwordEmail}</p>
+          <p>Setor: {selectUser?.department}</p>
+          <p>Empresa: {selectUser?.company}</p>
+          <p>Unidade: {selectUser?.unit}</p>
+          <p>Usuário Rede: {selectUser?.networkUser}</p>
+          <p>Senha Rede: {selectUser?.networkPassword}</p>
+          <p>E-mail Discord: {selectUser?.discordEmail}</p>
+          <p>Senha Discord: {selectUser?.discordPassword}</p>
+        </Modal>
+      )}
+    </Table.Root>
   );
 }

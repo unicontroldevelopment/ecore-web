@@ -17,11 +17,26 @@ export default class {
       return error;
     }
   }
+  async getById(employeeData) {
+    try {
+      const response = await api.get("employee/:id", employeeData)
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 
   async getUsers() {
     try {
-      console.log("api");
       const response = await api.get("/employees")
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async delete(employeeId) {
+    try {
+      const response = await api.delete(`employee/${employeeId}`)
       return response;
     } catch (error) {
       return error;

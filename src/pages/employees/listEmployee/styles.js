@@ -38,14 +38,14 @@ tbody tr:nth-child(even) {
 
 export const ButtonContainer = styled.div`
 display: flex;
-gap: 10px; // Espaçamento entre os botões
+gap: 10px;
 `;
 
-export const Button = styled.button`
+export const ButtonStyle = styled.button`
 background-color: ${props => props.delete ? 'red' : (props.view ? 'yellow' : 'blue')};
 border-radius: 50%;
-border: 1px solid black; // Borda preta
-color: black; // Cor do texto alterada para preto para melhor visibilidade no botão amarelo
+border: 1px solid black;
+color: black;
 width: 30px;
 height: 30px;
 display: flex;

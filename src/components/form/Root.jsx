@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import { Row, Col, Typography, Button } from "antd";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { Button, Col, Row, Typography } from "antd";
 
 const { Title } = Typography;
 
