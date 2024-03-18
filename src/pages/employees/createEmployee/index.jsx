@@ -9,7 +9,7 @@ import EmployeeService from "../../../services/EmployeeService";
 import { Options } from "../../../utils/options";
 
 export default function CreateEmployee() {
-  VerifyUserRole(["", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador", "RH"]);
   const navigate = useNavigate();
   const service = new EmployeeService();
 
