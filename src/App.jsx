@@ -11,6 +11,7 @@ import Template from "./components/template/Template";
 
 import Login from "./pages/login/Login";
 import Dashboard from "./pages/dashboard/Dashboard";
+import AccessDenied from "./pages/accessDenied";
 import CreateEmployee from "./pages/employees/createEmployee";
 
 const App = () => {
@@ -33,6 +34,16 @@ const App = () => {
           <AuthProvider>
             <Routes>
               <Route exact path="/" element={<Login />} />
+              <Route
+                path="/accessDenied"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <AccessDenied />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
               <Route
                 path="/dashboard"
                 element={
