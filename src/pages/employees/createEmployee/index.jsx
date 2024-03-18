@@ -24,7 +24,7 @@ export default function CreateEmployee() {
     networkUser: "",
     networkPassword: "",
     email: "",
-    passwordEmail: "",
+    emailPassword: "",
     discordEmail: "",
     discordPassword: "",
     notebookBrand: "",
@@ -233,8 +233,8 @@ export default function CreateEmployee() {
           <CustomInput.Input
             label="Senha e-mail"
             type="text"
-            name="passwordEmail"
-            value={values.passwordEmail}
+            name="emailPassword"
+            value={values.emailPassword}
             onChange={(e) => {
               setValues({ ...values, [e.target.name]: e.target.value });
             }}
