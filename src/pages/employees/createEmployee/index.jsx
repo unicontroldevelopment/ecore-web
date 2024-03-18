@@ -1,24 +1,18 @@
-import { Button, Row } from "antd";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
+import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import { CustomInput } from "../../../components/input/index";
-import toastInfo from "../../../components/toasts/toastInfo";
-import UserService from "../../../services/UserService";
-import {
-  companies,
-  department,
-  role,
-  units,
-} from "../../../utils/ListCompanies";
-import toastSuccess from "../../../components/toasts/toastSuccess";
-import toastError from "../../../components/toasts/toastError";
+import { Form } from "../../../components/form";
+import { Toast } from "../../../components/toasts";
+import EmployeeService from "../../../services/EmployeeService";
+import { Options } from "../../../utils/options";
 
 export default function CreateEmployee() {
+  VerifyUserRole(["Master", "Administrador", "RH"]);
   const navigate = useNavigate();
-  const userRegister = new UserService();
+  const service = new EmployeeService();
 
-  //State para receber os dados
   const [values, setValues] = React.useState({
     name: "",
     role: "",
@@ -30,7 +24,7 @@ export default function CreateEmployee() {
     networkUser: "",
     networkPassword: "",
     email: "",
-    passwordEmail: "",
+    emailPassword: "",
     discordEmail: "",
     discordPassword: "",
     notebookBrand: "",
@@ -41,7 +35,6 @@ export default function CreateEmployee() {
     windowsVersion: "",
   });
 
-  //State dos erros
   const [messageError, setMessageError] = React.useState({
     name: "",
     email: "",
@@ -50,14 +43,23 @@ export default function CreateEmployee() {
   });
 
   const handleChange = (event) => {
-    setValues(prevState => {
-      const updatedValues = { ...prevState, [event.target.name]: event.target.value };
-      if (event.target.name === "password" || event.target.name === "passwordConfirmation") {
-        verifyPasswords(updatedValues.password, updatedValues.passwordConfirmation);
+    setValues((prevState) => {
+      const updatedValues = {
+        ...prevState,
+        [event.target.name]: event.target.value,
+      };
+      if (
+        event.target.name === "password" ||
+        event.target.name === "passwordConfirmation"
+      ) {
+        verifyPasswords(
+          updatedValues.password,
+          updatedValues.passwordConfirmation
+        );
       }
       return updatedValues;
     });
-  
+
     if (event.target.value !== "") {
       setMessageError((prevState) => ({
         ...prevState,
@@ -67,7 +69,7 @@ export default function CreateEmployee() {
   };
 
   const verifyPasswords = (password, passwordConfirmation) => {
-    const errorMessage = "As senhas não conferem";
+    const errorMessage = "As senhas não conferem!";
 
     if (password === passwordConfirmation) {
       setMessageError((prevState) => ({
@@ -112,25 +114,32 @@ export default function CreateEmployee() {
     const emptyField = areRequiredFieldsFilled();
 
     if (!emptyField) {
-      toastInfo("Preencha os campos obrigatórios!");
+      Toast.Info("Preencha os campos obrigatórios!");
       return;
     }
 
-    const response = await userRegister.create(values);
+    const response = await service.create(values);
 
     if (response.request.status === 500) {
-      toastError("Usuário já cadastrado!");
+      Toast.Error("Colaborador já cadastrado!");
       return;
     } else {
-      toastSuccess("Colaborador cadastrado com sucesso!");
+      Toast.Success("Colaborador cadastrado com sucesso!");
       navigate("/dashboard");
     }
   };
 
+  const handleCancel = () => {
+    navigate("/dashboard");
+  };
+
   return (
-    <>
-      <h1 style={{ textAlign: "center" }}>Funcionário</h1>
-      <Row gutter={[12, 12]}>
+    <Form.Root
+      title="Cadastrar Funcionário"
+      handleCancel={handleCancel}
+      handleSubmit={handleSubmit}
+    >
+      <Form.Fragment section="Dados do Colaborador">
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="Nome Completo"
@@ -143,11 +152,49 @@ export default function CreateEmployee() {
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Select
-            label="Selecione um cargo"
+            label="Selecione um setor"
+            name="department"
+            value={values.department}
+            onChange={handleChange}
+            options={Options.Departments()}
+          />
+        </CustomInput.Root>
+        <CustomInput.Root columnSize={6}>
+          <CustomInput.Select
+            label="Selecione uma empresa"
+            name="company"
+            value={values.company}
+            onChange={handleChange}
+            options={Options.Companies()}
+          />
+        </CustomInput.Root>
+        <CustomInput.Root columnSize={6}>
+          <CustomInput.Select
+            label="Selecione uma unidade"
+            name="unit"
+            value={values.unit}
+            onChange={handleChange}
+            options={Options.Units()}
+          />
+        </CustomInput.Root>
+      </Form.Fragment>
+      <Form.Fragment section="Acesso Ecore Web">
+        <CustomInput.Root columnSize={6}>
+          <CustomInput.Input
+            label="Usuário (E-mail)"
+            type="text"
+            name="user"
+            value={values.email}
+            disabled={true}
+          />
+        </CustomInput.Root>
+        <CustomInput.Root columnSize={6}>
+          <CustomInput.Select
+            label="Perfil"
             name="role"
             value={values.role}
             onChange={handleChange}
-            options={role()}
+            options={Options.Roles()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -170,36 +217,31 @@ export default function CreateEmployee() {
             errorText={messageError.passwordConfirmation}
           />
         </CustomInput.Root>
+      </Form.Fragment>
+      <Form.Fragment section="E-mail">
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Select
-            label="Selecione um setor"
-            name="department"
-            value={values.department}
+          <CustomInput.Input
+            label="E-mail"
+            type="text"
+            name="email"
+            value={values.email}
             onChange={handleChange}
-            options={department()}
+            errorText={messageError.email}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Select
-            label="Selecione uma empresa"
-            name="company"
-            value={values.company}
-            onChange={handleChange}
-            options={companies()}
+          <CustomInput.Input
+            label="Senha e-mail"
+            type="text"
+            name="emailPassword"
+            value={values.emailPassword}
+            onChange={(e) => {
+              setValues({ ...values, [e.target.name]: e.target.value });
+            }}
           />
         </CustomInput.Root>
-        <CustomInput.Root columnSize={6}>
-          <CustomInput.Select
-            label="Selecione uma unidade"
-            name="unit"
-            value={values.unit}
-            onChange={handleChange}
-            options={units()}
-          />
-        </CustomInput.Root>
-      </Row>
-      <h1 style={{ textAlign: "center" }}>Contas do usuário</h1>
-      <Row gutter={[12, 12]}>
+      </Form.Fragment>
+      <Form.Fragment section="Acesso à rede">
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="Usuário rede"
@@ -222,27 +264,8 @@ export default function CreateEmployee() {
             }}
           />
         </CustomInput.Root>
-        <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
-            label="E-mail"
-            type="text"
-            name="email"
-            value={values.email}
-            onChange={handleChange}
-            errorText={messageError.email}
-          />
-        </CustomInput.Root>
-        <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
-            label="Senha e-mail"
-            type="text"
-            name="passwordEmail"
-            value={values.passwordEmail}
-            onChange={(e) => {
-              setValues({ ...values, [e.target.name]: e.target.value });
-            }}
-          />
-        </CustomInput.Root>
+      </Form.Fragment>
+      <Form.Fragment section="Discord">
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="E-mail discord"
@@ -265,18 +288,15 @@ export default function CreateEmployee() {
             }}
           />
         </CustomInput.Root>
-      </Row>
-      <h1 style={{ textAlign: "center" }}>Notebook</h1>
-      <Row gutter={[12, 12]}>
+      </Form.Fragment>
+      <Form.Fragment section="Notebook">
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
+          <CustomInput.Select
             label="Marca Notebook"
-            type="text"
             name="notebookBrand"
             value={values.notebookBrand}
-            onChange={(e) => {
-              setValues({ ...values, [e.target.name]: e.target.value });
-            }}
+            onChange={handleChange}
+            options={Options.NotebookBrands()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -313,34 +333,24 @@ export default function CreateEmployee() {
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
+          <CustomInput.Select
             label="Versão Office"
-            type="text"
             name="officeVersion"
             value={values.officeVersion}
-            onChange={(e) => {
-              setValues({ ...values, [e.target.name]: e.target.value });
-            }}
+            onChange={handleChange}
+            options={Options.OfficeVersions()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
-            label="Versão Windows"
-            type="text"
+          <CustomInput.Select
+            label="Versão sistema operacional"
             name="windowsVersion"
             value={values.windowsVersion}
-            onChange={(e) => {
-              setValues({ ...values, [e.target.name]: e.target.value });
-            }}
+            onChange={handleChange}
+            options={Options.OSVersions()}
           />
         </CustomInput.Root>
-      </Row>
-      <Button type="primary" onClick={handleSubmit}>
-        Cadastrar
-      </Button>
-      <Button type="primary" onClick={() => navigate("/dashboard")}>
-        Cancelar
-      </Button>
-    </>
+      </Form.Fragment>
+    </Form.Root>
   );
 }
