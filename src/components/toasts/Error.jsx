@@ -1,13 +1,11 @@
 import { toast } from "react-toastify";
 
-const toastSuccess = (message) => {
-  toast.success(message, {
+export const Error = (message) => {
+  toast.error(message, {
     theme: "light",
     position: "bottom-right",
     pauseOnFocusLoss: false,
     autoClose: 5000,
-    toastId: "success",
+    toastId: "error",
   });
 };
-
-export default toastSuccess;

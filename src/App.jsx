@@ -10,6 +10,7 @@ import Template from "./components/template/Template";
 import PrivatePage from "./utils/PrivatePage";
 
 import Dashboard from "./pages/dashboard/Dashboard";
+import AccessDenied from "./pages/accessDenied";
 import CreateEmployee from "./pages/employees/createEmployee";
 import ListEmployee from "./pages/employees/listEmployee";
 import Login from "./pages/login/Login";
@@ -34,6 +35,16 @@ const App = () => {
           <AuthProvider>
             <Routes>
               <Route exact path="/" element={<Login />} />
+              <Route
+                path="/accessDenied"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <AccessDenied />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
               <Route
                 path="/dashboard"
                 element={

@@ -2,16 +2,14 @@
 import { useNavigate } from "react-router-dom";
 import * as React from "react";
 
-import toastError from "../components/toasts/toastError";
-import toastSuccess from "../components/toasts/toastSuccess";
-import toastInfo from "../components/toasts/toastInfo";
+import { Toast } from "../components/toasts";
 
 import { api } from "../services/api";
-import UserService from "../services/UserService";
+import EmployeeService from "../services/EmployeeService";
 import { UserTypeContext } from "./UserTypeContext";
 import Loading from "../components/animations/Loading";
 
-const userService = new UserService();
+const employeeService = new EmployeeService();
 
 export const AuthContext = React.createContext();
 
@@ -41,13 +39,13 @@ export const AuthProvider = ({ children }) => {
     context.setUserType(null);
     api.defaults.headers.Authorization = null;
     setUser(null);
-    toastInfo("Logue-se para acessar o sistema!");
+    Toast.Info("Logue-se para acessar o sistema!");
     navigate("/");
   };
 
   const loginAuth = async (email, password) => {
     try {
-      const response = await userService.login(email, password);
+      const response = await employeeService.login(email, password);
 
       const loggedUser = response.data.user;
       const token = response.data.token;
@@ -59,9 +57,9 @@ export const AuthProvider = ({ children }) => {
       api.defaults.headers.Authorization = `Bearer ${token}`;
       setUser(loggedUser);
       navigate("/dashboard");
-      toastSuccess("Login realizado com sucesso!");
+      Toast.Success("Login realizado com sucesso!");
     } catch (error) {
-      toastError(error.message);
+      Toast.Error(error.message);
     }
   };
 
