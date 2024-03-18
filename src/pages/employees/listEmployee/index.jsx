@@ -1,12 +1,12 @@
 import * as React from "react";
 import { FaRegEdit, FaRegEye, FaRegTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import UserService from "../../../services/UserService";
+import EmployeeService from "../../../services/EmployeeService";
 import { Button, ButtonContainer, Table } from "./styles";
 
 export default function ListEmployee() {
   const navigate = useNavigate();
-  const [usersPerPage] = React.useState(25);
+  const [usersPerPage] = React.useState(15);
   const [users, setUsers] = React.useState([]);
   const [currentPage, setCurrentPage] = React.useState(0);
   const [showDeleteConfirmation, setShowDeleteConfirmation] =
@@ -15,10 +15,9 @@ export default function ListEmployee() {
   const quantityPages = Math.ceil(users.length / usersPerPage);
   const firstUser = currentPage * usersPerPage;
   const lastUser = firstUser + usersPerPage;
-  console.log("users", users);
   const currentUsers = users.slice(firstUser, lastUser);
 
-  const userList = new UserService();
+  const userList = new EmployeeService();
 
   React.useEffect(() => {
     const fetchUsers = async () => {
