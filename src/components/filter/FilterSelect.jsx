@@ -42,6 +42,9 @@ export const FilterSelect = ({
       >
         <InputLabel>{label}</InputLabel>
         <Select name={name} value={value} onChange={onChange} label={label}>
+        <MenuItem value="">
+            Nenhum
+          </MenuItem>
           {options.map((option, index) => (
             <MenuItem key={index} value={option}>
               {upperCaseString(option)}

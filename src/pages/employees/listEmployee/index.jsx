@@ -9,7 +9,7 @@ import { Options } from "../../../utils/options";
 export default function ListEmployee() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
-  const [filteredUsers, setFilteredUsers] = React.useState([])
+  const [filteredUsers, setFilteredUsers] = React.useState([]);
   const [selectUser, setSelectUser] = React.useState(null);
   const [isModalVisible, setIsModalVisible] = React.useState(false);
   const [filter, setFilter] = React.useState({
@@ -33,30 +33,18 @@ export default function ListEmployee() {
   }, []);
 
   const applyFilter = () => {
-    let filtered = users;
+    const initialFilter = users;
 
-    if (filter.name) {
-      filtered = filtered.filter(user => user.name.includes(filter.name));
-    }
-
-    if (filter.role) {
-      filtered = filtered.filter(user => user.role.includes(filter.role));
-    }
-
-    if (filter.department) {
-      filtered = filtered.filter(user => user.department.includes(filter.department));
-    }
-
-    if (filter.company) {
-      filtered = filtered.filter(user => user.company.includes(filter.company));
-    }
-
-    if (filter.unit) {
-      filtered = filtered.filter(user => user.unit.includes(filter.unit));
-    }
+    const filtered = initialFilter
+      .filter((user) => user.name.includes(filter.name))
+      .filter((user) => user.role.includes(filter.role))
+      .filter((user) => user.department.includes(filter.department))
+      .filter((user) => user.company.includes(filter.company))
+      .filter((user) => user.unit.includes(filter.unit));
 
     setFilteredUsers(filtered);
   };
+
 
   React.useEffect(() => {
     applyFilter();
@@ -64,9 +52,9 @@ export default function ListEmployee() {
 
   const handleChange = (event) => {
     setFilter((prevState) => ({
-        ...prevState,
-        [event.target.name]: event.target.value, }
-    ));
+      ...prevState,
+      [event.target.name]: event.target.value,
+    }));
   };
 
   const confirmDelete = async (e) => {
