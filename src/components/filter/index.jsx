@@ -1,11 +1,11 @@
 import { FilterDivider } from "./FilterDivider";
 import { FilterSelect } from "./FilterSelect";
-import { FilterString } from "./FilterString";
+import { FilterInput } from "./FilterString";
 import { Fragment } from "./Fragment";
 
 export const Filter= {
     Select: FilterSelect,
-    CustomInput: FilterString,
+    FilterInput: FilterInput,
     Fragment: Fragment,
     Divider: FilterDivider,
 };

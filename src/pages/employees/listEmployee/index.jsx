@@ -1,6 +1,7 @@
-import { Modal } from "antd";
+import { Button, Modal } from "antd";
 import * as React from "react";
 import { Filter } from "../../../components/filter";
+import { CustomModal } from "../../../components/modal";
 import { Table } from "../../../components/table";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import EmployeeService from "../../../services/EmployeeService";
@@ -10,7 +11,7 @@ export default function ListEmployee() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
   const [filteredUsers, setFilteredUsers] = React.useState([]);
-  const [selectUser, setSelectUser] = React.useState(null);
+  const [selectUser, setSelectUser] = React.useState([]);
   const [isModalVisible, setIsModalVisible] = React.useState(false);
   const [filter, setFilter] = React.useState({
     name: "",
@@ -32,6 +33,7 @@ export default function ListEmployee() {
     fetchUsers();
   }, []);
 
+
   const applyFilter = () => {
     const initialFilter = users;
 
@@ -44,7 +46,6 @@ export default function ListEmployee() {
 
     setFilteredUsers(filtered);
   };
-
 
   React.useEffect(() => {
     applyFilter();
@@ -81,7 +82,7 @@ export default function ListEmployee() {
   return (
     <Table.Root title="Lista de funcionários" columnSize={6}>
       <Filter.Fragment section="Filtro">
-        <Filter.CustomInput
+        <Filter.FilterInput
           label="Nome"
           name="name"
           value={filter.name}
@@ -124,22 +125,68 @@ export default function ListEmployee() {
       />
       {isModalVisible && (
         <Modal
-          title="Detalhes do Usuário"
+          title="Detalhes do usuário"
           open={isModalVisible}
-          onOk={() => setIsModalVisible(false)}
+          centered
+          width={1000}
           onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="back" onClick={() => setIsModalVisible(false)}>
+              Voltar
+            </Button>,
+          ]}
         >
-          <p>Nome: {selectUser?.name}</p>
-          <p>Senha: {selectUser?.password}</p>
-          <p>E-mail: {selectUser?.email}</p>
-          <p>Senha E-mail: {selectUser?.passwordEmail}</p>
-          <p>Setor: {selectUser?.department}</p>
-          <p>Empresa: {selectUser?.company}</p>
-          <p>Unidade: {selectUser?.unit}</p>
-          <p>Usuário Rede: {selectUser?.networkUser}</p>
-          <p>Senha Rede: {selectUser?.networkPassword}</p>
-          <p>E-mail Discord: {selectUser?.discordEmail}</p>
-          <p>Senha Discord: {selectUser?.discordPassword}</p>
+          <CustomModal.Info label="Nome" value={selectUser.name} />
+          <CustomModal.Info label="Senha" value={selectUser.password} />
+          <CustomModal.Info label="Perfil" value={selectUser.role} />
+          <CustomModal.Info label="Setor" value={selectUser.department} />
+          <CustomModal.Info label="Empresa" value={selectUser.company} />
+          <CustomModal.Info label="Unidade" value={selectUser.unit} />
+          <CustomModal.Info
+            label="Usuário rede"
+            value={selectUser.networkUser}
+          />
+          <CustomModal.Info
+            label="Senha rede"
+            value={selectUser.networkPassword}
+          />
+          <CustomModal.Info label="Email" value={selectUser.email} />
+          <CustomModal.Info
+            label="Senha e-mail"
+            value={selectUser.emailPassword}
+          />
+          <CustomModal.Info
+            label="E-mail discord"
+            value={selectUser.discordEmail}
+          />
+          <CustomModal.Info
+            label="Senha discord"
+            value={selectUser.discordPassword}
+          />
+          <CustomModal.Info
+            label="Marca Notebook"
+            value={selectUser.notebookBrand}
+          />
+          <CustomModal.Info
+            label="Nome Notebook"
+            value={selectUser.notebookName}
+          />
+          <CustomModal.Info
+            label="Patrimônio notebook"
+            value={selectUser.notebookProperty}
+          />
+          <CustomModal.Info
+            label="Patrimônio cooler"
+            value={selectUser.coolerProperty}
+          />
+          <CustomModal.Info
+            label="Versão office"
+            value={selectUser.officeVersion}
+          />
+          <CustomModal.Info
+            label="Versão windows"
+            value={selectUser.windowsVersion}
+          />
         </Modal>
       )}
     </Table.Root>

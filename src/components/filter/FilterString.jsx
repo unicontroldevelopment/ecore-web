@@ -3,7 +3,7 @@ import TextField from "@mui/material/TextField";
 import { Col } from "antd";
 import * as React from "react";
 
-export const FilterString = ({
+export const FilterInput = ({
   label,
   type = "text",
   name,
