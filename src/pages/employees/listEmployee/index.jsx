@@ -1,6 +1,8 @@
 import { Button, Modal } from "antd";
 import * as React from "react";
 import { Filter } from "../../../components/filter";
+import { Form } from "../../../components/form";
+import { CustomInput } from "../../../components/input/index";
 import { CustomModal } from "../../../components/modal";
 import { Table } from "../../../components/table";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
@@ -11,8 +13,29 @@ export default function ListEmployee() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
   const [filteredUsers, setFilteredUsers] = React.useState([]);
-  const [selectUser, setSelectUser] = React.useState([]);
-  const [isModalVisible, setIsModalVisible] = React.useState(false);
+  const [selectUser, setSelectUser] = React.useState({
+    name: "",
+    role: "",
+    password: "",
+    passwordConfirmation: "",
+    department: "",
+    company: "",
+    unit: "",
+    networkUser: "",
+    networkPassword: "",
+    email: "",
+    emailPassword: "",
+    discordEmail: "",
+    discordPassword: "",
+    notebookBrand: "",
+    notebookName: "",
+    notebookProperty: "",
+    coolerProperty: "",
+    officeVersion: "",
+    windowsVersion: "",
+  });
+  const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
+  const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
   const [filter, setFilter] = React.useState({
     name: "",
     role: "",
@@ -33,7 +56,6 @@ export default function ListEmployee() {
     fetchUsers();
   }, []);
 
-
   const applyFilter = () => {
     const initialFilter = users;
 
@@ -52,6 +74,13 @@ export default function ListEmployee() {
   }, [filter, users]);
 
   const handleChange = (event) => {
+    setSelectUser((prevState) => ({
+      ...prevState,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleChangeFilter = (event) => {
     setFilter((prevState) => ({
       ...prevState,
       [event.target.name]: event.target.value,
@@ -74,9 +103,35 @@ export default function ListEmployee() {
     return;
   };
 
+  const confirmUpdate = async (updateData) => {
+    try {
+      const response = await service.update(updateData.id, updateData);
+
+      if (response.status === 200) {
+        const updatedData = users.map((user) =>
+          user.id === updateData.id ? { ...user, ...updateData } : user
+        );
+
+        setUsers(updatedData);
+        setFilteredUsers(updatedData);
+
+        setIsModalVisibleUpdate(false);
+      }
+
+      return response;
+    } catch (error) {
+      return error;
+    }
+  };
+
+  const handleUpdate = (user) => {
+    setSelectUser(user);
+    setIsModalVisibleUpdate(true);
+  };
+
   const handleView = (user) => {
     setSelectUser(user);
-    setIsModalVisible(true);
+    setIsModalVisibleView(true);
   };
 
   return (
@@ -86,52 +141,53 @@ export default function ListEmployee() {
           label="Nome"
           name="name"
           value={filter.name}
-          onChange={handleChange}
+          onChange={handleChangeFilter}
         />
         <Filter.Select
           label="Perfil"
           name="role"
           value={filter.role}
-          onChange={handleChange}
+          onChange={handleChangeFilter}
           options={Options.Roles()}
         />
         <Filter.Select
           label="Setor"
           name="department"
           value={filter.department}
-          onChange={handleChange}
+          onChange={handleChangeFilter}
           options={Options.Departments()}
         />
         <Filter.Select
           label="Empresas"
           name="company"
           value={filter.company}
-          onChange={handleChange}
+          onChange={handleChangeFilter}
           options={Options.Companies()}
         />
         <Filter.Select
           label="Unidade"
           name="unit"
           value={filter.unit}
-          onChange={handleChange}
+          onChange={handleChangeFilter}
           options={Options.Units()}
         />
       </Filter.Fragment>
       <Table.Table
         data={filteredUsers}
         onView={handleView}
+        onUpdate={handleUpdate}
         confirm={confirmDelete}
         cancel={cancelDelete}
       />
-      {isModalVisible && (
+      {isModalVisibleView && (
         <Modal
           title="Detalhes do usuário"
-          open={isModalVisible}
+          open={isModalVisibleView}
           centered
           width={1000}
-          onCancel={() => setIsModalVisible(false)}
+          onCancel={() => setIsModalVisibleView(false)}
           footer={[
-            <Button key="back" onClick={() => setIsModalVisible(false)}>
+            <Button key="back" onClick={() => setIsModalVisibleView(false)}>
               Voltar
             </Button>,
           ]}
@@ -187,6 +243,208 @@ export default function ListEmployee() {
             label="Versão windows"
             value={selectUser.windowsVersion}
           />
+        </Modal>
+      )}
+      {isModalVisibleUpdate && (
+        <Modal
+          title="Editar usuário"
+          open={isModalVisibleUpdate}
+          centered
+          style={{ top: 20 }}
+          onCancel={() => setIsModalVisibleUpdate(false)}
+          width={1000}
+          footer={[
+            <Button key="submit" type="primary" onClick={() => confirmUpdate(selectUser)}>
+              Atualizar
+            </Button>,
+            <Button key="back" onClick={() => setIsModalVisibleUpdate(false)}>
+              Voltar
+            </Button>,
+          ]}
+        >
+          <Form.Fragment section="Dados do Colaborador">
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Nome Completo"
+                type="text"
+                name="name"
+                value={selectUser.name}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Selecione um setor"
+                name="department"
+                value={selectUser.department}
+                onChange={handleChange}
+                options={Options.Departments()}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Selecione uma empresa"
+                name="company"
+                value={selectUser.company}
+                onChange={handleChange}
+                options={Options.Companies()}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Selecione uma unidade"
+                name="unit"
+                value={selectUser.unit}
+                onChange={handleChange}
+                options={Options.Units()}
+              />
+            </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="Acesso Ecore Web">
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Usuário (E-mail)"
+                type="text"
+                name="user"
+                value={selectUser.email}
+                disabled={true}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Perfil"
+                name="role"
+                value={selectUser.role}
+                onChange={handleChange}
+                options={Options.Roles()}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Senha"
+                type="text"
+                name="password"
+                value={selectUser.password}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="E-mail">
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="E-mail"
+                type="text"
+                name="email"
+                value={selectUser.email}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Senha e-mail"
+                type="text"
+                name="emailPassword"
+                value={selectUser.emailPassword}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="Acesso à rede">
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Usuário rede"
+                type="text"
+                name="networkUser"
+                value={selectUser.networkUser}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Senha rede"
+                type="text"
+                name="networkPassword"
+                value={selectUser.networkPassword}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="Discord">
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="E-mail discord"
+                type="text"
+                name="discordEmail"
+                value={selectUser.discordEmail}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Senha discord"
+                type="text"
+                name="discordPassword"
+                value={selectUser.discordPassword}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="Notebook">
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Marca Notebook"
+                name="notebookBrand"
+                value={selectUser.notebookBrand}
+                onChange={handleChange}
+                options={Options.NotebookBrands()}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Nome Notebook"
+                type="text"
+                name="notebookName"
+                value={selectUser.notebookName}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Patrimônio Notebook"
+                type="text"
+                name="notebookProperty"
+                value={selectUser.notebookProperty}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Patrimônio cooler"
+                type="text"
+                name="coolerProperty"
+                value={selectUser.coolerProperty}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Versão Office"
+                name="officeVersion"
+                value={selectUser.officeVersion}
+                onChange={handleChange}
+                options={Options.OfficeVersions()}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Versão sistema operacional"
+                name="windowsVersion"
+                value={selectUser.windowsVersion}
+                onChange={handleChange}
+                options={Options.OSVersions()}
+              />
+            </CustomInput.Root>
+          </Form.Fragment>
         </Modal>
       )}
     </Table.Root>
