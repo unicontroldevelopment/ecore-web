@@ -5,6 +5,7 @@ import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input/index";
 import { CustomModal } from "../../../components/modal";
 import { Table } from "../../../components/table";
+import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import EmployeeService from "../../../services/EmployeeService";
 import { Options } from "../../../utils/options";
@@ -46,12 +47,17 @@ export default function ListEmployee() {
 
   const service = new EmployeeService();
 
+  const sortUsersAlphabetically = (users) => {
+    return users.sort((a, b) => a.name.localeCompare(b.name));
+  };
+
   React.useEffect(() => {
     const fetchUsers = async () => {
       const request = await service.getUsers();
+      const sortedUsers = sortUsersAlphabetically(request.data.listUsers);
 
-      setUsers(request.data.listUsers);
-      setFilteredUsers(request.data.listUsers);
+      setUsers(sortedUsers);
+      setFilteredUsers(sortedUsers);
     };
     fetchUsers();
   }, []);
@@ -93,6 +99,8 @@ export default function ListEmployee() {
 
       if (response.status === 200) {
         setUsers(filteredUsers.filter((user) => user.id !== e.id));
+
+        Toast.Success("Usuário deletado com sucesso!")
       }
       return response;
     } catch (error) {
@@ -114,6 +122,7 @@ export default function ListEmployee() {
 
         setUsers(updatedData);
         setFilteredUsers(updatedData);
+        Toast.Success("Usuário atualizado com sucesso!")
 
         setIsModalVisibleUpdate(false);
       }
