@@ -13,7 +13,6 @@ import { Options } from "../../../utils/options";
 export default function ListEmployee() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
-  const [filteredUsers, setFilteredUsers] = React.useState([]);
   const [selectUser, setSelectUser] = React.useState({
     name: "",
     role: "",
@@ -47,37 +46,19 @@ export default function ListEmployee() {
 
   const service = new EmployeeService();
 
-  const sortUsersAlphabetically = (users) => {
-    return users.sort((a, b) => a.name.localeCompare(b.name));
-  };
-
   React.useEffect(() => {
     const fetchUsers = async () => {
-      const request = await service.getUsers();
-      const sortedUsers = sortUsersAlphabetically(request.data.listUsers);
-
-      setUsers(sortedUsers);
-      setFilteredUsers(sortedUsers);
+      const request = await service.getEmployees(
+        filter.role,
+        filter.name,
+        filter.department,
+        filter.company,
+        filter.unit
+      );
+      setUsers(request.data.listUsers);
     };
     fetchUsers();
-  }, []);
-
-  const applyFilter = () => {
-    const initialFilter = users;
-
-    const filtered = initialFilter
-      .filter((user) => user.name.includes(filter.name))
-      .filter((user) => user.role.includes(filter.role))
-      .filter((user) => user.department.includes(filter.department))
-      .filter((user) => user.company.includes(filter.company))
-      .filter((user) => user.unit.includes(filter.unit));
-
-    setFilteredUsers(filtered);
-  };
-
-  React.useEffect(() => {
-    applyFilter();
-  }, [filter, users]);
+  }, [filter]);
 
   const handleChange = (event) => {
     setSelectUser((prevState) => ({
@@ -98,9 +79,9 @@ export default function ListEmployee() {
       const response = await service.delete(e.id);
 
       if (response.status === 200) {
-        setUsers(filteredUsers.filter((user) => user.id !== e.id));
+        setUsers(users.filter((user) => user.id !== e.id));
 
-        Toast.Success("Usuário deletado com sucesso!")
+        Toast.Success("Funcionário deletado com sucesso!");
       }
       return response;
     } catch (error) {
@@ -121,8 +102,7 @@ export default function ListEmployee() {
         );
 
         setUsers(updatedData);
-        setFilteredUsers(updatedData);
-        Toast.Success("Usuário atualizado com sucesso!")
+        Toast.Success("Funcionário atualizado com sucesso!");
 
         setIsModalVisibleUpdate(false);
       }
@@ -143,9 +123,41 @@ export default function ListEmployee() {
     setIsModalVisibleView(true);
   };
 
+  const options = [
+    {
+      title: "Nome",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Perfil",
+      key: "role",
+      dataIndex: "role",
+      render: (text, record) => <span>{record.role ?? "-"}</span>,
+    },
+    {
+      title: "Setor",
+      key: "department",
+      dataIndex: "department",
+      render: (text, record) => <span>{record.department ?? "-"}</span>,
+    },
+    {
+      title: "Empresa",
+      dataIndex: "company",
+      key: "company",
+      render: (text, record) => <span>{record.company ?? "-"}</span>,
+    },
+    {
+      title: "Unidade",
+      dataIndex: "unit",
+      key: "unit",
+      render: (text, record) => <span>{record.unit ?? "-"}</span>,
+    },
+  ];
+
   return (
     <Table.Root title="Lista de funcionários" columnSize={6}>
-      <Filter.Fragment section="Filtro">
+      <Filter.Fragment section="Filtros">
         <Filter.FilterInput
           label="Nome"
           name="name"
@@ -182,7 +194,8 @@ export default function ListEmployee() {
         />
       </Filter.Fragment>
       <Table.Table
-        data={filteredUsers}
+        data={users}
+        columns={options}
         onView={handleView}
         onUpdate={handleUpdate}
         confirm={confirmDelete}
@@ -190,7 +203,7 @@ export default function ListEmployee() {
       />
       {isModalVisibleView && (
         <Modal
-          title="Detalhes do usuário"
+          title="Detalhes do Funcionário"
           open={isModalVisibleView}
           centered
           width={1000}
@@ -263,7 +276,11 @@ export default function ListEmployee() {
           onCancel={() => setIsModalVisibleUpdate(false)}
           width={1000}
           footer={[
-            <Button key="submit" type="primary" onClick={() => confirmUpdate(selectUser)}>
+            <Button
+              key="submit"
+              type="primary"
+              onClick={() => confirmUpdate(selectUser)}
+            >
               Atualizar
             </Button>,
             <Button key="back" onClick={() => setIsModalVisibleUpdate(false)}>
