@@ -274,7 +274,7 @@ export default function ListEmployee() {
           centered
           style={{ top: 20 }}
           onCancel={() => setIsModalVisibleUpdate(false)}
-          width={1000}
+          width={1200}
           footer={[
             <Button
               key="submit"
