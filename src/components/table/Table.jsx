@@ -1,69 +1,77 @@
 /* eslint-disable react/prop-types */
-import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Button, Popconfirm, Table } from "antd";
-import { FaRegEdit, FaRegEye, FaRegTrashAlt } from "react-icons/fa";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  QuestionCircleOutlined,
+} from "@ant-design/icons";
+import { ActionsContainer } from "./styles";
 
-export const CustomTable = ({ data, onView, onUpdate, confirm, cancel }) => {
-  const columns = [
-    {
-      title: "Nome",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Perfil",
-      dataIndex: "role",
-      key: "role",
-    },
-    {
-      title: "Setor",
-      dataIndex: "department",
-      key: "department",
-    },
-    {
-      title: "Empresa",
-      dataIndex: "company",
-      key: "company",
-    },
-    {
-      title: "Unidade",
-      dataIndex: "unit",
-      key: "unit",
-    },
+export const CustomTable = ({
+  data,
+  onView,
+  onUpdate,
+  confirm,
+  cancel,
+  columns,
+}) => {
+  const columnsAndActions = [
+    ...columns.map((column) => ({
+      title: column.title,
+      dataIndex: column.dataIndex,
+      key: column.key,
+      render: column.render,
+    })),
     {
       title: "Ações",
       key: "actions",
       render: (text, record) => (
-        <div>
-          <Button style={{backgroundColor: "#FFFF00"}} onClick={() => onView(record)}>
-            <FaRegEye />
-          </Button>
-          <Button style={{backgroundColor: "#4D4DFF"}} onClick={() => onUpdate(record)}>
-            <FaRegEdit />
-          </Button>
+        <ActionsContainer>
+          <Button
+            style={{ backgroundColor: "#3f8ece", color: "#fff" }}
+            onClick={() => onView(record)}
+            icon={<EyeOutlined />}
+            shape="circle"
+          />
+          <Button
+            style={{ backgroundColor: "#36db6a", color: "#fff" }}
+            onClick={() => onUpdate(record)}
+            icon={<EditOutlined />}
+            shape="circle"
+          />
           <Popconfirm
-            title="Deletar usuário!"
-            description="Você tem certeza que quer deletar este usuário?"
+            title="Tem certeza?"
+            description="Você quer deletar esta informação?"
             onConfirm={() => confirm(record)}
             onCancel={() => cancel(record)}
             okText="Sim"
             cancelText="Não"
-            icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+            icon={<QuestionCircleOutlined style={{ color: "red" }} />}
           >
-            <Button style={{backgroundColor: "#FF0000"}}>
-              <FaRegTrashAlt />
-            </Button>
+            <Button
+              style={{ backgroundColor: "#da4444", color: "#fff" }}
+              icon={<DeleteOutlined />}
+              shape="circle"
+            />
           </Popconfirm>
-        </div>
+        </ActionsContainer>
       ),
     },
   ];
+
+  console.log(columnsAndActions);
 
   const paginationConfig = {
     defaultPageSize: 15,
   };
 
   return (
-    <Table columns={columns} dataSource={data} pagination={paginationConfig} rowKey="id" />
+    <Table
+      columns={columnsAndActions}
+      dataSource={data}
+      pagination={paginationConfig}
+      rowKey="id"
+    />
   );
 };
