@@ -72,11 +72,11 @@ const Template = (props) => {
       children: [
         {
           key: "3-1",
-          label: <Link to="/dashboard">Cadastrar</Link>,
+          label: <Link to="/serveraccess/create">Cadastrar</Link>,
         },
         {
           key: "3-2",
-          label: <Link to="/dashboard">Listar</Link>,
+          label: <Link to="/serveraccess/list">Listar</Link>,
         },
       ],
     },

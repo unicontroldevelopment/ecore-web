@@ -9,11 +9,13 @@ import { UserTypeProvider } from "./contexts/UserTypeContext";
 import Template from "./components/template/Template";
 import PrivatePage from "./utils/PrivatePage";
 
-import Dashboard from "./pages/dashboard/Dashboard";
 import AccessDenied from "./pages/accessDenied";
+import Dashboard from "./pages/dashboard/Dashboard";
 import CreateEmployee from "./pages/employees/createEmployee";
 import ListEmployee from "./pages/employees/listEmployee";
 import Login from "./pages/login/Login";
+import CreateAccess from "./pages/serverAccess/createAccess";
+import ListServerAccess from "./pages/serverAccess/listAccess";
 
 const App = () => {
   return (
@@ -71,6 +73,26 @@ const App = () => {
                   <PrivatePage>
                     <Template>
                       <ListEmployee />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/serveraccess/create"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <CreateAccess />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/serveraccess/list"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <ListServerAccess />
                     </Template>
                   </PrivatePage>
                 }
