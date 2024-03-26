@@ -17,6 +17,7 @@ export default function CreateAccess() {
   const [employees, setEmployees] = React.useState([]);
   const [valueName, setValueName] = React.useState("");
   const [employeesNames, setEmployeesNames] = React.useState([]);
+  const [messageError, setMessageError] = React.useState("");
   const [values, setValues] = React.useState({
     fitolog: false,
     commercial: false,
@@ -42,16 +43,28 @@ export default function CreateAccess() {
         const registeredAccessRequest = await service.getServerAccess();
         const registeredAccess = registeredAccessRequest.data.listUsers;
 
-        const unregisteredEmployees = allEmployees.filter(
-            user => !registeredAccess.find(regUser => regUser.employeeId === user.id)
-          );
+        const registeredIds = new Set(registeredAccess.map(user => user.ServerAccess[0].employeeId));
 
-        const employeeOptions = unregisteredEmployees.map(user => user.name);
+        const unregisteredEmployees = allEmployees.filter(
+          user => !registeredIds.has(user.id)
+        );
+
+        const employeeOptions = await unregisteredEmployees.map(user => user.name);
+
       setEmployees(unregisteredEmployees);
       setEmployeesNames(employeeOptions);
     };
     fetchUsers();
   }, []);
+
+  const areRequiredFieldsFilled = () => {
+    if (!valueName) {
+      setMessageError("Este campo é obrigatório");
+      return false;
+    }
+    setMessageError("");
+    return true;
+  };
 
   const handleChange = async (event) => {
     try {
@@ -64,6 +77,9 @@ export default function CreateAccess() {
         setValueName(event.target.value);
         return updatedValues;
       });
+      if (event.target.value !== "") {
+        setMessageError("");
+      }
     } catch (error) {
       return error;
     }
@@ -71,6 +87,12 @@ export default function CreateAccess() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const isAllFieldsFilled = areRequiredFieldsFilled();
+  
+    if (!isAllFieldsFilled) {
+      Toast.Info("Preencha os campos obrigatórios!");
+      return;
+    }
 
     const response = await service.create(values);
 
@@ -100,6 +122,7 @@ export default function CreateAccess() {
           value={valueName}
           onChange={handleChange}
           options={employeesNames}
+          errorText={messageError}
         />
       </Form.Fragment>
       <Form.Fragment section="Acessos as Pastas">

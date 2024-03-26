@@ -26,36 +26,37 @@ export const CustomTable = ({
     {
       title: "Ações",
       key: "actions",
+      width: 150,
       render: (text, record) => (
-        <ActionsContainer>
-          <Button
-            style={{ backgroundColor: "#3f8ece", color: "#fff" }}
-            onClick={() => onView(record)}
-            icon={<EyeOutlined />}
-            shape="circle"
-          />
-          <Button
-            style={{ backgroundColor: "#36db6a", color: "#fff" }}
-            onClick={() => onUpdate(record)}
-            icon={<EditOutlined />}
-            shape="circle"
-          />
-          <Popconfirm
-            title="Tem certeza?"
-            description="Você quer deletar esta informação?"
-            onConfirm={() => confirm(record)}
-            onCancel={() => cancel(record)}
-            okText="Sim"
-            cancelText="Não"
-            icon={<QuestionCircleOutlined style={{ color: "red" }} />}
-          >
+          <ActionsContainer>
             <Button
-              style={{ backgroundColor: "#da4444", color: "#fff" }}
-              icon={<DeleteOutlined />}
+              style={{ backgroundColor: "#3f8ece", color: "#fff" }}
+              onClick={() => onView(record)}
+              icon={<EyeOutlined />}
               shape="circle"
             />
-          </Popconfirm>
-        </ActionsContainer>
+            <Button
+              style={{ backgroundColor: "#36db6a", color: "#fff" }}
+              onClick={() => onUpdate(record)}
+              icon={<EditOutlined />}
+              shape="circle"
+            />
+            <Popconfirm
+              title="Tem certeza?"
+              description="Você quer deletar esta informação?"
+              onConfirm={() => confirm(record)}
+              onCancel={() => cancel(record)}
+              okText="Sim"
+              cancelText="Não"
+              icon={<QuestionCircleOutlined style={{ color: "red" }} />}
+            >
+              <Button
+                style={{ backgroundColor: "#da4444", color: "#fff" }}
+                icon={<DeleteOutlined />}
+                shape="circle"
+              />
+            </Popconfirm>
+          </ActionsContainer>
       ),
     },
   ];
@@ -63,7 +64,7 @@ export const CustomTable = ({
   const paginationConfig = {
     defaultPageSize: 10,
     showSizeChanger: true,
-    pageSizeOptions: ['10', '15', '20', '30', '50'],
+    pageSizeOptions: ["10", "15", "20", "30", "50"],
   };
 
   return (

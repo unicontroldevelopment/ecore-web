@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'; // Importando ícones do Ant Design
+import { CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons'; // Importando ícones do Ant Design
 import { Col, Row } from "antd";
 import styled from "styled-components";
 
@@ -16,7 +16,7 @@ export function InfoBoolean({ label, value}) {
   greyBackground = !greyBackground;
 
 
- const icon = value ? <CheckCircleOutlined style={{ color: 'green' }} /> : <CloseCircleOutlined style={{ color: 'red' }} />;
+ const icon = value ? <CheckCircleFilled style={{ color: 'green' }} /> : <CloseCircleFilled style={{ color: 'red' }} />;
 
   return (
     <StyledRow backcolor={greyBackground}>

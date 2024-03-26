@@ -1,34 +1,19 @@
 import { Button, Modal } from "antd";
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
-import { CustomInput } from "../../../components/input/index";
 import { CustomModal } from "../../../components/modal";
+import { CustomSwitch } from "../../../components/switch";
 import { Table } from "../../../components/table";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import ServerAccessService from "../../../services/ServerAccessService";
-import { Options } from "../../../utils/options";
 
 export default function ListServerAccess() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
-  const [selectUser, setSelectUser] = React.useState({
-    fitolog: false,
-    commercial: false,
-    administrative: false,
-    humanResources: false,
-    technician: false,
-    newsis: false,
-    marketing: false,
-    projects: false,
-    managementControl: false,
-    trainings: false,
-    it: false,
-    temp: false,
-    franchises: false,
-    employeeId: "",
-  });
+  const [selectUser, setSelectUser] = React.useState(null);
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
   const [filter, setFilter] = React.useState({
@@ -36,6 +21,8 @@ export default function ListServerAccess() {
   });
 
   const service = new ServerAccessService();
+
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     const fetchUsers = async () => {
@@ -48,13 +35,6 @@ export default function ListServerAccess() {
     fetchUsers();
   }, [filter]);
 
-  const handleChange = (event) => {
-    setSelectUser((prevState) => ({
-      ...prevState,
-      [event.target.name]: event.target.value,
-    }));
-  };
-
   const handleChangeFilter = (event) => {
     setFilter((prevState) => ({
       ...prevState,
@@ -64,10 +44,10 @@ export default function ListServerAccess() {
 
   const confirmDelete = async (e) => {
     try {
-      const response = await service.delete(e.id);
+      const response = await service.delete(e.ServerAccess[0].id);
 
       if (response.status === 200) {
-        setUsers(users.filter((user) => user.id !== e.id));
+        setUsers(users.filter((user) => user.ServerAccess[0].id !== e.ServerAccess[0].id));
 
         Toast.Success("Funcionário deletado com sucesso!");
       }
@@ -82,12 +62,15 @@ export default function ListServerAccess() {
 
   const confirmUpdate = async (updateData) => {
     try {
-      const response = await service.update(updateData.id, updateData);
+      const serverData = updateData.ServerAccess[0]
+      const serverId = updateData.ServerAccess[0].id
+
+      const response = await service.update(serverId, serverData)
 
       if (response.status === 200) {
         const updatedData = users.map((user) =>
-          user.id === updateData.id ? { ...user, ...updateData } : user
-        );
+        user.ServerAccess[0].id === updateData.ServerAccess[0].id ? { ...user, ...updateData } : user
+      );
 
         setUsers(updatedData);
         Toast.Success("Funcionário atualizado com sucesso!");
@@ -111,6 +94,10 @@ export default function ListServerAccess() {
     setIsModalVisibleView(true);
   };
 
+  const ButtonRegister = () => {
+    navigate("/serveraccess/create")
+  }
+
   const options = [
     {
       title: "Nome",
@@ -128,6 +115,7 @@ export default function ListServerAccess() {
           value={filter.name}
           onChange={handleChangeFilter}
         />
+        <Filter.Button label="Registar Novo Acesso" onClick={ButtonRegister}/>
       </Filter.Fragment>
       <Table.Table
         data={users}
@@ -150,39 +138,39 @@ export default function ListServerAccess() {
             </Button>,
           ]}
         >
-          <CustomModal.Boolean label="Fitolog" value={selectUser.fitolog} />
-          <CustomModal.Boolean label="Comercial" value={selectUser.commercial} />
-          <CustomModal.Boolean label="Administrativo" value={selectUser.administrative} />
-          <CustomModal.Boolean label="RH" value={selectUser.humanResources} />
-          <CustomModal.Boolean label="Técnico" value={selectUser.technician} />
+          <CustomModal.Boolean label="Fitolog" value={selectUser.ServerAccess[0].fitolog} />
+          <CustomModal.Boolean label="Comercial" value={selectUser.ServerAccess[0].commercial} />
+          <CustomModal.Boolean label="Administrativo" value={selectUser.ServerAccess[0].administrative} />
+          <CustomModal.Boolean label="RH" value={selectUser.ServerAccess[0].humanResources} />
+          <CustomModal.Boolean label="Técnico" value={selectUser.ServerAccess[0].technician} />
           <CustomModal.Boolean
             label="Newsis"
-            value={selectUser.newsis}
+            value={selectUser.ServerAccess[0].newsis}
           />
           <CustomModal.Boolean
             label="Marketing"
-            value={selectUser.marketing}
+            value={selectUser.ServerAccess[0].marketing}
           />
-          <CustomModal.Boolean label="Projetos" value={selectUser.projects} />
+          <CustomModal.Boolean label="Projetos" value={selectUser.ServerAccess[0].projects} />
           <CustomModal.Boolean
             label="Controle Gestão"
-            value={selectUser.managementControl}
+            value={selectUser.ServerAccess[0].managementControl}
           />
           <CustomModal.Boolean
             label="Treinamentos"
-            value={selectUser.trainings}
+            value={selectUser.ServerAccess[0].trainings}
           />
           <CustomModal.Boolean
             label="TI"
-            value={selectUser.it}
+            value={selectUser.ServerAccess[0].it}
           />
           <CustomModal.Boolean
             label="Temp"
-            value={selectUser.temp}
+            value={selectUser.ServerAccess[0].temp}
           />
           <CustomModal.Boolean
             label="Franquias"
-            value={selectUser.franchises}
+            value={selectUser.ServerAccess[0].franchises}
           />
         </Modal>
       )}
@@ -207,189 +195,242 @@ export default function ListServerAccess() {
             </Button>,
           ]}
         >
-          <Form.Fragment section="Dados do Colaborador">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Nome Completo"
-                type="text"
-                name="name"
-                value={selectUser.name}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Selecione um setor"
-                name="department"
-                value={selectUser.department}
-                onChange={handleChange}
-                options={Options.Departments()}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Selecione uma empresa"
-                name="company"
-                value={selectUser.company}
-                onChange={handleChange}
-                options={Options.Companies()}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Selecione uma unidade"
-                name="unit"
-                value={selectUser.unit}
-                onChange={handleChange}
-                options={Options.Units()}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Acesso Ecore Web">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Usuário (E-mail)"
-                type="text"
-                name="user"
-                value={selectUser.email}
-                disabled={true}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Perfil"
-                name="role"
-                value={selectUser.role}
-                onChange={handleChange}
-                options={Options.Roles()}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Senha"
-                type="text"
-                name="password"
-                value={selectUser.password}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="E-mail">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="E-mail"
-                type="text"
-                name="email"
-                value={selectUser.email}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Senha e-mail"
-                type="text"
-                name="emailPassword"
-                value={selectUser.emailPassword}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Acesso à rede">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Usuário rede"
-                type="text"
-                name="networkUser"
-                value={selectUser.networkUser}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Senha rede"
-                type="text"
-                name="networkPassword"
-                value={selectUser.networkPassword}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Discord">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="E-mail discord"
-                type="text"
-                name="discordEmail"
-                value={selectUser.discordEmail}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Senha discord"
-                type="text"
-                name="discordPassword"
-                value={selectUser.discordPassword}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Notebook">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Marca Notebook"
-                name="notebookBrand"
-                value={selectUser.notebookBrand}
-                onChange={handleChange}
-                options={Options.NotebookBrands()}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Nome Notebook"
-                type="text"
-                name="notebookName"
-                value={selectUser.notebookName}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Patrimônio Notebook"
-                type="text"
-                name="notebookProperty"
-                value={selectUser.notebookProperty}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Patrimônio cooler"
-                type="text"
-                name="coolerProperty"
-                value={selectUser.coolerProperty}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Versão Office"
-                name="officeVersion"
-                value={selectUser.officeVersion}
-                onChange={handleChange}
-                options={Options.OfficeVersions()}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Versão sistema operacional"
-                name="windowsVersion"
-                value={selectUser.windowsVersion}
-                onChange={handleChange}
-                options={Options.OSVersions()}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
+      <Form.Fragment section="Atualizar Lista de Acessos do Funcionário">
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Fitolog"
+            enabled={selectUser.ServerAccess[0].fitolog}
+            permissionName="fitolog"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, fitolog: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Comercial"
+            enabled={selectUser.ServerAccess[0].commercial}
+            permissionName="commercial"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, commercial: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Administrativo"
+            enabled={selectUser.ServerAccess[0].administrative}
+            permissionName="administrative"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, administrative: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="RH"
+            enabled={selectUser.ServerAccess[0].humanResources}
+            permissionName="humanResources"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, humanResources: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Técnico"
+            enabled={selectUser.ServerAccess[0].technician}
+            permissionName="technician"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, technician: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Newsis"
+            enabled={selectUser.ServerAccess[0].newsis}
+            permissionName="newsis"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, newsis: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Marketing"
+            enabled={selectUser.ServerAccess[0].marketing}
+            permissionName="marketing"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, marketing: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Projetos"
+            enabled={selectUser.ServerAccess[0].projects}
+            permissionName="projects"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, projects: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Controle Gestão"
+            enabled={selectUser.ServerAccess[0].managementControl}
+            permissionName="managementControl"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, managementControl: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Treinamentos"
+            enabled={selectUser.ServerAccess[0].trainings}
+            permissionName="trainings"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, trainings: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="TI"
+            enabled={selectUser.ServerAccess[0].it}
+            permissionName="it"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, it: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Temp"
+            enabled={selectUser.ServerAccess[0].temp}
+            permissionName="temp"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, temp: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+        <CustomSwitch.Root columnSize={12}>
+          <CustomSwitch.Switch
+            label="Franquias"
+            enabled={selectUser.ServerAccess[0].franchises}
+            permissionName="franchises"
+            onChange={(checked) => {
+              let updatedUser = { ...selectUser };
+              updatedUser.ServerAccess = updatedUser.ServerAccess.map((access, index) => {
+                if (index === 0) {
+                  return { ...access, franchises: checked };
+                }
+                return access;
+              });
+          
+              setSelectUser(updatedUser);
+            }}
+          />
+        </CustomSwitch.Root>
+      </Form.Fragment>
         </Modal>
       )}
     </Table.Root>

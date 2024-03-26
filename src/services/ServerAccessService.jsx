@@ -41,6 +41,8 @@ export default class {
   }
   async update(serverAccessId, serverAccessData) {
     try {
+      console.log("id", serverAccessId);
+      console.log("data", serverAccessData);
       const response = await api.put(`serverAccess/${serverAccessId}`, serverAccessData);
       return response;
     } catch (error) {
