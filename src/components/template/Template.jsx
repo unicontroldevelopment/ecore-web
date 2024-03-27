@@ -49,18 +49,22 @@ const Template = (props) => {
       children: [
         {
           key: "2-1",
-          label: <Link to="/dashboard">Grupo</Link>,
+          label: <Link to="/emails/create">Cadastrar E-mail</Link>,
         },
         {
           key: "2-2",
-          label: <Link to="/dashboard">Franqueados</Link>,
+          label: <Link to="/emails/listGroup">Grupo</Link>,
         },
         {
           key: "2-3",
-          label: <Link to="/dashboard">Newsis</Link>,
+          label: <Link to="/dashboard">Franqueados</Link>,
         },
         {
           key: "2-4",
+          label: <Link to="/dashboard">Newsis</Link>,
+        },
+        {
+          key: "2-5",
           label: <Link to="/dashboard">Labs</Link>,
         },
       ],

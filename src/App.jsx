@@ -11,6 +11,8 @@ import PrivatePage from "./utils/PrivatePage";
 
 import AccessDenied from "./pages/accessDenied";
 import Dashboard from "./pages/dashboard/Dashboard";
+import CreateEmail from "./pages/emails/createEmail";
+import ListGroup from "./pages/emails/listGroups";
 import CreateEmployee from "./pages/employees/createEmployee";
 import ListEmployee from "./pages/employees/listEmployee";
 import Login from "./pages/login/Login";
@@ -93,6 +95,26 @@ const App = () => {
                   <PrivatePage>
                     <Template>
                       <ListServerAccess />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/emails/create"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <CreateEmail />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/emails/listGroup"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <ListGroup />
                     </Template>
                   </PrivatePage>
                 }

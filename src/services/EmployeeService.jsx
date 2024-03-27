@@ -1,5 +1,5 @@
-import { api } from "./api";
 import qs from "qs";
+import { api } from "./api";
 
 export default class {
   async login(email, password) {
@@ -10,9 +10,9 @@ export default class {
       return error;
     }
   }
-  async create(userData) {
+  async create(employeeData) {
     try {
-      const response = await api.post("/employee", userData);
+      const response = await api.post("/employee", employeeData);
       return response;
     } catch (error) {
       return error;
@@ -20,7 +20,7 @@ export default class {
   }
   async getById(employeeId) {
     try {
-      const response = await api.get(`employee/${employeeId}`);
+      const response = await api.get(`/employee/${employeeId}`);
       return response;
     } catch (error) {
       return error;
@@ -45,7 +45,7 @@ export default class {
   }
   async delete(employeeId) {
     try {
-      const response = await api.delete(`employee/${employeeId}`);
+      const response = await api.delete(`/employee/${employeeId}`);
       return response;
     } catch (error) {
       return error;
@@ -53,7 +53,7 @@ export default class {
   }
   async update(employeeId, employeeData) {
     try {
-      const response = await api.put(`employee/${employeeId}`, employeeData);
+      const response = await api.put(`/employee/${employeeId}`, employeeData);
       return response;
     } catch (error) {
       return error;

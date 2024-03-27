@@ -1,10 +1,11 @@
+import { Companies } from "./Companies";
 import { Departments } from "./Departments";
-import { Units } from "./Units";
+import { EmailType } from "./EmailType";
 import { NotebookBrands } from "./NotebookBrands";
 import { OSVersions } from "./OSVersions";
-import { Companies } from "./Companies";
-import { Roles } from "./Roles";
 import { OfficeVersions } from "./OfficeVersions";
+import { Roles } from "./Roles";
+import { Units } from "./Units";
 
 export const Options = {
   Departments,
@@ -14,4 +15,5 @@ export const Options = {
   Companies,
   Roles,
   OfficeVersions,
+  EmailType
 };
