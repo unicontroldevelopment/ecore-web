@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-import * as React from "react";
 import {
   FormControl,
   FormHelperText,
@@ -7,6 +6,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
+import * as React from "react";
 
 export function CustomSelect({
   label,
@@ -14,6 +14,7 @@ export function CustomSelect({
   value,
   onChange,
   errorText,
+  multiple,
   options,
 }) {
   const [error, setError] = React.useState(false);
@@ -40,7 +41,7 @@ export function CustomSelect({
       error={error}
     >
       <InputLabel>{label}</InputLabel>
-      <Select name={name} value={value} onChange={onChange} label={label}>
+      <Select name={name} value={value} onChange={onChange} label={label} multiple={multiple}>
         {options.map((option, index) => (
           <MenuItem key={index} value={option}>
             {upperCaseString(option)}

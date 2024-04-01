@@ -167,7 +167,7 @@ export default function CreateEmail() {
         </CustomInput.Root>
       </Form.Fragment>
       <Form.Fragment section="Direcionamentos">
-        <CustomInput.Input/>
+        <CustomInput.Input />
       </Form.Fragment>
     </Form.Root>
   );

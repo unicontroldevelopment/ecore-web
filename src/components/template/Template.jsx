@@ -118,14 +118,18 @@ const Template = (props) => {
       children: [
         {
           key: "5-1",
-          label: <Link to="/dashboard">Gerar Documentos</Link>,
+          label: <Link to="/documents/create">Cadastrar Serviço</Link>,
         },
         {
           key: "5-2",
-          label: <Link to="/dashboard">Gerar Contratos</Link>,
+          label: <Link to="/dashboard">Gerar Documentos</Link>,
         },
         {
           key: "5-3",
+          label: <Link to="/documents/generateContract">Gerar Contratos</Link>,
+        },
+        {
+          key: "5-4",
           label: <Link to="/dashboard">Gerenciar Contratos</Link>,
         },
       ],
