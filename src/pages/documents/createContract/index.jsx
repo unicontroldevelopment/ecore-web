@@ -7,6 +7,7 @@ import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
 import { Options } from "../../../utils/options";
+import { CreatingPdf, ViewerPDF } from "../../../utils/pdf/crateContract";
 
 export default function CreateContract() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
@@ -23,17 +24,15 @@ export default function CreateContract() {
     neighborhood: "",
     city: "",
     state: "",
-  });
-
-  const [userContract, setUserContract] = React.useState(null);
-
-  const [contract, setContract] = React.useState({
     numberContract: "",
     dateContract: "",
     valueContract: "",
     indexContract: "",
     servicesContract: [],
   });
+
+  const [userContract, setUserContract] = React.useState("");
+  const [valueDecimal, setValueDecimal] = React.useState("");
 
   const [messageError, setMessageError] = React.useState({
     name: "",
@@ -51,6 +50,21 @@ export default function CreateContract() {
     servicesContract: "",
   });
 
+  React.useEffect(() => {
+    const fetchServices = async () => {
+      const dataServices = await service.getServices();
+
+      setServices(() => {
+        const updatedServices = dataServices.data.listUsers.map(
+          (service) => service.description
+        );
+        return updatedServices;
+      });
+    };
+
+    fetchServices();
+  }, []);
+
   const handleChange = (event) => {
     setValues((prevState) => {
       const updatedValues = {
@@ -60,22 +74,19 @@ export default function CreateContract() {
       return updatedValues;
     });
 
-    if (event.target.value !== "") {
-      setMessageError((prevState) => ({
-        ...prevState,
-        [event.target.name]: "",
-      }));
-    }
-  };
+    if (event.target.name === "valueContract") {
+      setValueDecimal(() => {
+        let cleanInput = event.target.value.replace(/[^\d]/g, "");
 
-  const handleContractChange = (event) => {
-    setContract((prevState) => {
-      const updatedValues = {
-        ...prevState,
-        [event.target.name]: event.target.value,
-      };
-      return updatedValues;
-    });
+        if (cleanInput.length > 2) {
+          cleanInput = cleanInput.slice(0, -2) + "," + cleanInput.slice(-2);
+        } else if (cleanInput.length === 2) {
+          cleanInput = "," + cleanInput;
+        }
+
+        return cleanInput;
+      });
+    }
 
     if (event.target.value !== "") {
       setMessageError((prevState) => ({
@@ -95,6 +106,11 @@ export default function CreateContract() {
       "neighborhood",
       "city",
       "state",
+      "numberContract",
+      "dateContract",
+      "valueContract",
+      "indexContract",
+      "servicesContract",
     ];
     let newErrors = {};
     let isAllFieldsFilled = true;
@@ -121,9 +137,7 @@ export default function CreateContract() {
       return;
     }
 
-    const response = await service.createService(values);
-
-    if (response.request.status === 500) {
+    if ("status" === 500) {
       Toast.Error("Serviço já cadastrado!");
       return;
     } else {
@@ -147,7 +161,7 @@ export default function CreateContract() {
           <CustomInput.Input
             label="Nome"
             type="text"
-            name="description"
+            name="name"
             value={values.name}
             onChange={handleChange}
             errorText={messageError.name}
@@ -183,7 +197,16 @@ export default function CreateContract() {
             errorText={messageError.road}
           />
         </CustomInput.Root>
-        <CustomInput.Root columnSize={6}>
+        <CustomInput.Root columnSize={3}>
+          <CustomInput.Input
+            label="Número"
+            type="text"
+            name="number"
+            value={values.complement}
+            onChange={handleChange}
+          />
+        </CustomInput.Root>
+        <CustomInput.Root columnSize={3}>
           <CustomInput.Input
             label="Complemento"
             type="text"
@@ -236,61 +259,70 @@ export default function CreateContract() {
       </Form.Fragment>
       <Form.Fragment section="Contrato">
         <CustomInput.Root columnSize={6}>
-          {" "}
           <CustomInput.Input
             label="Número"
             type="text"
             name="numberContract"
-            value={contract.numberContract}
-            onChange={handleContractChange}
+            value={values.numberContract}
+            onChange={handleChange}
             errorText={messageError.numberContract}
           />
         </CustomInput.Root>
-
         <CustomInput.Root columnSize={6}>
-          {" "}
           <CustomInput.Input
             label="Data de Início"
             type="text"
             name="dateContract"
-            value={contract.dateContract}
-            onChange={handleContractChange}
+            value={values.dateContract}
+            onChange={handleChange}
             errorText={messageError.dateContract}
           />
         </CustomInput.Root>
-
         <CustomInput.Root columnSize={6}>
-          {" "}
           <CustomInput.Input
             label="Valor"
             type="text"
             name="valueContract"
-            value={contract.valueContract}
-            onChange={handleContractChange}
+            value={valueDecimal}
+            onChange={handleChange}
             errorText={messageError.valueContract}
           />
         </CustomInput.Root>
-
         <CustomInput.Root columnSize={6}>
-          {" "}
           <CustomInput.Input
             label="Índice"
             type="text"
             name="indexContract"
-            value={contract.indexContract}
-            onChange={handleContractChange}
+            value={values.indexContract}
+            onChange={handleChange}
             errorText={messageError.indexContract}
           />
         </CustomInput.Root>
-          <CustomInput.Select
-            label="Serviços"
-            name="servicesContract"
-            onChange={handleContractChange}
-            multiple={true}
-            options={Options.Roles()}
-            value={contract.servicesContract}
-          />
+        <CustomInput.Select
+          label="Serviços"
+          name="servicesContract"
+          value={values.servicesContract}
+          onChange={handleChange}
+          multiple={true}
+          options={services}
+        />
       </Form.Fragment>
+      <CreatingPdf />
+      <ViewerPDF
+        name={values.name}
+        cpfCnpj={values.cpfCnpj}
+        cep={values.cep}
+        road={values.road}
+        number={values.number}
+        complement={values.complement}
+        neighborhood={values.neighborhood}
+        city={values.city}
+        state={values.state}
+        numberContract={values.numberContract}
+        dateContract={values.dateContract}
+        valueContract={values.valueContract}
+        indexContract={values.indexContract}
+      />
     </Form.Root>
   );
 }

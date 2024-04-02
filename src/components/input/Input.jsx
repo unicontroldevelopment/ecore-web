@@ -8,6 +8,7 @@ export function Input({
   name,
   value,
   onChange,
+  onBlur,
   errorText,
   disabled,
 }) {
@@ -34,6 +35,7 @@ export function Input({
         autoComplete="on"
         size="small"
         onChange={onChange}
+        onBlur={onBlur}
         value={value}
         error={error}
         helperText={errorText}

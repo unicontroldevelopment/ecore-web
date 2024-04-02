@@ -30,10 +30,6 @@ export default function ListGroup() {
     fetchUsers();
   }, []);
 
-  React.useEffect(() => {
-    console.log(users);
-  }, [users])
-
   const handleChange = (event) => {
     setSelectUser((prevState) => ({
       ...prevState,
