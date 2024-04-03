@@ -39,4 +39,41 @@ export default class {
       return error;
     }
   }
+  async createContract(contractData) {
+    try {
+      const response = await api.post("/contract", contractData);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async getContracts(type) {
+    const query = {
+        type
+    };
+
+    try {
+      const response = await api.get(`/contracts?${qs.stringify(query)}`);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async deleteContract(contractId) {
+    try {
+      const response = await api.delete(`/contract/${contractId}`);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async updateContract(contractId, contractData) {
+    try {
+      const response = await api.put(`/contract/${contractId}`, contractData);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }

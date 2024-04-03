@@ -7,7 +7,7 @@ import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
 import { Options } from "../../../utils/options";
-import { CreatingPdf, ViewerPDF } from "../../../utils/pdf/crateContract";
+import { CreatingPdf } from "../../../utils/pdf/crateContract";
 
 export default function CreateContract() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
@@ -15,8 +15,9 @@ export default function CreateContract() {
   const service = new DocumentsService();
   const [services, setServices] = React.useState([]);
   const [values, setValues] = React.useState({
+    status: "Aguardando..",
     name: "",
-    cpfCnpj: "",
+    cpfcnpj: "",
     cep: "",
     road: "",
     number: "",
@@ -24,10 +25,10 @@ export default function CreateContract() {
     neighborhood: "",
     city: "",
     state: "",
-    numberContract: "",
-    dateContract: "",
-    valueContract: "",
-    indexContract: "",
+    contractNumber: "",
+    date: "",
+    value: "",
+    index: "",
     servicesContract: [],
   });
 
@@ -36,17 +37,17 @@ export default function CreateContract() {
 
   const [messageError, setMessageError] = React.useState({
     name: "",
-    cpfCnpj: "",
+    cpfcnpj: "",
     cep: "",
     road: "",
     number: "",
     neighborhood: "",
     city: "",
     state: "",
-    numberContract: "",
-    dateContract: "",
-    valueContract: "",
-    indexContract: "",
+    contractNumber: "",
+    date: "",
+    value: "",
+    index: "",
     servicesContract: "",
   });
 
@@ -74,7 +75,7 @@ export default function CreateContract() {
       return updatedValues;
     });
 
-    if (event.target.name === "valueContract") {
+    if (event.target.name === "value") {
       setValueDecimal(() => {
         let cleanInput = event.target.value.replace(/[^\d]/g, "");
 
@@ -99,17 +100,17 @@ export default function CreateContract() {
   const areRequiredFieldsFilled = () => {
     const requiredFields = [
       "name",
-      "cpfCnpj",
+      "cpfcnpj",
       "cep",
       "road",
       "number",
       "neighborhood",
       "city",
       "state",
-      "numberContract",
-      "dateContract",
-      "valueContract",
-      "indexContract",
+      "contractNumber",
+      "date",
+      "value",
+      "index",
       "servicesContract",
     ];
     let newErrors = {};
@@ -137,11 +138,13 @@ export default function CreateContract() {
       return;
     }
 
-    if ("status" === 500) {
-      Toast.Error("Serviço já cadastrado!");
+    const response = await service.createContract(values);
+
+    if (response.request.status === 500) {
+      Toast.Error("Contrato já cadastrado!");
       return;
     } else {
-      Toast.Success("Colaborador cadastrado com sucesso!");
+      Toast.Success("Contrato cadastrado com sucesso!");
       navigate("/dashboard");
     }
   };
@@ -171,10 +174,10 @@ export default function CreateContract() {
           <CustomInput.Input
             label="CPF ou CNPJ"
             type="text"
-            name="cpfCnpj"
-            value={values.cpfCnpj}
+            name="cpfcnpj"
+            value={values.cpfcnpj}
             onChange={handleChange}
-            errorText={messageError.cpfCnpj}
+            errorText={messageError.cpfcnpj}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -202,8 +205,9 @@ export default function CreateContract() {
             label="Número"
             type="text"
             name="number"
-            value={values.complement}
+            value={values.number}
             onChange={handleChange}
+            errorText={messageError.number}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={3}>
@@ -262,40 +266,40 @@ export default function CreateContract() {
           <CustomInput.Input
             label="Número"
             type="text"
-            name="numberContract"
-            value={values.numberContract}
+            name="contractNumber"
+            value={values.contractNumber}
             onChange={handleChange}
-            errorText={messageError.numberContract}
+            errorText={messageError.contractNumber}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="Data de Início"
             type="text"
-            name="dateContract"
-            value={values.dateContract}
+            name="date"
+            value={values.date}
             onChange={handleChange}
-            errorText={messageError.dateContract}
+            errorText={messageError.date}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="Valor"
             type="text"
-            name="valueContract"
+            name="value"
             value={valueDecimal}
             onChange={handleChange}
-            errorText={messageError.valueContract}
+            errorText={messageError.value}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
             label="Índice"
             type="text"
-            name="indexContract"
-            value={values.indexContract}
+            name="index"
+            value={values.index}
             onChange={handleChange}
-            errorText={messageError.indexContract}
+            errorText={messageError.index}
           />
         </CustomInput.Root>
         <CustomInput.Select
@@ -308,21 +312,6 @@ export default function CreateContract() {
         />
       </Form.Fragment>
       <CreatingPdf />
-      <ViewerPDF
-        name={values.name}
-        cpfCnpj={values.cpfCnpj}
-        cep={values.cep}
-        road={values.road}
-        number={values.number}
-        complement={values.complement}
-        neighborhood={values.neighborhood}
-        city={values.city}
-        state={values.state}
-        numberContract={values.numberContract}
-        dateContract={values.dateContract}
-        valueContract={values.valueContract}
-        indexContract={values.indexContract}
-      />
     </Form.Root>
   );
 }

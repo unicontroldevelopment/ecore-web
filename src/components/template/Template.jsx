@@ -130,7 +130,7 @@ const Template = (props) => {
         },
         {
           key: "5-4",
-          label: <Link to="/dashboard">Gerenciar Contratos</Link>,
+          label: <Link to="/documents/manageContracts">Gerenciar Contratos</Link>,
         },
       ],
     },

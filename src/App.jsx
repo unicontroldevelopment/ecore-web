@@ -13,6 +13,7 @@ import AccessDenied from "./pages/accessDenied";
 import Dashboard from "./pages/dashboard/Dashboard";
 import CreateContract from "./pages/documents/createContract";
 import CreateService from "./pages/documents/createService";
+import ManageContracts from "./pages/documents/manageContratcs";
 import CreateEmail from "./pages/emails/createEmail";
 import ListGroup from "./pages/emails/listGroups";
 import CreateEmployee from "./pages/employees/createEmployee";
@@ -137,6 +138,16 @@ const App = () => {
                   <PrivatePage>
                     <Template>
                       <CreateContract />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/documents/manageContracts"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <ManageContracts />
                     </Template>
                   </PrivatePage>
                 }
