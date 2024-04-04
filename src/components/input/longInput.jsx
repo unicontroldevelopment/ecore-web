@@ -1,12 +1,10 @@
 /* eslint-disable react/prop-types */
+import DeleteIcon from '@mui/icons-material/Delete';
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import TextField from "@mui/material/TextField";
+import { Button, IconButton, InputAdornment, TextField } from "@mui/material";
 
-export function LongInput({ label, isExpanded, onExpandToggle}) {
-
+export function LongInput({ label, isExpanded, onExpandToggle, onDelete, onChange, value }) {
   const adornmentStyle = {
     position: "absolute",
     right: 0,
@@ -14,15 +12,26 @@ export function LongInput({ label, isExpanded, onExpandToggle}) {
     marginRight: "0px",
   };
 
+  const calculateRows = (text) => {
+    if (!isExpanded) return 1;
+    const lines = (text.match(/\n/g) || []).length + 1;
+    return Math.min(lines, 15);
+  };
+
   return (
+    <div style={{ width: "100%", marginBottom: "20px"}}>
       <TextField
         sx={{
-          width: "100%",
+          width: "94%",
           minHeight: 64,
         }}
         label={label}
-        rows={isExpanded ? 10 : 1}
+        rows={calculateRows(value)}
+        minRows={1}
+        maxRows={isExpanded ? 15 : 1}
+        value={value}
         multiline
+        onChange={onChange}
         fullWidth
         InputProps={{
           endAdornment: (
@@ -34,5 +43,9 @@ export function LongInput({ label, isExpanded, onExpandToggle}) {
           ),
         }}
       />
+            <Button style={{ width: "1%"}} onClick={onDelete}>
+        <DeleteIcon />
+      </Button>
+    </div>
   );
 }

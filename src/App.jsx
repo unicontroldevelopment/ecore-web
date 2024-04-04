@@ -9,6 +9,9 @@ import { UserTypeProvider } from "./contexts/UserTypeContext";
 import Template from "./components/template/Template";
 import PrivatePage from "./utils/PrivatePage";
 
+import ptBR from 'antd/lib/locale/pt_BR';
+import moment from 'moment';
+import 'moment/locale/pt-br';
 import AccessDenied from "./pages/accessDenied";
 import Dashboard from "./pages/dashboard/Dashboard";
 import CreateContract from "./pages/documents/createContract";
@@ -21,6 +24,8 @@ import ListEmployee from "./pages/employees/listEmployee";
 import Login from "./pages/login/Login";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
+
+moment.locale('pt-br');
 
 const App = () => {
   return (
@@ -36,6 +41,7 @@ const App = () => {
           colorLink: "#4168B0",
         },
       }}
+      locale={ptBR}
     >
       <BrowserRouter>
         <UserTypeProvider>

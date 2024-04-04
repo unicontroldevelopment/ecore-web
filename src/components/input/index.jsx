@@ -1,3 +1,4 @@
+import { DateInput } from "./DateInput";
 import { Input } from "./Input";
 import { InputRoot } from "./InputRoot";
 import { CustomSelect } from "./Select";
@@ -8,4 +9,5 @@ export const CustomInput = {
   Input: Input,
   Root: InputRoot,
   LongText: LongInput,
+  DateInput: DateInput,
 };

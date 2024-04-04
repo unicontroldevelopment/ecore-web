@@ -10,7 +10,7 @@ import { ViewerPDF } from "../../../utils/pdf/crateContract";
 
 export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
-  const [users, setUsers] = React.useState([]);
+  const [contracts, setContracts] = React.useState([]);
   const [services, setServices] = React.useState([]);
   const [selectUser, setSelectUser] = React.useState({
     status: "",
@@ -29,6 +29,7 @@ export default function ManageContracts() {
     value: "",
     index: "",
     servicesContract: [],
+    clauses: ["oi"],
   });
 
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
@@ -37,10 +38,9 @@ export default function ManageContracts() {
   const service = new DocumentsService();
 
   React.useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchcontracts = async () => {
       const request = await service.getContracts("");
-      setUsers(request.data.listContracts);
-      console.log(request.data.listContracts);
+      setContracts(request.data.listContracts);
 
       const dataServices = await service.getServices();
 
@@ -51,21 +51,37 @@ export default function ManageContracts() {
         return updatedServices;
       });
     };
-    fetchUsers();
+    fetchcontracts();
   }, []);
 
-  const [textFields, setTextFields] = React.useState([]);
-
   const handleAddClick = () => {
-      setTextFields(prevFields => [...prevFields, { id: Date.now(), isExpanded: false }]);
+    setSelectUser((prevContract) => ({
+      ...prevContract,
+      clauses: [
+        ...prevContract.clauses,
+        { id: Date.now(), text: "", isExpanded: false},
+      ],
+    }));
+  };
+
+
+
+  const handleDeleteClause = (id) => {
+    setSelectUser((prevUser) => ({
+      ...prevUser,
+      clauses: prevUser.clauses.filter((clause) => clause.id !== id),
+    }));
   };
 
   const toggleExpand = (id) => {
-      setTextFields(prevFields => 
-          prevFields.map(field => 
-              field.id === id ? { ...field, isExpanded: !field.isExpanded } : field
-          )
-      );
+    setSelectUser((prevUser) => ({
+      ...prevUser,
+      clauses: prevUser.clauses.map((clause) =>
+        clause.id === id
+          ? { ...clause, isExpanded: !clause.isExpanded }
+          : clause
+      ),
+    }));
   };
 
   const handleChange = (event) => {
@@ -80,9 +96,9 @@ export default function ManageContracts() {
       const response = await service.delete(e.id);
 
       if (response.status === 200) {
-        setUsers(users.filter((user) => user.id !== e.id));
+        setContracts(contracts.filter((user) => user.id !== e.id));
 
-        Toast.Success("E-mail deletado com sucesso!");
+        Toast.Success("Contrato deletado com sucesso!");
       }
       return response;
     } catch (error) {
@@ -98,11 +114,11 @@ export default function ManageContracts() {
       const response = await service.update(updateData.id, updateData);
 
       if (response.status === 200) {
-        const updatedData = users.map((user) =>
+        const updatedData = contracts.map((user) =>
           user.id === updateData.id ? { ...user, ...updateData } : user
         );
 
-        setUsers(updatedData);
+        setContracts(updatedData);
         Toast.Success("Contrato atualizado com sucesso!");
 
         setIsModalVisibleUpdate(false);
@@ -115,12 +131,12 @@ export default function ManageContracts() {
   };
 
   const handleUpdate = (user) => {
-    setSelectUser(user);
+    setSelectUser(prevUser => ({ ...prevUser, ...user }));
     setIsModalVisibleUpdate(true);
   };
 
   const handleView = (user) => {
-    setSelectUser(user);
+    setSelectUser(prevUser => ({ ...prevUser, ...user }));
     setIsModalVisibleView(true);
   };
 
@@ -141,7 +157,7 @@ export default function ManageContracts() {
   return (
     <Table.Root title="Lista de Contratos" columnSize={6}>
       <Table.Table
-        data={users}
+        data={contracts}
         columns={options}
         onView={handleView}
         onUpdate={handleUpdate}
@@ -329,37 +345,35 @@ export default function ManageContracts() {
               />
             </CustomInput.Root>
             <CustomInput.Select
-          label="Serviços"
-          name="servicesContract"
-          value={services}
-          onChange={handleChange}
-          multiple={true}
-          options={services}
-        />
+              label="Serviços"
+              name="servicesContract"
+              value={services}
+              onChange={handleChange}
+              multiple={true}
+              options={services}
+            />
           </Form.Fragment>
           <Form.Fragment section="Clausulas">
-          <CustomInput.LongText label="Clausulá Nº1"
-            />
-            <CustomInput.LongText
-            />
-            <CustomInput.LongText
-            />
-            <CustomInput.LongText
-            />
-          </Form.Fragment>
-          <div>
-            <Button variant="contained" color="primary" onClick={handleAddClick}>
-                Adicionar Campo de Texto
-            </Button>
-
-            {textFields.map(field => (
-                <CustomInput.LongText
+          <div style={{ width: "100%" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddClick}
+              >
+                Adicionar Cláusula
+              </Button>
+                {selectUser.clauses.map((field) => (
+                  <CustomInput.LongText
                     key={field.id}
+                    label={field.text}
                     isExpanded={field.isExpanded}
                     onExpandToggle={() => toggleExpand(field.id)}
-                />
-            ))}
-        </div>
+                    onDelete={() => handleDeleteClause(field.id)}
+                  />
+                ))
+              }
+            </div>
+          </Form.Fragment>
         </Modal>
       )}
     </Table.Root>

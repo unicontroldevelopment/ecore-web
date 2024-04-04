@@ -1,13 +1,22 @@
+import { Button } from "antd";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
+import dayjs from "dayjs";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
+import {
+  ClauseFive,
+  ClauseFour,
+  ClauseOne,
+  ClauseSix,
+  ClauseThree,
+  ClauseTwo,
+} from "../../../utils/clauses/clauses";
 import { Options } from "../../../utils/options";
-import { CreatingPdf } from "../../../utils/pdf/crateContract";
 
 export default function CreateContract() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
@@ -26,14 +35,21 @@ export default function CreateContract() {
     city: "",
     state: "",
     contractNumber: "",
-    date: "",
+    date: dayjs(),
     value: "",
     index: "",
     servicesContract: [],
+    clauses: [
+      { id: 1, text: `${ClauseOne()}`, isExpanded: false },
+      { id: 2, text: "", isExpanded: false },
+      { id: 3, text: `${ClauseThree()}`, isExpanded: false },
+      { id: 4, text: `${ClauseFour()}`, isExpanded: false },
+      { id: 5, text: `${ClauseFive()}`, isExpanded: false },
+      { id: 6, text: `${ClauseSix()}`, isExpanded: false },
+    ],
   });
 
   const [userContract, setUserContract] = React.useState("");
-  const [valueDecimal, setValueDecimal] = React.useState("");
 
   const [messageError, setMessageError] = React.useState({
     name: "",
@@ -52,6 +68,21 @@ export default function CreateContract() {
   });
 
   React.useEffect(() => {
+    console.log(values.date);
+  }, [values.date])
+
+  React.useEffect(() => {
+    setValues((prevValues) => ({
+      ...prevValues,
+      clauses: prevValues.clauses.map((clause) =>
+        clause.id === 2
+          ? { ...clause, text: ClauseTwo(prevValues.value) }
+          : clause
+      ),
+    }));
+  }, [values.value]);
+
+  React.useEffect(() => {
     const fetchServices = async () => {
       const dataServices = await service.getServices();
 
@@ -66,34 +97,73 @@ export default function CreateContract() {
     fetchServices();
   }, []);
 
-  const handleChange = (event) => {
-    setValues((prevState) => {
-      const updatedValues = {
+  const handleAddClick = () => {
+    setValues((prevContract) => ({
+      ...prevContract,
+      clauses: [
+        ...prevContract.clauses,
+        { id: Date.now(), text: "", isExpanded: false },
+      ],
+    }));
+  };
+
+  const handleDeleteClause = (id) => {
+    setValues((prevUser) => ({
+      ...prevUser,
+      clauses: prevUser.clauses.filter((clause) => clause.id !== id),
+    }));
+  };
+
+  const toggleExpand = (id) => {
+    setValues((prevUser) => ({
+      ...prevUser,
+      clauses: prevUser.clauses.map((clause) =>
+        clause.id === id
+          ? { ...clause, isExpanded: !clause.isExpanded }
+          : clause
+      ),
+    }));
+  };
+
+  const handleClauseChange = (id, newText) => {
+    setValues((prevValues) => ({
+      ...prevValues,
+      clauses: prevValues.clauses.map((clause) =>
+        clause.id === id ? { ...clause, text: newText } : clause
+      ),
+    }));
+  };
+
+
+  const handleChange = (eventOrDate, dateString) => {
+    if (eventOrDate.target) {
+      const { name, value } = eventOrDate.target;
+  
+      setValues(prevState => ({
         ...prevState,
-        [event.target.name]: event.target.value,
-      };
-      return updatedValues;
-    });
-
-    if (event.target.name === "value") {
-      setValueDecimal(() => {
-        let cleanInput = event.target.value.replace(/[^\d]/g, "");
-
-        if (cleanInput.length > 2) {
-          cleanInput = cleanInput.slice(0, -2) + "," + cleanInput.slice(-2);
-        } else if (cleanInput.length === 2) {
-          cleanInput = "," + cleanInput;
-        }
-
-        return cleanInput;
-      });
+        [name]: value,
+      }));
+  
+      if (value !== "") {
+        setMessageError(prevState => ({
+          ...prevState,
+          [name]: "",
+        }));
+      }
     }
 
-    if (event.target.value !== "") {
-      setMessageError((prevState) => ({
+    else {
+      setValues(prevState => ({
         ...prevState,
-        [event.target.name]: "",
+        date: eventOrDate ? dayjs(eventOrDate) : null,
       }));
+  
+      if (dateString !== "") {
+        setMessageError(prevState => ({
+          ...prevState,
+          date: "",
+        }));
+      }
     }
   };
 
@@ -273,13 +343,11 @@ export default function CreateContract() {
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
-            label="Data de Início"
-            type="text"
+          <CustomInput.DateInput
+          label="Data"
             name="date"
             value={values.date}
             onChange={handleChange}
-            errorText={messageError.date}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -287,7 +355,7 @@ export default function CreateContract() {
             label="Valor"
             type="text"
             name="value"
-            value={valueDecimal}
+            value={values.value}
             onChange={handleChange}
             errorText={messageError.value}
           />
@@ -311,7 +379,29 @@ export default function CreateContract() {
           options={services}
         />
       </Form.Fragment>
-      <CreatingPdf />
+      <Form.Fragment section="Cláusulas">
+        <div style={{ width: "100%" }}>
+          <Button
+            variant="contained"
+            style={{ marginBottom: "20px" }}
+            color="primary"
+            onClick={handleAddClick}
+          >
+            Adicionar Cláusula
+          </Button>
+          {values.clauses.map((clause, index) => (
+            <CustomInput.LongText
+              key={clause.id}
+              label={`Cláusula Nº${index + 1}`}
+              value={clause.text}
+              isExpanded={clause.isExpanded}
+              onChange={(e) => handleClauseChange(clause.id, e.target.value)}
+              onExpandToggle={() => toggleExpand(clause.id)}
+              onDelete={() => handleDeleteClause(clause.id)}
+            />
+          ))}
+        </div>
+      </Form.Fragment>
     </Form.Root>
   );
 }
