@@ -16,6 +16,7 @@ import {
   ClauseThree,
   ClauseTwo,
 } from "../../../utils/clauses/clauses";
+import { formatMoney } from "../../../utils/formats/formatMoney";
 import { Options } from "../../../utils/options";
 
 export default function CreateContract() {
@@ -47,6 +48,7 @@ export default function CreateContract() {
       { id: 5, text: `${ClauseFive()}`, isExpanded: false },
       { id: 6, text: `${ClauseSix()}`, isExpanded: false },
     ],
+    propouse: "",
   });
 
   const [userContract, setUserContract] = React.useState("");
@@ -68,15 +70,11 @@ export default function CreateContract() {
   });
 
   React.useEffect(() => {
-    console.log(values.date);
-  }, [values.date])
-
-  React.useEffect(() => {
     setValues((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
         clause.id === 2
-          ? { ...clause, text: ClauseTwo(prevValues.value) }
+          ? { ...clause, text: ClauseTwo(formatMoney(prevValues.value)) }
           : clause
       ),
     }));
@@ -134,38 +132,46 @@ export default function CreateContract() {
     }));
   };
 
-
   const handleChange = (eventOrDate, dateString) => {
     if (eventOrDate.target) {
       const { name, value } = eventOrDate.target;
-  
-      setValues(prevState => ({
+
+      setValues((prevState) => ({
         ...prevState,
         [name]: value,
       }));
-  
+
       if (value !== "") {
-        setMessageError(prevState => ({
+        setMessageError((prevState) => ({
           ...prevState,
           [name]: "",
         }));
       }
-    }
-
-    else {
-      setValues(prevState => ({
+    } else {
+      setValues((prevState) => ({
         ...prevState,
         date: eventOrDate ? dayjs(eventOrDate) : null,
       }));
-  
+
       if (dateString !== "") {
-        setMessageError(prevState => ({
+        setMessageError((prevState) => ({
           ...prevState,
           date: "",
         }));
       }
     }
   };
+
+  const handleFileUpload = (fileInfo) => {
+    setValues(prevValues => ({
+      ...prevValues,
+      propouse: fileInfo,
+    }));
+  };
+
+  React.useEffect(() => {
+    console.log("Clausulas:", values.clauses);
+  }, [values.clauses])
 
   const areRequiredFieldsFilled = () => {
     const requiredFields = [
@@ -344,7 +350,7 @@ export default function CreateContract() {
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
           <CustomInput.DateInput
-          label="Data"
+            label="Data"
             name="date"
             value={values.date}
             onChange={handleChange}
@@ -355,7 +361,7 @@ export default function CreateContract() {
             label="Valor"
             type="text"
             name="value"
-            value={values.value}
+            value={formatMoney(values.value)}
             onChange={handleChange}
             errorText={messageError.value}
           />
@@ -401,6 +407,9 @@ export default function CreateContract() {
             />
           ))}
         </div>
+      </Form.Fragment>
+      <Form.Fragment section="Proposta">
+        <CustomInput.Upload onFileUpload={handleFileUpload}/>
       </Form.Fragment>
     </Form.Root>
   );
