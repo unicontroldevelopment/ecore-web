@@ -6,6 +6,8 @@ import { Table } from "../../../components/table";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
+import { formatMoney } from "../../../utils/formats/formatMoney";
+import { Options } from "../../../utils/options";
 import { ViewerPDF } from "../../../utils/pdf/crateContract";
 
 export default function ManageContracts() {
@@ -29,9 +31,11 @@ export default function ManageContracts() {
     value: "",
     index: "",
     servicesContract: [],
-    clauses: ["oi"],
+    clauses: [],
   });
 
+  const [selectedDescriptions, setSelectedDescriptions] = React.useState([]);
+  const [valueMoney, setValueMoney] = React.useState("");
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
 
@@ -39,32 +43,70 @@ export default function ManageContracts() {
 
   React.useEffect(() => {
     const fetchcontracts = async () => {
-      const request = await service.getContracts("");
-      setContracts(request.data.listContracts);
+      try {
+        const request = await service.getContracts("");
+        const dataContracts = request.data.listContracts;
 
-      const dataServices = await service.getServices();
+        const updatedContracts = dataContracts.map((contract) => {
+          return {
+            ...contract,
+            clauses: contract.clauses.map((clause) => ({
+              ...clause,
+              isExpanded: false,
+            })),
+          };
+        });
 
-      setServices(() => {
+        setContracts(updatedContracts);
+
+        const dataServices = await service.getServices();
         const updatedServices = dataServices.data.listUsers.map(
           (service) => service.description
         );
-        return updatedServices;
-      });
+
+        setServices(updatedServices);
+      } catch (error) {
+        console.error("Erro ao buscar contratos ou serviços:", error);
+      }
     };
     fetchcontracts();
   }, []);
+
+  const descriptionToIdMap = services.reduce((acc, service) => {
+    acc[service.description] = service.id;
+    return acc;
+  }, {});
+
+  function arraysAreEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+  }
+
+  React.useEffect(() => {
+    const newSelectedIds = selectedDescriptions.map(
+      (desc) => descriptionToIdMap[desc]
+    );
+
+    if (!arraysAreEqual(selectUser.servicesContract, newSelectedIds)) {
+      setSelectUser((prevValues) => ({
+        ...prevValues,
+        servicesContract: newSelectedIds,
+      }));
+    }
+  }, [selectedDescriptions]);
 
   const handleAddClick = () => {
     setSelectUser((prevContract) => ({
       ...prevContract,
       clauses: [
         ...prevContract.clauses,
-        { id: Date.now(), text: "", isExpanded: false},
+        { id: Date.now(), text: "", isExpanded: false },
       ],
     }));
   };
-
-
 
   const handleDeleteClause = (id) => {
     setSelectUser((prevUser) => ({
@@ -82,6 +124,38 @@ export default function ManageContracts() {
           : clause
       ),
     }));
+  };
+
+  const handleClauseChange = (id, newText) => {
+    setSelectUser((prevValues) => ({
+      ...prevValues,
+      clauses: prevValues.clauses.map((clause) =>
+        clause.id === id ? { ...clause, text: newText } : clause
+      ),
+    }));
+  };
+
+  const removeMask = (maskedValue) => {
+    return maskedValue.replace(/[.,]/g, "");
+  };
+
+  const handleValueChange = (event) => {
+    const { name, value } = event.target;
+
+    const unmaskedValue = removeMask(value);
+
+    setSelectUser((prevState) => ({
+      ...prevState,
+      [name]: unmaskedValue,
+    }));
+
+    setValueMoney(formatMoney(value));
+  };
+
+  const handleServiceChange = (selectedDescriptions) => {
+    const descriptions = selectedDescriptions.target.value;
+
+    setSelectedDescriptions(descriptions);
   };
 
   const handleChange = (event) => {
@@ -131,12 +205,12 @@ export default function ManageContracts() {
   };
 
   const handleUpdate = (user) => {
-    setSelectUser(prevUser => ({ ...prevUser, ...user }));
+    setSelectUser((prevUser) => ({ ...prevUser, ...user }));
     setIsModalVisibleUpdate(true);
   };
 
   const handleView = (user) => {
-    setSelectUser(prevUser => ({ ...prevUser, ...user }));
+    setSelectUser((prevUser) => ({ ...prevUser, ...user }));
     setIsModalVisibleView(true);
   };
 
@@ -303,7 +377,7 @@ export default function ManageContracts() {
               label="Assinaturas"
               name="servicesContract"
               value={selectUser.tecSignature}
-              options={["Augusto", "Leandro"]}
+              options={Options.Companies()}
               onChange={handleChange}
             />
           </Form.Fragment>
@@ -330,9 +404,9 @@ export default function ManageContracts() {
               <CustomInput.Input
                 label="Valor"
                 type="text"
-                name="valueContract"
-                value={selectUser.value}
-                onChange={handleChange}
+                name="value"
+                value={valueMoney}
+                onChange={handleValueChange}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
@@ -347,31 +421,35 @@ export default function ManageContracts() {
             <CustomInput.Select
               label="Serviços"
               name="servicesContract"
-              value={services}
-              onChange={handleChange}
+              value={selectedDescriptions}
+              onChange={handleServiceChange}
               multiple={true}
               options={services}
             />
           </Form.Fragment>
           <Form.Fragment section="Clausulas">
-          <div style={{ width: "100%" }}>
+            <div style={{ width: "100%" }}>
               <Button
                 variant="contained"
+                style={{ marginBottom: "20px" }}
                 color="primary"
                 onClick={handleAddClick}
               >
                 Adicionar Cláusula
               </Button>
-                {selectUser.clauses.map((field) => (
-                  <CustomInput.LongText
-                    key={field.id}
-                    label={field.text}
-                    isExpanded={field.isExpanded}
-                    onExpandToggle={() => toggleExpand(field.id)}
-                    onDelete={() => handleDeleteClause(field.id)}
-                  />
-                ))
-              }
+              {selectUser.clauses.map((clause, index) => (
+                <CustomInput.LongText
+                  key={clause.id}
+                  label={`Cláusula Nº${index + 1}`}
+                  value={clause.description}
+                  isExpanded={clause.isExpanded}
+                  onChange={(e) =>
+                    handleClauseChange(clause.id, e.target.value)
+                  }
+                  onExpandToggle={() => toggleExpand(clause.id)}
+                  onDelete={() => handleDeleteClause(clause.id)}
+                />
+              ))}
             </div>
           </Form.Fragment>
         </Modal>

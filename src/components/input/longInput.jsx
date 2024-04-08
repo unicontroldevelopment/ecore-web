@@ -14,7 +14,7 @@ export function LongInput({ label, isExpanded, onExpandToggle, onDelete, onChang
 
   const calculateRows = (text) => {
     if (!isExpanded) return 1;
-    const lines = (text.match(/\n/g) || []).length + 1;
+    const lines = (text.match(/\n/g) || []).length + 2;
     return Math.min(lines, 15);
   };
 
@@ -27,8 +27,6 @@ export function LongInput({ label, isExpanded, onExpandToggle, onDelete, onChang
         }}
         label={label}
         rows={calculateRows(value)}
-        minRows={1}
-        maxRows={isExpanded ? 15 : 1}
         value={value}
         multiline
         onChange={onChange}

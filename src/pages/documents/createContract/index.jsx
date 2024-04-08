@@ -35,23 +35,25 @@ export default function CreateContract() {
     neighborhood: "",
     city: "",
     state: "",
+    tecSignature: "",
     contractNumber: "",
     date: dayjs(),
     value: "",
     index: "",
     servicesContract: [],
     clauses: [
-      { id: 1, text: `${ClauseOne()}`, isExpanded: false },
-      { id: 2, text: "", isExpanded: false },
-      { id: 3, text: `${ClauseThree()}`, isExpanded: false },
-      { id: 4, text: `${ClauseFour()}`, isExpanded: false },
-      { id: 5, text: `${ClauseFive()}`, isExpanded: false },
-      { id: 6, text: `${ClauseSix()}`, isExpanded: false },
+      { id: 0, text: `${ClauseOne()}`, isExpanded: false },
+      { id: 1, text: "", isExpanded: false },
+      { id: 2, text: `${ClauseThree()}`, isExpanded: false },
+      { id: 3, text: `${ClauseFour()}`, isExpanded: false },
+      { id: 4, text: `${ClauseFive()}`, isExpanded: false },
+      { id: 5, text: `${ClauseSix()}`, isExpanded: false },
     ],
     propouse: "",
   });
 
-  const [userContract, setUserContract] = React.useState("");
+  const [selectedDescriptions, setSelectedDescriptions] = React.useState([]);
+  const [valueMoney, setValueMoney] = React.useState("");
 
   const [messageError, setMessageError] = React.useState({
     name: "",
@@ -62,6 +64,7 @@ export default function CreateContract() {
     neighborhood: "",
     city: "",
     state: "",
+    tecSignature: "",
     contractNumber: "",
     date: "",
     value: "",
@@ -73,27 +76,54 @@ export default function CreateContract() {
     setValues((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
-        clause.id === 2
+        clause.id === 1
           ? { ...clause, text: ClauseTwo(formatMoney(prevValues.value)) }
           : clause
       ),
     }));
   }, [values.value]);
 
+  const servicesDesc = services.map(service => service.description);
+
   React.useEffect(() => {
     const fetchServices = async () => {
       const dataServices = await service.getServices();
 
       setServices(() => {
-        const updatedServices = dataServices.data.listUsers.map(
-          (service) => service.description
-        );
+        const updatedServices = dataServices.data.listUsers.map(service => ({
+          id: service.id,
+          description: service.description
+        }))
         return updatedServices;
       });
     };
 
     fetchServices();
   }, []);
+
+  const descriptionToIdMap = services.reduce((acc, service) => {
+    acc[service.description] = service.id;
+    return acc;
+  }, {});
+
+  function arraysAreEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) return false;
+    }
+    return true;
+  }
+
+  React.useEffect(() => {
+    const newSelectedIds = selectedDescriptions.map(desc => descriptionToIdMap[desc]);
+  
+    if (!arraysAreEqual(values.servicesContract, newSelectedIds)) {
+      setValues(prevValues => ({
+        ...prevValues,
+        servicesContract: newSelectedIds,
+      }));
+    }
+  }, [selectedDescriptions]);
 
   const handleAddClick = () => {
     setValues((prevContract) => ({
@@ -132,6 +162,29 @@ export default function CreateContract() {
     }));
   };
 
+  const removeMask = (maskedValue) => {
+    return maskedValue.replace(/[.,]/g, '');
+  };
+
+  const handleValueChange = (event) => {
+    const { name, value } = event.target;
+  
+    const unmaskedValue = removeMask(value);
+  
+    setValues((prevState) => ({
+      ...prevState,
+      [name]: unmaskedValue,
+    }));
+  
+    setValueMoney(formatMoney(value));
+  }
+
+  const handleServiceChange = (selectedDescriptions) => {
+    const descriptions = selectedDescriptions.target.value
+
+    setSelectedDescriptions(descriptions);
+  };
+
   const handleChange = (eventOrDate, dateString) => {
     if (eventOrDate.target) {
       const { name, value } = eventOrDate.target;
@@ -163,15 +216,11 @@ export default function CreateContract() {
   };
 
   const handleFileUpload = (fileInfo) => {
-    setValues(prevValues => ({
+    setValues((prevValues) => ({
       ...prevValues,
       propouse: fileInfo,
     }));
   };
-
-  React.useEffect(() => {
-    console.log("Clausulas:", values.clauses);
-  }, [values.clauses])
 
   const areRequiredFieldsFilled = () => {
     const requiredFields = [
@@ -214,7 +263,17 @@ export default function CreateContract() {
       return;
     }
 
-    const response = await service.createContract(values);
+    const clausesToSend = values.clauses.map(clause => ({
+      numberClause: clause.id,  // ou qualquer outra propriedade que represente o número da cláusula
+      description: clause.text
+    }));
+
+    const dataToSend = {
+      ...values,
+      clauses: clausesToSend,
+    };
+
+    const response = await service.createContract(dataToSend);
 
     if (response.request.status === 500) {
       Toast.Error("Contrato já cadastrado!");
@@ -329,12 +388,10 @@ export default function CreateContract() {
       <Form.Fragment section="Contratado">
         <CustomInput.Select
           label="Assinaturas"
-          name="servicesContract"
-          value={userContract}
+          name="tecSignature"
+          value={values.tecSignature}
           options={Options.Companies()}
-          onChange={(e) => {
-            setUserContract(e.target.value);
-          }}
+          onChange={handleChange}
         />
       </Form.Fragment>
       <Form.Fragment section="Contrato">
@@ -361,8 +418,8 @@ export default function CreateContract() {
             label="Valor"
             type="text"
             name="value"
-            value={formatMoney(values.value)}
-            onChange={handleChange}
+            value={valueMoney}
+            onChange={handleValueChange}
             errorText={messageError.value}
           />
         </CustomInput.Root>
@@ -379,10 +436,10 @@ export default function CreateContract() {
         <CustomInput.Select
           label="Serviços"
           name="servicesContract"
-          value={values.servicesContract}
-          onChange={handleChange}
+          value={selectedDescriptions}
+          onChange={handleServiceChange}
           multiple={true}
-          options={services}
+          options={servicesDesc}
         />
       </Form.Fragment>
       <Form.Fragment section="Cláusulas">
@@ -409,7 +466,7 @@ export default function CreateContract() {
         </div>
       </Form.Fragment>
       <Form.Fragment section="Proposta">
-        <CustomInput.Upload onFileUpload={handleFileUpload}/>
+        <CustomInput.Upload onFileUpload={handleFileUpload} />
       </Form.Fragment>
     </Form.Root>
   );
