@@ -1,8 +1,11 @@
+import { SendOutlined } from '@ant-design/icons';
 import { Button, Modal } from "antd";
 import * as React from "react";
+import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input/index";
 import { Table } from "../../../components/table";
+import { ActionsContainer } from "../../../components/table/styles";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
@@ -30,11 +33,15 @@ export default function ManageContracts() {
     date: "",
     value: "",
     index: "",
-    servicesContract: [],
+    contracts_Service: [],
     clauses: [],
+  });
+  const [filter, setFilter] = React.useState({
+    name: "",
   });
 
   const [selectedDescriptions, setSelectedDescriptions] = React.useState([]);
+  const [serviceOptions, setServiceOptions] = React.useState([]);
   const [valueMoney, setValueMoney] = React.useState("");
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
@@ -44,7 +51,7 @@ export default function ManageContracts() {
   React.useEffect(() => {
     const fetchcontracts = async () => {
       try {
-        const request = await service.getContracts("");
+        const request = await service.getContracts(filter.name);
         const dataContracts = request.data.listContracts;
 
         const updatedContracts = dataContracts.map((contract) => {
@@ -60,17 +67,18 @@ export default function ManageContracts() {
         setContracts(updatedContracts);
 
         const dataServices = await service.getServices();
-        const updatedServices = dataServices.data.listUsers.map(
-          (service) => service.description
+        const serviceDescription = dataServices.data.listUsers.map(
+          (services) => services.description
         );
 
-        setServices(updatedServices);
+        setServices(dataServices.data.listUsers);
+        setServiceOptions(serviceDescription);
       } catch (error) {
         console.error("Erro ao buscar contratos ou serviços:", error);
       }
     };
     fetchcontracts();
-  }, []);
+  }, [filter]);
 
   const descriptionToIdMap = services.reduce((acc, service) => {
     acc[service.description] = service.id;
@@ -86,24 +94,35 @@ export default function ManageContracts() {
   }
 
   React.useEffect(() => {
+    console.log("Contrato:", selectUser);
+  }, [selectUser]);
+
+  React.useEffect(() => {
     const newSelectedIds = selectedDescriptions.map(
       (desc) => descriptionToIdMap[desc]
     );
 
-    if (!arraysAreEqual(selectUser.servicesContract, newSelectedIds)) {
+    if (!arraysAreEqual(selectUser.contracts_Service, newSelectedIds)) {
       setSelectUser((prevValues) => ({
         ...prevValues,
-        servicesContract: newSelectedIds,
+        contracts_Service: newSelectedIds,
       }));
     }
   }, [selectedDescriptions]);
+
+  const handleChangeFilter = (event) => {
+    setFilter((prevState) => ({
+      ...prevState,
+      [event.target.name]: event.target.value,
+    }));
+  };
 
   const handleAddClick = () => {
     setSelectUser((prevContract) => ({
       ...prevContract,
       clauses: [
         ...prevContract.clauses,
-        { id: Date.now(), text: "", isExpanded: false },
+        { id: Date.now(), description: "", isExpanded: false },
       ],
     }));
   };
@@ -130,7 +149,7 @@ export default function ManageContracts() {
     setSelectUser((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
-        clause.id === id ? { ...clause, text: newText } : clause
+        clause.id === id ? { ...clause, description: newText } : clause
       ),
     }));
   };
@@ -185,7 +204,17 @@ export default function ManageContracts() {
 
   const confirmUpdate = async (updateData) => {
     try {
-      const response = await service.update(updateData.id, updateData);
+  
+      const clausesToSend = updateData.clauses.map(clause => ({
+        description: clause.text
+      }));
+  
+      const dataToSend = {
+        ...updateData,
+        clauses: clausesToSend,
+      };
+
+      const response = await service.updateContract(updateData.id, dataToSend);
 
       if (response.status === 200) {
         const updatedData = contracts.map((user) =>
@@ -206,6 +235,22 @@ export default function ManageContracts() {
 
   const handleUpdate = (user) => {
     setSelectUser((prevUser) => ({ ...prevUser, ...user }));
+
+    if (user.contracts_Service) {
+      const userServicesDescriptions = user.contracts_Service
+        .map((serviceId) => {
+          const service = services.find((s) => s.id === serviceId.service_id);
+          return service ? service.description : null;
+        })
+        .filter(Boolean);
+
+      setSelectedDescriptions(userServicesDescriptions);
+    }
+
+    if (user.value) {
+      setValueMoney(formatMoney(user.value));
+    }
+
     setIsModalVisibleUpdate(true);
   };
 
@@ -215,6 +260,11 @@ export default function ManageContracts() {
   };
 
   const options = [
+    {
+      title: "Cliente",
+      dataIndex: "name",
+      key: "name",
+    },
     {
       title: "Nº Contrato",
       dataIndex: "contractNumber",
@@ -226,10 +276,48 @@ export default function ManageContracts() {
       dataIndex: "status",
       render: (text, record) => <span>{record.status ?? "-"}</span>,
     },
+    {
+      title: "Controle Assinatura",
+      key: "actions",
+      width: 150,
+      render: () => (
+        <ActionsContainer>
+          <Button
+          title="Enviar para Assinatura!"
+            style={{ backgroundColor: "#3f8ece", color: "#fff" }}
+            shape="circle"
+            icon={<SendOutlined />}
+          />
+          <Button
+          title="Receber Assinatura!"
+            style={{ backgroundColor: "#36db6a", color: "#fff" }}
+            shape="circle"
+          />
+          <Button
+          title="Deletar Assinatura"
+            style={{ backgroundColor: "#da4444", color: "#fff" }}
+            shape="circle"
+          />
+          <Button
+          title="Gerar Aditivo"
+            style={{ backgroundColor: "#da4444", color: "#fff" }}
+            shape="circle"
+          />
+        </ActionsContainer>
+      ),
+    },
   ];
 
   return (
     <Table.Root title="Lista de Contratos" columnSize={6}>
+      <Filter.Fragment section="Filtro">
+        <Filter.FilterInput
+          label="Nome do Cliente"
+          name="name"
+          onChange={handleChangeFilter}
+          value={filter.name}
+        />
+      </Filter.Fragment>
       <Table.Table
         data={contracts}
         columns={options}
@@ -339,7 +427,7 @@ export default function ManageContracts() {
               <CustomInput.Input
                 label="Complemento"
                 type="text"
-                name="neighborhood"
+                name="complement"
                 value={selectUser.complement}
                 onChange={handleChange}
               />
@@ -375,7 +463,7 @@ export default function ManageContracts() {
           <Form.Fragment section="Contratado">
             <CustomInput.Select
               label="Assinaturas"
-              name="servicesContract"
+              name="tecSignature"
               value={selectUser.tecSignature}
               options={Options.Companies()}
               onChange={handleChange}
@@ -392,10 +480,9 @@ export default function ManageContracts() {
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
+              <CustomInput.DateInput
                 label="Data de Início"
-                type="text"
-                name="dateContract"
+                name="date"
                 value={selectUser.date}
                 onChange={handleChange}
               />
@@ -413,18 +500,18 @@ export default function ManageContracts() {
               <CustomInput.Input
                 label="Índice"
                 type="text"
-                name="indexContract"
+                name="index"
                 value={selectUser.index}
                 onChange={handleChange}
               />
             </CustomInput.Root>
             <CustomInput.Select
               label="Serviços"
-              name="servicesContract"
+              name="contracts_Service"
               value={selectedDescriptions}
               onChange={handleServiceChange}
               multiple={true}
-              options={services}
+              options={serviceOptions}
             />
           </Form.Fragment>
           <Form.Fragment section="Clausulas">

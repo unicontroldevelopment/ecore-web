@@ -264,7 +264,6 @@ export default function CreateContract() {
     }
 
     const clausesToSend = values.clauses.map(clause => ({
-      numberClause: clause.id,  // ou qualquer outra propriedade que represente o número da cláusula
       description: clause.text
     }));
 

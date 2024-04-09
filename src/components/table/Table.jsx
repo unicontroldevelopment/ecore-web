@@ -28,35 +28,38 @@ export const CustomTable = ({
       key: "actions",
       width: 150,
       render: (text, record) => (
-          <ActionsContainer>
+        <ActionsContainer>
+          <Button
+            title="Visualizar"
+            style={{ backgroundColor: "#3f8ece", color: "#fff" }}
+            onClick={() => onView(record)}
+            icon={<EyeOutlined />}
+            shape="circle"
+          />
+          <Button
+            title="Editar"
+            style={{ backgroundColor: "#36db6a", color: "#fff" }}
+            onClick={() => onUpdate(record)}
+            icon={<EditOutlined />}
+            shape="circle"
+          />
+          <Popconfirm
+            title="Tem certeza?"
+            description="Você quer deletar esta informação?"
+            onConfirm={() => confirm(record)}
+            onCancel={() => cancel(record)}
+            okText="Sim"
+            cancelText="Não"
+            icon={<QuestionCircleOutlined style={{ color: "red" }} />}
+          >
             <Button
-              style={{ backgroundColor: "#3f8ece", color: "#fff" }}
-              onClick={() => onView(record)}
-              icon={<EyeOutlined />}
+              title="Deletar"
+              style={{ backgroundColor: "#da4444", color: "#fff" }}
+              icon={<DeleteOutlined />}
               shape="circle"
             />
-            <Button
-              style={{ backgroundColor: "#36db6a", color: "#fff" }}
-              onClick={() => onUpdate(record)}
-              icon={<EditOutlined />}
-              shape="circle"
-            />
-            <Popconfirm
-              title="Tem certeza?"
-              description="Você quer deletar esta informação?"
-              onConfirm={() => confirm(record)}
-              onCancel={() => cancel(record)}
-              okText="Sim"
-              cancelText="Não"
-              icon={<QuestionCircleOutlined style={{ color: "red" }} />}
-            >
-              <Button
-                style={{ backgroundColor: "#da4444", color: "#fff" }}
-                icon={<DeleteOutlined />}
-                shape="circle"
-              />
-            </Popconfirm>
-          </ActionsContainer>
+          </Popconfirm>
+        </ActionsContainer>
       ),
     },
   ];
