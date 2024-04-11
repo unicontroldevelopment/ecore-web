@@ -1,4 +1,4 @@
-import { SendOutlined } from '@ant-design/icons';
+import { SendOutlined } from "@ant-design/icons";
 import { Button, Modal } from "antd";
 import * as React from "react";
 import { Filter } from "../../../components/filter";
@@ -39,9 +39,6 @@ export default function ManageContracts() {
   const [filter, setFilter] = React.useState({
     name: "",
   });
-
-  const [selectedDescriptions, setSelectedDescriptions] = React.useState([]);
-  const [serviceOptions, setServiceOptions] = React.useState([]);
   const [valueMoney, setValueMoney] = React.useState("");
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
@@ -67,12 +64,8 @@ export default function ManageContracts() {
         setContracts(updatedContracts);
 
         const dataServices = await service.getServices();
-        const serviceDescription = dataServices.data.listUsers.map(
-          (services) => services.description
-        );
 
         setServices(dataServices.data.listUsers);
-        setServiceOptions(serviceDescription);
       } catch (error) {
         console.error("Erro ao buscar contratos ou serviços:", error);
       }
@@ -80,35 +73,9 @@ export default function ManageContracts() {
     fetchcontracts();
   }, [filter]);
 
-  const descriptionToIdMap = services.reduce((acc, service) => {
-    acc[service.description] = service.id;
-    return acc;
-  }, {});
-
-  function arraysAreEqual(arr1, arr2) {
-    if (arr1.length !== arr2.length) return false;
-    for (let i = 0; i < arr1.length; i++) {
-      if (arr1[i] !== arr2[i]) return false;
-    }
-    return true;
-  }
-
   React.useEffect(() => {
     console.log("Contrato:", selectUser);
   }, [selectUser]);
-
-  React.useEffect(() => {
-    const newSelectedIds = selectedDescriptions.map(
-      (desc) => descriptionToIdMap[desc]
-    );
-
-    if (!arraysAreEqual(selectUser.contracts_Service, newSelectedIds)) {
-      setSelectUser((prevValues) => ({
-        ...prevValues,
-        contracts_Service: newSelectedIds,
-      }));
-    }
-  }, [selectedDescriptions]);
 
   const handleChangeFilter = (event) => {
     setFilter((prevState) => ({
@@ -171,10 +138,41 @@ export default function ManageContracts() {
     setValueMoney(formatMoney(value));
   };
 
-  const handleServiceChange = (selectedDescriptions) => {
-    const descriptions = selectedDescriptions.target.value;
-
-    setSelectedDescriptions(descriptions);
+  const handleServiceChange = (event) => {
+    const { value } = event.target; // 'value' é o array das descrições dos serviços selecionados
+  
+    setSelectUser((prevState) => {
+      // Filtra os serviços que estão atualmente selecionados
+      const updatedContractsService = prevState.contracts_Service
+        .filter(contractService =>
+          value.includes(contractService.Services.description)
+        )
+        .map(contractService => ({
+          ...contractService,
+          service_id: contractService.Services.id, // Mantém o service_id original
+          contract_id: prevState.id // Adiciona o contract_id do selectUser
+        }));
+  
+      // Adiciona novos serviços que foram selecionados e ainda não estão na lista
+      value.forEach(description => {
+        if (!updatedContractsService.some(cs => cs.Services.description === description)) {
+          const serviceToAdd = services.find(s => s.description === description);
+          if (serviceToAdd) {
+            updatedContractsService.push({
+              contract_id: prevState.id,
+              service_id: serviceToAdd.id,
+              Services: { ...serviceToAdd, description: serviceToAdd.description }
+            });
+          }
+        }
+      });
+  
+      // Retorna o estado atualizado
+      return {
+        ...prevState,
+        contracts_Service: updatedContractsService
+      };
+    });
   };
 
   const handleChange = (event) => {
@@ -204,11 +202,10 @@ export default function ManageContracts() {
 
   const confirmUpdate = async (updateData) => {
     try {
-  
-      const clausesToSend = updateData.clauses.map(clause => ({
-        description: clause.text
+      const clausesToSend = updateData.clauses.map((clause) => ({
+        description: clause.text,
       }));
-  
+
       const dataToSend = {
         ...updateData,
         clauses: clausesToSend,
@@ -229,28 +226,19 @@ export default function ManageContracts() {
 
       return response;
     } catch (error) {
+      Toast.Error(error)
       return error;
     }
   };
 
-  const handleUpdate = (user) => {
-    setSelectUser((prevUser) => ({ ...prevUser, ...user }));
+  const handleUpdate = (selectedUser) => {
 
-    if (user.contracts_Service) {
-      const userServicesDescriptions = user.contracts_Service
-        .map((serviceId) => {
-          const service = services.find((s) => s.id === serviceId.service_id);
-          return service ? service.description : null;
-        })
-        .filter(Boolean);
-
-      setSelectedDescriptions(userServicesDescriptions);
+    setSelectUser(selectedUser);
+  
+    if (selectedUser.value) {
+      setValueMoney(formatMoney(selectedUser.value));
     }
-
-    if (user.value) {
-      setValueMoney(formatMoney(user.value));
-    }
-
+  
     setIsModalVisibleUpdate(true);
   };
 
@@ -283,23 +271,23 @@ export default function ManageContracts() {
       render: () => (
         <ActionsContainer>
           <Button
-          title="Enviar para Assinatura!"
+            title="Enviar para Assinatura!"
             style={{ backgroundColor: "#3f8ece", color: "#fff" }}
             shape="circle"
             icon={<SendOutlined />}
           />
           <Button
-          title="Receber Assinatura!"
+            title="Receber Assinatura!"
             style={{ backgroundColor: "#36db6a", color: "#fff" }}
             shape="circle"
           />
           <Button
-          title="Deletar Assinatura"
+            title="Deletar Assinatura"
             style={{ backgroundColor: "#da4444", color: "#fff" }}
             shape="circle"
           />
           <Button
-          title="Gerar Aditivo"
+            title="Gerar Aditivo"
             style={{ backgroundColor: "#da4444", color: "#fff" }}
             shape="circle"
           />
@@ -508,10 +496,10 @@ export default function ManageContracts() {
             <CustomInput.Select
               label="Serviços"
               name="contracts_Service"
-              value={selectedDescriptions}
+              value={selectUser.contracts_Service.map((service) => service.Services.description)}
               onChange={handleServiceChange}
               multiple={true}
-              options={serviceOptions}
+              options={services.map((service) => service.description)}
             />
           </Form.Fragment>
           <Form.Fragment section="Clausulas">
