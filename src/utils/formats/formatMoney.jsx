@@ -1,4 +1,4 @@
-export const formatMoney = (value) => {
+export const Money = (value) => {
   const onlyNums = value.replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '');
 
   if (onlyNums.length === 0) {

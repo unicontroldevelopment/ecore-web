@@ -1,5 +1,6 @@
 import { SendOutlined } from "@ant-design/icons";
 import { Button, Modal } from "antd";
+import dayjs from "dayjs";
 import * as React from "react";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
@@ -9,7 +10,7 @@ import { ActionsContainer } from "../../../components/table/styles";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
-import { formatMoney } from "../../../utils/formats/formatMoney";
+import { Formats } from "../../../utils/formats";
 import { Options } from "../../../utils/options";
 import { ViewerPDF } from "../../../utils/pdf/crateContract";
 
@@ -17,7 +18,7 @@ export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [contracts, setContracts] = React.useState([]);
   const [services, setServices] = React.useState([]);
-  const [selectUser, setSelectUser] = React.useState({
+  const [selectContract, setSelectContract] = React.useState({
     status: "",
     name: "",
     cpfcnpj: "",
@@ -65,7 +66,7 @@ export default function ManageContracts() {
 
         const dataServices = await service.getServices();
 
-        setServices(dataServices.data.listUsers);
+        setServices(dataServices.data.listServices);
       } catch (error) {
         console.error("Erro ao buscar contratos ou serviços:", error);
       }
@@ -74,8 +75,8 @@ export default function ManageContracts() {
   }, [filter]);
 
   React.useEffect(() => {
-    console.log("Contrato:", selectUser);
-  }, [selectUser]);
+    console.log("Contrato:", selectContract);
+  }, [selectContract]);
 
   const handleChangeFilter = (event) => {
     setFilter((prevState) => ({
@@ -85,26 +86,26 @@ export default function ManageContracts() {
   };
 
   const handleAddClick = () => {
-    setSelectUser((prevContract) => ({
+    setSelectContract((prevContract) => ({
       ...prevContract,
       clauses: [
         ...prevContract.clauses,
-        { id: Date.now(), description: "", isExpanded: false },
+        { currentId: Date.now(), description: "", isExpanded: false },
       ],
     }));
   };
 
   const handleDeleteClause = (id) => {
-    setSelectUser((prevUser) => ({
-      ...prevUser,
-      clauses: prevUser.clauses.filter((clause) => clause.id !== id),
+    setSelectContract((prevContract) => ({
+      ...prevContract,
+      clauses: prevContract.clauses.filter((clause) => clause.id !== id),
     }));
   };
 
   const toggleExpand = (id) => {
-    setSelectUser((prevUser) => ({
-      ...prevUser,
-      clauses: prevUser.clauses.map((clause) =>
+    setSelectContract((prevContract) => ({
+      ...prevContract,
+      clauses: prevContract.clauses.map((clause) =>
         clause.id === id
           ? { ...clause, isExpanded: !clause.isExpanded }
           : clause
@@ -113,7 +114,7 @@ export default function ManageContracts() {
   };
 
   const handleClauseChange = (id, newText) => {
-    setSelectUser((prevValues) => ({
+    setSelectContract((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
         clause.id === id ? { ...clause, description: newText } : clause
@@ -130,30 +131,28 @@ export default function ManageContracts() {
 
     const unmaskedValue = removeMask(value);
 
-    setSelectUser((prevState) => ({
+    setSelectContract((prevState) => ({
       ...prevState,
       [name]: unmaskedValue,
     }));
 
-    setValueMoney(formatMoney(value));
+    setValueMoney(Formats.Money(value));
   };
 
   const handleServiceChange = (event) => {
-    const { value } = event.target; // 'value' é o array das descrições dos serviços selecionados
+    const { value } = event.target;
   
-    setSelectUser((prevState) => {
-      // Filtra os serviços que estão atualmente selecionados
+    setSelectContract((prevState) => {
       const updatedContractsService = prevState.contracts_Service
         .filter(contractService =>
           value.includes(contractService.Services.description)
         )
         .map(contractService => ({
           ...contractService,
-          service_id: contractService.Services.id, // Mantém o service_id original
-          contract_id: prevState.id // Adiciona o contract_id do selectUser
+          service_id: contractService.Services.id,
+          contract_id: prevState.id
         }));
   
-      // Adiciona novos serviços que foram selecionados e ainda não estão na lista
       value.forEach(description => {
         if (!updatedContractsService.some(cs => cs.Services.description === description)) {
           const serviceToAdd = services.find(s => s.description === description);
@@ -167,7 +166,6 @@ export default function ManageContracts() {
         }
       });
   
-      // Retorna o estado atualizado
       return {
         ...prevState,
         contracts_Service: updatedContractsService
@@ -175,11 +173,20 @@ export default function ManageContracts() {
     });
   };
 
-  const handleChange = (event) => {
-    setSelectUser((prevState) => ({
-      ...prevState,
-      [event.target.name]: event.target.value,
-    }));
+  const handleChange = (eventOrDate) => {
+    if (eventOrDate.target) {
+      const { name, value } = eventOrDate.target;
+
+      setSelectContract((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    } else {
+      setSelectContract((prevState) => ({
+        ...prevState,
+        date: eventOrDate ? dayjs(eventOrDate) : null,
+      }));
+    }
   };
 
   const confirmDelete = async (e) => {
@@ -187,7 +194,7 @@ export default function ManageContracts() {
       const response = await service.delete(e.id);
 
       if (response.status === 200) {
-        setContracts(contracts.filter((user) => user.id !== e.id));
+        setContracts(contracts.filter((contract) => contract.id !== e.id));
 
         Toast.Success("Contrato deletado com sucesso!");
       }
@@ -202,20 +209,13 @@ export default function ManageContracts() {
 
   const confirmUpdate = async (updateData) => {
     try {
-      const clausesToSend = updateData.clauses.map((clause) => ({
-        description: clause.text,
-      }));
 
-      const dataToSend = {
-        ...updateData,
-        clauses: clausesToSend,
-      };
-
-      const response = await service.updateContract(updateData.id, dataToSend);
+      console.log("Data:", updateData);
+      const response = await service.updateContract(updateData.id, updateData);
 
       if (response.status === 200) {
-        const updatedData = contracts.map((user) =>
-          user.id === updateData.id ? { ...user, ...updateData } : user
+        const updatedData = contracts.map((contract) =>
+          contract.id === updateData.id ? { ...contract, ...updateData } : contract
         );
 
         setContracts(updatedData);
@@ -231,19 +231,27 @@ export default function ManageContracts() {
     }
   };
 
-  const handleUpdate = (selectedUser) => {
+  const handleUpdate = (contract) => {
 
-    setSelectUser(selectedUser);
+    const updatedContractsService = contract.clauses.map((service) => ({
+      ...service,
+      currentId: service.id,
+    }));
+
+    setSelectContract({
+      ...contract,
+      clauses: updatedContractsService,
+    });
   
-    if (selectedUser.value) {
-      setValueMoney(formatMoney(selectedUser.value));
+    if (contract.value) {
+      setValueMoney(Formats.Money(contract.value));
     }
   
     setIsModalVisibleUpdate(true);
   };
 
-  const handleView = (user) => {
-    setSelectUser((prevUser) => ({ ...prevUser, ...user }));
+  const handleView = (contract) => {
+    setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
     setIsModalVisibleView(true);
   };
 
@@ -328,19 +336,21 @@ export default function ManageContracts() {
           ]}
         >
           <ViewerPDF
-            name={selectUser.name}
-            cpfCnpj={selectUser.cpfcnpj}
-            cep={selectUser.cep}
-            road={selectUser.road}
-            number={selectUser.number}
-            complement={selectUser.complement}
-            neighborhood={selectUser.neighborhood}
-            city={selectUser.city}
-            state={selectUser.state}
-            numberContract={selectUser.numberContract}
-            dateContract={selectUser.date}
-            valueContract={selectUser.value}
-            indexContract={selectUser.index}
+            name={selectContract.name}
+            cpfCnpj={selectContract.cpfcnpj}
+            cep={selectContract.cep}
+            road={selectContract.road}
+            number={selectContract.number}
+            complement={selectContract.complement}
+            neighborhood={selectContract.neighborhood}
+            city={selectContract.city}
+            state={selectContract.state}
+            numberContract={selectContract.numberContract}
+            dateContract={selectContract.date}
+            valueContract={selectContract.value}
+            indexContract={selectContract.index}
+            services={selectContract.contracts_Service}
+            clauses={selectContract.clauses}
           />
         </Modal>
       )}
@@ -356,7 +366,7 @@ export default function ManageContracts() {
             <Button
               key="submit"
               type="primary"
-              onClick={() => confirmUpdate(selectUser)}
+              onClick={() => confirmUpdate(selectContract)}
             >
               Atualizar
             </Button>,
@@ -371,7 +381,7 @@ export default function ManageContracts() {
                 label="Nome"
                 type="text"
                 name="name"
-                value={selectUser.name}
+                value={selectContract.name}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -380,7 +390,7 @@ export default function ManageContracts() {
                 label="CPF ou CNPJ"
                 type="text"
                 name="cpfCnpj"
-                value={selectUser.cpfcnpj}
+                value={selectContract.cpfcnpj}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -389,7 +399,7 @@ export default function ManageContracts() {
                 label="CEP"
                 type="text"
                 name="cep"
-                value={selectUser.cep}
+                value={selectContract.cep}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -398,7 +408,7 @@ export default function ManageContracts() {
                 label="Rua"
                 type="text"
                 name="road"
-                value={selectUser.road}
+                value={selectContract.road}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -407,7 +417,7 @@ export default function ManageContracts() {
                 label="Número"
                 type="text"
                 name="number"
-                value={selectUser.number}
+                value={selectContract.number}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -416,7 +426,7 @@ export default function ManageContracts() {
                 label="Complemento"
                 type="text"
                 name="complement"
-                value={selectUser.complement}
+                value={selectContract.complement}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -425,7 +435,7 @@ export default function ManageContracts() {
                 label="Bairro"
                 type="text"
                 name="neighborhood"
-                value={selectUser.neighborhood}
+                value={selectContract.neighborhood}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -434,7 +444,7 @@ export default function ManageContracts() {
                 label="Cidade"
                 type="text"
                 name="city"
-                value={selectUser.city}
+                value={selectContract.city}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -443,7 +453,7 @@ export default function ManageContracts() {
                 label="UF"
                 type="text"
                 name="state"
-                value={selectUser.state}
+                value={selectContract.state}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -452,7 +462,7 @@ export default function ManageContracts() {
             <CustomInput.Select
               label="Assinaturas"
               name="tecSignature"
-              value={selectUser.tecSignature}
+              value={selectContract.tecSignature}
               options={Options.Companies()}
               onChange={handleChange}
             />
@@ -463,15 +473,14 @@ export default function ManageContracts() {
                 label="Número"
                 type="text"
                 name="contractNumber"
-                value={selectUser.contractNumber}
+                value={selectContract.contractNumber}
                 onChange={handleChange}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
               <CustomInput.DateInput
                 label="Data de Início"
-                name="date"
-                value={selectUser.date}
+                value={selectContract.date}
                 onChange={handleChange}
               />
             </CustomInput.Root>
@@ -489,14 +498,14 @@ export default function ManageContracts() {
                 label="Índice"
                 type="text"
                 name="index"
-                value={selectUser.index}
+                value={selectContract.index}
                 onChange={handleChange}
               />
             </CustomInput.Root>
             <CustomInput.Select
               label="Serviços"
               name="contracts_Service"
-              value={selectUser.contracts_Service.map((service) => service.Services.description)}
+              value={selectContract.contracts_Service.map((service) => service.Services.description)}
               onChange={handleServiceChange}
               multiple={true}
               options={services.map((service) => service.description)}
@@ -512,9 +521,9 @@ export default function ManageContracts() {
               >
                 Adicionar Cláusula
               </Button>
-              {selectUser.clauses.map((clause, index) => (
+              {selectContract.clauses.map((clause, index) => (
                 <CustomInput.LongText
-                  key={clause.id}
+                  key={clause.currentId}
                   label={`Cláusula Nº${index + 1}`}
                   value={clause.description}
                   isExpanded={clause.isExpanded}

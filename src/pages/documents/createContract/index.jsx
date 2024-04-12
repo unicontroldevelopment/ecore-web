@@ -16,7 +16,7 @@ import {
   ClauseThree,
   ClauseTwo,
 } from "../../../utils/clauses/clauses";
-import { formatMoney } from "../../../utils/formats/formatMoney";
+import { Formats } from "../../../utils/formats";
 import { Options } from "../../../utils/options";
 
 export default function CreateContract() {
@@ -54,6 +54,8 @@ export default function CreateContract() {
 
   const [selectedDescriptions, setSelectedDescriptions] = React.useState([]);
   const [valueMoney, setValueMoney] = React.useState("");
+  const [formatCpfOrCnpj, setFormatCpfOrCnpj] = React.useState("");
+  const [formatCep, setFormatCep] = React.useState("");
 
   const [messageError, setMessageError] = React.useState({
     name: "",
@@ -77,7 +79,7 @@ export default function CreateContract() {
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
         clause.id === 1
-          ? { ...clause, text: ClauseTwo(formatMoney(prevValues.value)) }
+          ? { ...clause, text: ClauseTwo(Formats.Money(prevValues.value)) }
           : clause
       ),
     }));
@@ -90,7 +92,7 @@ export default function CreateContract() {
       const dataServices = await service.getServices();
 
       setServices(() => {
-        const updatedServices = dataServices.data.listUsers.map(service => ({
+        const updatedServices = dataServices.data.listServices.map(service => ({
           id: service.id,
           description: service.description
         }))
@@ -136,16 +138,16 @@ export default function CreateContract() {
   };
 
   const handleDeleteClause = (id) => {
-    setValues((prevUser) => ({
-      ...prevUser,
-      clauses: prevUser.clauses.filter((clause) => clause.id !== id),
+    setValues((prevContract) => ({
+      ...prevContract,
+      clauses: prevContract.clauses.filter((clause) => clause.id !== id),
     }));
   };
 
   const toggleExpand = (id) => {
-    setValues((prevUser) => ({
-      ...prevUser,
-      clauses: prevUser.clauses.map((clause) =>
+    setValues((prevContract) => ({
+      ...prevContract,
+      clauses: prevContract.clauses.map((clause) =>
         clause.id === id
           ? { ...clause, isExpanded: !clause.isExpanded }
           : clause
@@ -166,17 +168,34 @@ export default function CreateContract() {
     return maskedValue.replace(/[.,]/g, '');
   };
 
-  const handleValueChange = (event) => {
+  const handleFormatsChange = (event) => {
     const { name, value } = event.target;
   
     const unmaskedValue = removeMask(value);
   
-    setValues((prevState) => ({
-      ...prevState,
-      [name]: unmaskedValue,
-    }));
-  
-    setValueMoney(formatMoney(value));
+    if(name === "cpfcnpj") {
+      setValues((prevState) => ({
+        ...prevState,
+        [name]: unmaskedValue,
+      }));
+    
+      setFormatCpfOrCnpj(Formats.CpfCnpj(value));
+    } else if(name === "value"){
+      setValues((prevState) => ({
+        ...prevState,
+        [name]: unmaskedValue,
+      }));
+    
+      setValueMoney(Formats.Money(value));
+    } else if (name === "cep"){
+      setValues((prevState) => ({
+        ...prevState,
+        [name]: unmaskedValue,
+      }));
+    
+      setFormatCep(Formats.Cep(value));
+    }
+
   }
 
   const handleServiceChange = (selectedDescriptions) => {
@@ -309,8 +328,8 @@ export default function CreateContract() {
             label="CPF ou CNPJ"
             type="text"
             name="cpfcnpj"
-            value={values.cpfcnpj}
-            onChange={handleChange}
+            value={formatCpfOrCnpj}
+            onChange={handleFormatsChange}
             errorText={messageError.cpfcnpj}
           />
         </CustomInput.Root>
@@ -319,8 +338,8 @@ export default function CreateContract() {
             label="CEP"
             type="text"
             name="cep"
-            value={values.cep}
-            onChange={handleChange}
+            value={formatCep}
+            onChange={handleFormatsChange}
             errorText={messageError.cep}
           />
         </CustomInput.Root>
@@ -418,7 +437,7 @@ export default function CreateContract() {
             type="text"
             name="value"
             value={valueMoney}
-            onChange={handleValueChange}
+            onChange={handleFormatsChange}
             errorText={messageError.value}
           />
         </CustomInput.Root>
