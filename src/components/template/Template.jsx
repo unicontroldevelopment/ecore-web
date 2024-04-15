@@ -99,11 +99,11 @@ const Template = (props) => {
         },
         {
           key: "4-3",
-          label: <Link to="/dashboard">Gerenciar Informações</Link>,
+          label: <Link to="/employee/manageInfo">Gerenciar Informações</Link>,
         },
         {
           key: "4-4",
-          label: <Link to="/dashboard">Cadastrar Informações</Link>,
+          label: <Link to="/employee/createInfo">Cadastrar Informações</Link>,
         },
         {
           key: "4-5",

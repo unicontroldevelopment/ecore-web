@@ -1,5 +1,4 @@
 import { Button, Modal } from "antd";
-import dayjs from "dayjs";
 import * as React from "react";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
@@ -11,42 +10,38 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import EmployeeService from "../../../services/EmployeeService";
 import { Options } from "../../../utils/options";
 
-export default function ListEmployee() {
+export default function ManageEmployeeInfo() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
   const [selectUser, setSelectUser] = React.useState({
     name: "",
-    birthday: dayjs(),
-    cpf: "",
-    ctps: "",
-    serie: "",
-    office: "",
-    cbo: "",
-    education: "",
-    maritalStatus: "",
-    nationality: "",
-    pis: "",
-    rg: "",
-    cep: "",
-    road: "",
-    number: "",
-    complement: "",
-    neighborhood: "",
-    city: "",
-    state: "",
-    level: "",
+    role: "",
+    password: "",
+    passwordConfirmation: "",
     department: "",
     company: "",
-    costCenter: "",
-    dateAdmission: dayjs(),
-    dateResignation: null,
-    initialWage: "",
-    currentWage: "",
+    unit: "",
+    networkUser: "",
+    networkPassword: "",
+    email: "",
+    emailPassword: "",
+    discordEmail: "",
+    discordPassword: "",
+    notebookBrand: "",
+    notebookName: "",
+    notebookProperty: "",
+    coolerProperty: "",
+    officeVersion: "",
+    windowsVersion: "",
   });
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
   const [filter, setFilter] = React.useState({
     name: "",
+    role: "",
+    department: "",
+    company: "",
+    unit: "",
   });
 
   const service = new EmployeeService();
@@ -54,7 +49,11 @@ export default function ListEmployee() {
   React.useEffect(() => {
     const fetchUsers = async () => {
       const request = await service.getEmployees(
+        filter.role,
         filter.name,
+        filter.department,
+        filter.company,
+        filter.unit
       );
       setUsers(request.data.listUsers);
     };
@@ -129,7 +128,31 @@ export default function ListEmployee() {
       title: "Nome",
       dataIndex: "name",
       key: "name",
-    }
+    },
+    {
+      title: "Perfil",
+      key: "role",
+      dataIndex: "role",
+      render: (text, record) => <span>{record.role ?? "-"}</span>,
+    },
+    {
+      title: "Setor",
+      key: "department",
+      dataIndex: "department",
+      render: (text, record) => <span>{record.department ?? "-"}</span>,
+    },
+    {
+      title: "Empresa",
+      dataIndex: "company",
+      key: "company",
+      render: (text, record) => <span>{record.company ?? "-"}</span>,
+    },
+    {
+      title: "Unidade",
+      dataIndex: "unit",
+      key: "unit",
+      render: (text, record) => <span>{record.unit ?? "-"}</span>,
+    },
   ];
 
   return (
@@ -154,6 +177,20 @@ export default function ListEmployee() {
           value={filter.department}
           onChange={handleChangeFilter}
           options={Options.Departments()}
+        />
+        <Filter.Select
+          label="Empresas"
+          name="company"
+          value={filter.company}
+          onChange={handleChangeFilter}
+          options={Options.Companies()}
+        />
+        <Filter.Select
+          label="Unidade"
+          name="unit"
+          value={filter.unit}
+          onChange={handleChangeFilter}
+          options={Options.Units()}
         />
       </Filter.Fragment>
       <Table.Table

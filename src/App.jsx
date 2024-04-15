@@ -9,9 +9,9 @@ import { UserTypeProvider } from "./contexts/UserTypeContext";
 import Template from "./components/template/Template";
 import PrivatePage from "./utils/PrivatePage";
 
-import ptBR from 'antd/lib/locale/pt_BR';
-import moment from 'moment';
-import 'moment/locale/pt-br';
+import ptBR from "antd/lib/locale/pt_BR";
+import moment from "moment";
+import "moment/locale/pt-br";
 import AccessDenied from "./pages/accessDenied";
 import Dashboard from "./pages/dashboard/Dashboard";
 import CreateContract from "./pages/documents/createContract";
@@ -20,12 +20,14 @@ import ManageContracts from "./pages/documents/manageContratcs";
 import CreateEmail from "./pages/emails/createEmail";
 import ListGroup from "./pages/emails/listGroups";
 import CreateEmployee from "./pages/employees/createEmployee";
+import CreateEmployeeInfo from "./pages/employees/createEmployeeInfo";
 import ListEmployee from "./pages/employees/listEmployee";
+import ManageEmployeeInfo from "./pages/employees/manageEmployeeInfo";
 import Login from "./pages/login/Login";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
 
-moment.locale('pt-br');
+moment.locale("pt-br");
 
 const App = () => {
   return (
@@ -73,7 +75,7 @@ const App = () => {
                 element={
                   <PrivatePage>
                     <Template>
-                      <CreateEmployee />
+                      <CreateEmployee/>
                     </Template>
                   </PrivatePage>
                 }
@@ -83,7 +85,27 @@ const App = () => {
                 element={
                   <PrivatePage>
                     <Template>
-                      <ListEmployee />
+                      <ListEmployee/>
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/employee/createInfo"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <CreateEmployeeInfo />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/employee/manageInfo"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <ManageEmployeeInfo />
                     </Template>
                   </PrivatePage>
                 }

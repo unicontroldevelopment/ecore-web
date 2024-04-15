@@ -21,7 +21,7 @@ export function CustomUpload({ onFileUpload }) {
   const handleUploadChange = (info) => {
     if (info.file.status === "done") {
       message.success(`${info.file.name} Arquivo Carregado com sucesso!`);
-      console.log("URL do arquivo:", info.file.response.url);
+      console.log("URL do arquivo:", info);
       onFileUpload(info.file.response.url);
     } else if (info.file.status === "error") {
       message.error(`${info.file.name} Erro ao carregar arquivo.`);

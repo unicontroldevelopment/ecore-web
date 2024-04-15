@@ -27,13 +27,9 @@ export default class {
     }
   }
 
-  async getEmployees(role, name, department, company, unit) {
+  async getEmployees(name) {
     const query = {
-      role,
       name,
-      department,
-      company,
-      unit,
     };
 
     try {
@@ -54,6 +50,55 @@ export default class {
   async update(employeeId, employeeData) {
     try {
       const response = await api.put(`/employee/${employeeId}`, employeeData);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async createInfo(employeeData) {
+    try {
+      const response = await api.post("/employeeInfo", employeeData);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async getByIdInfo(employeeId) {
+    try {
+      const response = await api.get(`/employeeInfo/${employeeId}`);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async getEmployeesInfo(role, name, department, company, unit) {
+    const query = {
+      role,
+      name,
+      department,
+      company,
+      unit,
+    };
+
+    try {
+      const response = await api.get(`/employeesInfo?${qs.stringify(query)}`);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async deleteInfo(employeeId) {
+    try {
+      const response = await api.delete(`/employeeInfo/${employeeId}`);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async updateInfo(employeeId, employeeData) {
+    try {
+      const response = await api.put(`/employeeInfo/${employeeId}`, employeeData);
       return response;
     } catch (error) {
       return error;

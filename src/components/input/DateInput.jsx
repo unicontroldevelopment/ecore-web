@@ -16,13 +16,14 @@ const StyledDatePicker = styled(AntDatePicker)`
   }
 `;
 
-export function DateInput({ label, value, onChange }) {
+export function DateInput({ label, name, value, onChange }) {
     const dateInputId = `date-picker-${label.replace(/\s+/g, '-').toLowerCase()}`;
   return (
     <FormControl variant="outlined" fullWidth>
       <InputLabel htmlFor={dateInputId}>{label}</InputLabel>
       <StyledDatePicker
         id={dateInputId}
+        name={name}
         value={value ? dayjs(value) : null}
         onChange={(date, dateString) => onChange(date, dateString)}
         format="DD/MM/YYYY"
