@@ -53,19 +53,7 @@ const Template = (props) => {
         },
         {
           key: "2-2",
-          label: <Link to="/emails/listGroup">Grupo</Link>,
-        },
-        {
-          key: "2-3",
-          label: <Link to="/dashboard">Franqueados</Link>,
-        },
-        {
-          key: "2-4",
-          label: <Link to="/dashboard">Newsis</Link>,
-        },
-        {
-          key: "2-5",
-          label: <Link to="/dashboard">Labs</Link>,
+          label: <Link to="/emails/list">Lista de Emails</Link>,
         },
       ],
     },
@@ -99,11 +87,11 @@ const Template = (props) => {
         },
         {
           key: "4-3",
-          label: <Link to="/employee/manageInfo">Gerenciar Informações</Link>,
+          label: <Link to="/employee/createInfo">Cadastrar Informações</Link>,
         },
         {
           key: "4-4",
-          label: <Link to="/employee/createInfo">Cadastrar Informações</Link>,
+          label: <Link to="/employee/manageInfo">Gerenciar Informações</Link>,
         },
         {
           key: "4-5",
@@ -130,7 +118,9 @@ const Template = (props) => {
         },
         {
           key: "5-4",
-          label: <Link to="/documents/manageContracts">Gerenciar Contratos</Link>,
+          label: (
+            <Link to="/documents/manageContracts">Gerenciar Contratos</Link>
+          ),
         },
       ],
     },
@@ -156,11 +146,11 @@ const Template = (props) => {
       children: [
         {
           key: "7-1",
-          label: <Link to="/dashboard">Cadastrar Produto</Link>,
+          label: <Link to="/stock/registerProduct">Cadastrar Produto</Link>,
         },
         {
           key: "7-2",
-          label: <Link to="/dashboard">Cadastrar Uniforme/EPI</Link>,
+          label: <Link to="/stock/registerEPI">Cadastrar Uniforme/EPI</Link>,
         },
         {
           key: "7-3",
@@ -173,6 +163,17 @@ const Template = (props) => {
         {
           key: "7-5",
           label: <Link to="/dashboard">Movimentações</Link>,
+        },
+      ],
+    },
+    {
+      key: "8",
+      icon: <FaBoxes />,
+      label: "Laboratório",
+      children: [
+        {
+          key: "8-1",
+          label: <Link to="/dashboard/teste">Aba de Testes</Link>,
         },
       ],
     },

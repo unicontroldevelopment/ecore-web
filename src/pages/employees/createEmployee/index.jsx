@@ -334,7 +334,7 @@ export default function CreateEmployee() {
         <CustomInput.Root columnSize={6}>
           <CustomInput.Select
             label="Empresa"
-            name="copmany"
+            name="company"
             value={values.company}
             onChange={handleChange}
             options={Options.Companies()}

@@ -48,7 +48,7 @@ export default function ManageEmployeeInfo() {
 
   React.useEffect(() => {
     const fetchUsers = async () => {
-      const request = await service.getEmployees(
+      const request = await service.getEmployeesInfo(
         filter.role,
         filter.name,
         filter.department,
@@ -76,7 +76,7 @@ export default function ManageEmployeeInfo() {
 
   const confirmDelete = async (e) => {
     try {
-      const response = await service.delete(e.id);
+      const response = await service.deleteInfo(e.id);
 
       if (response.status === 200) {
         setUsers(users.filter((user) => user.id !== e.id));
@@ -94,7 +94,7 @@ export default function ManageEmployeeInfo() {
 
   const confirmUpdate = async (updateData) => {
     try {
-      const response = await service.update(updateData.id, updateData);
+      const response = await service.updateInfo(updateData.id, updateData);
 
       if (response.status === 200) {
         const updatedData = users.map((user) =>

@@ -43,7 +43,7 @@ export default function CreateAccess() {
         const registeredAccessRequest = await service.getServerAccess();
         const registeredAccess = registeredAccessRequest.data.listUsers;
 
-        const registeredIds = new Set(registeredAccess.map(user => user.ServerAccess[0].employeeId));
+        const registeredIds = new Set(registeredAccess.map(user => user.ServerAccess[0].employeeInfoId));
 
         const unregisteredEmployees = allEmployees.filter(
           user => !registeredIds.has(user.id)
@@ -69,10 +69,10 @@ export default function CreateAccess() {
   const handleChange = async (event) => {
     try {
       setValues((prevState) => {
-        const employeeId = employees.find((user) => user.name === event.target.value);
+        const employeeInfoId = employees.find((user) => user.name === event.target.value);
         const updatedValues = {
           ...prevState,
-          [event.target.name]: employeeId.id,
+          [event.target.name]: employeeInfoId.id,
         };
         setValueName(event.target.value);
         return updatedValues;
@@ -118,7 +118,7 @@ export default function CreateAccess() {
       <Form.Fragment section="Lista de Funcionários">
         <CustomSwitch.Select
           label="Funcionários"
-          name="employeeId"
+          name="employeeInfoId"
           value={valueName}
           onChange={handleChange}
           options={employeesNames}

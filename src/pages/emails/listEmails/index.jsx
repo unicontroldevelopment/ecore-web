@@ -1,5 +1,6 @@
 import { Button, Modal } from "antd";
 import * as React from "react";
+import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input/index";
 import { CustomModal } from "../../../components/modal";
@@ -9,7 +10,7 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import EmailService from "../../../services/EmailService";
 import { Options } from "../../../utils/options";
 
-export default function ListGroup() {
+export default function ListEmails() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
   const [selectUser, setSelectUser] = React.useState({
@@ -19,16 +20,19 @@ export default function ListGroup() {
   });
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
+  const [filter, setFilter] = React.useState({
+    group: "",
+  });
 
   const service = new EmailService();
 
   React.useEffect(() => {
     const fetchUsers = async () => {
-      const request = await service.getEmails( "Grupo" );
+      const request = await service.getEmails(filter.group);
       setUsers(request.data.listUsers);
     };
     fetchUsers();
-  }, []);
+  }, [filter]);
 
   const handleChange = (event) => {
     setSelectUser((prevState) => ({
@@ -76,6 +80,13 @@ export default function ListGroup() {
     }
   };
 
+  const handleChangeFilter = (event) => {
+    setFilter((prevState) => ({
+      ...prevState,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
   const handleUpdate = (user) => {
     setSelectUser(user);
     setIsModalVisibleUpdate(true);
@@ -102,6 +113,15 @@ export default function ListGroup() {
 
   return (
     <Table.Root title="Lista de E-mails do Grupo" columnSize={6}>
+      <Filter.Fragment section="Filtro">
+      <Filter.Select
+          label="Perfil"
+          name="group"
+          value={filter.group}
+          onChange={handleChangeFilter}
+          options={Options.EmailType()}
+        />
+      </Filter.Fragment>
       <Table.Table
         data={users}
         columns={options}
@@ -158,7 +178,7 @@ export default function ListGroup() {
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
-            <CustomInput.Input
+              <CustomInput.Input
                 label="Senha"
                 type="text"
                 name="password"

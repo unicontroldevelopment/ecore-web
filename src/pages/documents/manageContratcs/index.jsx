@@ -12,13 +12,19 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
 import { Formats } from "../../../utils/formats";
 import { Options } from "../../../utils/options";
-import { ViewerPDF } from "../../../utils/pdf/crateContract";
+import { ViewerPDF } from "../../../utils/pdf/createContract";
+import { MyViewerReajustment } from "../../../utils/pdf/readjustment";
 
 export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [contracts, setContracts] = React.useState([]);
   const [services, setServices] = React.useState([]);
   const [propouse, setPropouse] = React.useState();
+  const [showViewer, setShowViewer] = React.useState(false);
+  const [reajustment, setReajustment] = React.useState({
+    newValue: "",
+    newIndex: "",
+  });
   const [selectContract, setSelectContract] = React.useState({
     status: "",
     name: "",
@@ -44,6 +50,8 @@ export default function ManageContracts() {
   const [valueMoney, setValueMoney] = React.useState("");
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
+  const [isModalVisibleReajustment, setIsModalVisibleReajustment] =
+    React.useState(false);
 
   const service = new DocumentsService();
 
@@ -138,34 +146,43 @@ export default function ManageContracts() {
 
   const handleServiceChange = (event) => {
     const { value } = event.target;
-  
+
     setSelectContract((prevState) => {
       const updatedContractsService = prevState.contracts_Service
-        .filter(contractService =>
+        .filter((contractService) =>
           value.includes(contractService.Services.description)
         )
-        .map(contractService => ({
+        .map((contractService) => ({
           ...contractService,
           service_id: contractService.Services.id,
-          contract_id: prevState.id
+          contract_id: prevState.id,
         }));
-  
-      value.forEach(description => {
-        if (!updatedContractsService.some(cs => cs.Services.description === description)) {
-          const serviceToAdd = services.find(s => s.description === description);
+
+      value.forEach((description) => {
+        if (
+          !updatedContractsService.some(
+            (cs) => cs.Services.description === description
+          )
+        ) {
+          const serviceToAdd = services.find(
+            (s) => s.description === description
+          );
           if (serviceToAdd) {
             updatedContractsService.push({
               contract_id: prevState.id,
               service_id: serviceToAdd.id,
-              Services: { ...serviceToAdd, description: serviceToAdd.description }
+              Services: {
+                ...serviceToAdd,
+                description: serviceToAdd.description,
+              },
             });
           }
         }
       });
-  
+
       return {
         ...prevState,
-        contracts_Service: updatedContractsService
+        contracts_Service: updatedContractsService,
       };
     });
   };
@@ -206,12 +223,13 @@ export default function ManageContracts() {
 
   const confirmUpdate = async (updateData) => {
     try {
-
       const response = await service.updateContract(updateData.id, updateData);
 
       if (response.status === 200) {
         const updatedData = contracts.map((contract) =>
-          contract.id === updateData.id ? { ...contract, ...updateData } : contract
+          contract.id === updateData.id
+            ? { ...contract, ...updateData }
+            : contract
         );
 
         setContracts(updatedData);
@@ -222,13 +240,12 @@ export default function ManageContracts() {
 
       return response;
     } catch (error) {
-      Toast.Error(error)
+      Toast.Error(error);
       return error;
     }
   };
 
   const handleUpdate = (contract) => {
-
     const updatedContractsService = contract.clauses.map((service) => ({
       ...service,
       currentId: service.id,
@@ -238,11 +255,11 @@ export default function ManageContracts() {
       ...contract,
       clauses: updatedContractsService,
     });
-  
+
     if (contract.value) {
       setValueMoney(Formats.Money(contract.value));
     }
-  
+
     setIsModalVisibleUpdate(true);
   };
 
@@ -253,6 +270,24 @@ export default function ManageContracts() {
   const handleView = (contract) => {
     setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
     setIsModalVisibleView(true);
+  };
+
+  const handleReajustment = (contract) => {
+    setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
+    console.log(contract);
+    setIsModalVisibleReajustment(true);
+  };
+
+  const handleReajustmentValues = (event) => {
+    const { name, value } = event.target;
+    setReajustment((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleButtonClick = () => {
+    setShowViewer(true);
   };
 
   const options = [
@@ -276,27 +311,49 @@ export default function ManageContracts() {
       title: "Controle Assinatura",
       key: "actions",
       width: 150,
-      render: () => (
+      render: (text, record) => (
         <ActionsContainer>
           <Button
             title="Enviar para Assinatura!"
-            style={{ backgroundColor: "#3f8ece", color: "#fff" }}
+            style={{ backgroundColor: "#c8afd5", color: "#fff" }}
             shape="circle"
             icon={<SendOutlined />}
           />
           <Button
             title="Receber Assinatura!"
-            style={{ backgroundColor: "#36db6a", color: "#fff" }}
+            style={{ backgroundColor: "#f8c3d7", color: "#fff" }}
             shape="circle"
           />
           <Button
             title="Deletar Assinatura"
-            style={{ backgroundColor: "#da4444", color: "#fff" }}
+            style={{ backgroundColor: "#ff9292", color: "#fff" }}
             shape="circle"
           />
           <Button
+            title="Gerar Reajuste"
+            onClick={() => handleReajustment(record)}
+            style={{ backgroundColor: "#c7dab6", color: "#fff" }}
+            shape="circle"
+          />
+        </ActionsContainer>
+      ),
+    },
+    {
+      title: "Aditivo/Reajuste",
+      key: "actions",
+      width: 150,
+      render: (text, record) => (
+        <ActionsContainer>
+          <Button
             title="Gerar Aditivo"
-            style={{ backgroundColor: "#da4444", color: "#fff" }}
+            style={{ backgroundColor: "#b8daf7", color: "#fff" }}
+            shape="circle"
+            icon={<SendOutlined />}
+          />
+          <Button
+            title="Gerar Reajuste"
+            onClick={() => handleReajustment(record)}
+            style={{ backgroundColor: "#f4e59a", color: "#fff" }}
             shape="circle"
           />
         </ActionsContainer>
@@ -322,7 +379,7 @@ export default function ManageContracts() {
         confirm={confirmDelete}
         cancel={cancelDelete}
       />
-      <CustomInput.Upload onFileUpload={handleFileUpload}/>
+      <CustomInput.Upload onFileUpload={handleFileUpload} />
       {isModalVisibleView && (
         <Modal
           title="Visualizar Documento"
@@ -506,7 +563,9 @@ export default function ManageContracts() {
             <CustomInput.Select
               label="Serviços"
               name="contracts_Service"
-              value={selectContract.contracts_Service.map((service) => service.Services.description)}
+              value={selectContract.contracts_Service.map(
+                (service) => service.Services.description
+              )}
               onChange={handleServiceChange}
               multiple={true}
               options={services.map((service) => service.description)}
@@ -537,6 +596,51 @@ export default function ManageContracts() {
               ))}
             </div>
           </Form.Fragment>
+        </Modal>
+      )}
+      {isModalVisibleReajustment && (
+        <Modal
+          title="Visualizar Documento"
+          open={isModalVisibleReajustment}
+          centered
+          width={1050}
+          onCancel={() => setIsModalVisibleReajustment(false)}
+          footer={[
+            <Button
+              key="back"
+              onClick={() => setIsModalVisibleReajustment(false)}
+            >
+              Voltar
+            </Button>,
+          ]}
+        >
+          <CustomInput.Input
+            label="Novo Valor de Contrato"
+            name="newValue"
+            value={reajustment.newValue}
+            onChange={handleReajustmentValues}
+          />
+          <CustomInput.Input
+            label="Novo Indice"
+            name="newIndex"
+            value={reajustment.newIndex}
+            onChange={handleReajustmentValues}
+          />
+          <Button
+            onClick={handleButtonClick}
+            disabled={!reajustment.newValue || !reajustment.newIndex}
+          >
+            Visualizar
+          </Button>
+
+          {showViewer && (
+            <MyViewerReajustment
+              name={selectContract.name}
+              valueContract={selectContract.value}
+              newIndex={reajustment.newIndex}
+              newValue={reajustment.newValue}
+            />
+          )}
         </Modal>
       )}
     </Table.Root>

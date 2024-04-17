@@ -4,7 +4,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Button, IconButton, InputAdornment, TextField } from "@mui/material";
 
-export function LongInput({ label, isExpanded, onExpandToggle, onDelete, onChange, value }) {
+export function LongText({ label, isExpanded, onExpandToggle, onDelete, onChange, value }) {
   const adornmentStyle = {
     position: "absolute",
     right: 0,

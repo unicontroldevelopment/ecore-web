@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
+import { Button } from "antd";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input";
 import { Toast } from "../../../components/toasts";
@@ -18,6 +19,7 @@ export default function CreateEmail() {
     email: "",
     password: "",
     passwordConfirmation: "",
+   redirects: [],
   });
 
   const [messageError, setMessageError] = React.useState({
@@ -71,6 +73,32 @@ export default function CreateEmail() {
     }
   };
 
+  const handleAddClick = () => {
+    setValues((prevValue) => ({
+      ...prevValue,
+      redirects: [
+        ...prevValue.redirects,
+        { currentId: Date.now(), email: ""},
+      ],
+    }));
+  };
+
+  const handleDeleteRedirect = (id) => {
+    setValues((prevValue) => ({
+      ...prevValue,
+      redirects: prevValue.redirects.filter((redirect) => redirect.currentId !== id),
+    }));
+  };
+
+  const handleRedirectChange = (id, newText) => {
+    setValues((prevValues) => ({
+      ...prevValues,
+      redirects: prevValues.redirects.map((redirect) =>
+        redirect.currentId === id ? { ...redirect, email: newText } : redirect
+      ),
+    }));
+  };
+
   const areRequiredFieldsFilled = () => {
     const requiredFields = [
       "email",
@@ -102,6 +130,8 @@ export default function CreateEmail() {
       Toast.Info("Preencha os campos obrigatórios!");
       return;
     }
+
+    console.log(values);
 
     const response = await service.create(values);
 
@@ -135,7 +165,7 @@ export default function CreateEmail() {
         />
       </Form.Fragment>
       <Form.Fragment section="Dados do E-mail">
-        <CustomInput.Root columnSize={6}>
+        <CustomInput.Root columnSize={12}>
           <CustomInput.Input
             label="Email"
             type="text"
@@ -167,7 +197,27 @@ export default function CreateEmail() {
         </CustomInput.Root>
       </Form.Fragment>
       <Form.Fragment section="Direcionamentos">
-        <CustomInput.Input />
+      <div style={{ width: "100%" }}>
+              <Button
+                variant="contained"
+                style={{ marginBottom: "20px" }}
+                color="primary"
+                onClick={handleAddClick}
+              >
+                Adicionar Redirecionamento
+              </Button>
+              {values.redirects.map((redirect, index) => (
+                <CustomInput.LongInput
+                  key={redirect.currentId}
+                  label={`Direcionamento Nº${index + 1}`}
+                  value={redirect.email}
+                  onChange={(e) =>
+                    handleRedirectChange(redirect.currentId, e.target.value)
+                  }
+                  onDelete={() => handleDeleteRedirect(redirect.currentId)}
+                />
+              ))}
+            </div>
       </Form.Fragment>
     </Form.Root>
   );

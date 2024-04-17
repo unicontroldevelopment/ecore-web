@@ -18,7 +18,7 @@ import CreateContract from "./pages/documents/createContract";
 import CreateService from "./pages/documents/createService";
 import ManageContracts from "./pages/documents/manageContratcs";
 import CreateEmail from "./pages/emails/createEmail";
-import ListGroup from "./pages/emails/listGroups";
+import ListEmails from "./pages/emails/listEmails";
 import CreateEmployee from "./pages/employees/createEmployee";
 import CreateEmployeeInfo from "./pages/employees/createEmployeeInfo";
 import ListEmployee from "./pages/employees/listEmployee";
@@ -26,6 +26,9 @@ import ManageEmployeeInfo from "./pages/employees/manageEmployeeInfo";
 import Login from "./pages/login/Login";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
+import RegisterEPI from "./pages/stock/registerEPI";
+import RegisterProduct from "./pages/stock/registerProduct";
+import Lab from "./pages/test";
 
 moment.locale("pt-br");
 
@@ -75,7 +78,7 @@ const App = () => {
                 element={
                   <PrivatePage>
                     <Template>
-                      <CreateEmployee/>
+                      <CreateEmployee />
                     </Template>
                   </PrivatePage>
                 }
@@ -85,7 +88,7 @@ const App = () => {
                 element={
                   <PrivatePage>
                     <Template>
-                      <ListEmployee/>
+                      <ListEmployee />
                     </Template>
                   </PrivatePage>
                 }
@@ -141,11 +144,11 @@ const App = () => {
                 }
               />
               <Route
-                path="/emails/listGroup"
+                path="/emails/list"
                 element={
                   <PrivatePage>
                     <Template>
-                      <ListGroup />
+                      <ListEmails />
                     </Template>
                   </PrivatePage>
                 }
@@ -176,6 +179,36 @@ const App = () => {
                   <PrivatePage>
                     <Template>
                       <ManageContracts />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/dashboard/teste"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <Lab />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/stock/registerProduct"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <RegisterProduct />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+                            <Route
+                path="/stock/registerEPI"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <RegisterEPI />
                     </Template>
                   </PrivatePage>
                 }

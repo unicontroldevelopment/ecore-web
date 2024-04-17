@@ -13,7 +13,7 @@ export default function CreateEmployeeInfo() {
   const navigate = useNavigate();
   const service = new EmployeeService();
 
-  const [names, setNames] = React.useState([]);
+  const [employees, setEmployees] = React.useState([]);
   const [values, setValues] = React.useState({
     name: "",
     role: "",
@@ -34,6 +34,7 @@ export default function CreateEmployeeInfo() {
     coolerProperty: "",
     officeVersion: "",
     windowsVersion: "",
+    employeeId: "",
   });
 
   const [messageError, setMessageError] = React.useState({
@@ -45,9 +46,19 @@ export default function CreateEmployeeInfo() {
 
   React.useEffect(() => {
     const fetchUsers = async () => {
-      const request = await service.getEmployees();
-      console.log(request.data.listUsers);
-      setNames(request.data.listUsers);
+      const allEmployeesRequest = await service.getEmployees();
+      const allEmployees = allEmployeesRequest.data.listUsers;
+
+      const registeredInfoRequest = await service.getEmployeesInfo();
+      const registeredInfo = registeredInfoRequest.data.listUsers;
+
+      const registeredIds = new Set(registeredInfo.map(user => user.id));
+
+      const unregisteredEmployees = allEmployees.filter(
+        user => !registeredIds.has(user.id)
+      );
+
+      setEmployees(unregisteredEmployees);
     };
     fetchUsers();
   }, []);
@@ -58,8 +69,6 @@ export default function CreateEmployeeInfo() {
         ...prevState,
         [event.target.name]: event.target.value,
       };
-      console.log(values);
-      console.log(event.target.value);
       if (
         event.target.name === "password" ||
         event.target.name === "passwordConfirmation"
@@ -79,6 +88,21 @@ export default function CreateEmployeeInfo() {
       }));
     }
   };
+
+  const handleSelectEmployee = (event) => {
+    const selectedEmployee = employees.filter((employee) => employee.name === event.target.value)
+
+    setValues((prevState) => {
+      const updatedValues = {
+        ...prevState,
+        [event.target.name]: event.target.value,
+        company: selectedEmployee[0].company,
+        unit: selectedEmployee[0].costCenter,
+        employeeId: selectedEmployee[0].id
+      };
+      return updatedValues;
+    });
+  }
 
   const verifyPasswords = (password, passwordConfirmation) => {
     const errorMessage = "As senhas não conferem!";
@@ -130,7 +154,7 @@ export default function CreateEmployeeInfo() {
       return;
     }
 
-    const response = await service.create(values);
+    const response = await service.createInfo(values);
 
     if (response.request.status === 500) {
       Toast.Error("Colaborador já cadastrado!");
@@ -157,8 +181,8 @@ export default function CreateEmployeeInfo() {
           label="Funcionário"
           name="name"
           value={values.name}
-          options={names.map((name) => name.name)}
-          onChange={handleChange}
+          options={employees.map((name) => name.name)}
+          onChange={handleSelectEmployee}
         />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -171,21 +195,21 @@ export default function CreateEmployeeInfo() {
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Select
-            label="Selecione uma empresa"
+          <CustomInput.Input
+            label="Empresa"
             name="company"
             value={values.company}
             onChange={handleChange}
-            options={Options.Companies()}
+            disabled={true}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Select
-            label="Selecione uma unidade"
+          <CustomInput.Input
+            label="Unidade"
             name="unit"
             value={values.unit}
             onChange={handleChange}
-            options={Options.Units()}
+            disabled={true}
           />
         </CustomInput.Root>
       </Form.Fragment>
