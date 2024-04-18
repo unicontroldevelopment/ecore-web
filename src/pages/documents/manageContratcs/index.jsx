@@ -19,7 +19,6 @@ export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [contracts, setContracts] = React.useState([]);
   const [services, setServices] = React.useState([]);
-  const [propouse, setPropouse] = React.useState();
   const [showViewer, setShowViewer] = React.useState(false);
   const [reajustment, setReajustment] = React.useState({
     newValue: "",
@@ -263,10 +262,6 @@ export default function ManageContracts() {
     setIsModalVisibleUpdate(true);
   };
 
-  const handleFileUpload = (fileInfo) => {
-    setPropouse(fileInfo);
-  };
-
   const handleView = (contract) => {
     setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
     setIsModalVisibleView(true);
@@ -379,7 +374,7 @@ export default function ManageContracts() {
         confirm={confirmDelete}
         cancel={cancelDelete}
       />
-      <CustomInput.Upload onFileUpload={handleFileUpload} />
+      <CustomInput.Upload/>
       {isModalVisibleView && (
         <Modal
           title="Visualizar Documento"

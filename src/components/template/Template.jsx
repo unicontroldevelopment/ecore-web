@@ -154,7 +154,7 @@ const Template = (props) => {
         },
         {
           key: "7-3",
-          label: <Link to="/dashboard">Controle de Estoque</Link>,
+          label: <Link to="/stock/control">Controle de Estoque</Link>,
         },
         {
           key: "7-4",
@@ -162,7 +162,7 @@ const Template = (props) => {
         },
         {
           key: "7-5",
-          label: <Link to="/dashboard">Movimentações</Link>,
+          label: <Link to="/stock/movements">Movimentações</Link>,
         },
       ],
     },

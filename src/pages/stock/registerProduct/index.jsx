@@ -13,6 +13,7 @@ export default function RegisterProduct() {
 
   const [product, setProduct] = React.useState({
     name: "",
+    type: "Entrada",
     unitOfMeasurement: "",
     unit: "",
     quantity: "",

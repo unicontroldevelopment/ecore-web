@@ -6,7 +6,6 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { Col } from "antd";
 import * as React from "react";
 
 export const FilterSelect = ({
@@ -31,7 +30,6 @@ export const FilterSelect = ({
     text.charAt(0).toUpperCase() + text.slice(1);
 
   return (
-    <Col span={4}>
       <FormControl
         sx={{
           width: "100%",
@@ -53,6 +51,5 @@ export const FilterSelect = ({
         </Select>
         {error && <FormHelperText>{errorText}</FormHelperText>}
       </FormControl>
-    </Col>
   );
 };

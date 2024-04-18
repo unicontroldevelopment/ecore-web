@@ -26,9 +26,10 @@ import ManageEmployeeInfo from "./pages/employees/manageEmployeeInfo";
 import Login from "./pages/login/Login";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
+import StockMovements from "./pages/stock/movements";
 import RegisterEPI from "./pages/stock/registerEPI";
 import RegisterProduct from "./pages/stock/registerProduct";
-import Lab from "./pages/test";
+import StockControl from "./pages/stock/stockControl";
 
 moment.locale("pt-br");
 
@@ -184,16 +185,6 @@ const App = () => {
                 }
               />
               <Route
-                path="/dashboard/teste"
-                element={
-                  <PrivatePage>
-                    <Template>
-                      <Lab />
-                    </Template>
-                  </PrivatePage>
-                }
-              />
-              <Route
                 path="/stock/registerProduct"
                 element={
                   <PrivatePage>
@@ -203,12 +194,32 @@ const App = () => {
                   </PrivatePage>
                 }
               />
-                            <Route
+              <Route
                 path="/stock/registerEPI"
                 element={
                   <PrivatePage>
                     <Template>
                       <RegisterEPI />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/stock/control"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <StockControl />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/stock/movements"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <StockMovements />
                     </Template>
                   </PrivatePage>
                 }
