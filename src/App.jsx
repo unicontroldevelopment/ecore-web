@@ -30,6 +30,7 @@ import StockMovements from "./pages/stock/movements";
 import RegisterEPI from "./pages/stock/registerEPI";
 import RegisterProduct from "./pages/stock/registerProduct";
 import StockControl from "./pages/stock/stockControl";
+import Teste from "./pages/test";
 
 moment.locale("pt-br");
 
@@ -220,6 +221,16 @@ const App = () => {
                   <PrivatePage>
                     <Template>
                       <StockMovements />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+                            <Route
+                path="/teste"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <Teste />
                     </Template>
                   </PrivatePage>
                 }
