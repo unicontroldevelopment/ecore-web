@@ -1,72 +1,77 @@
 /* eslint-disable react/prop-types */
 import { Button, Upload } from "antd";
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
 import React, { useState } from "react";
-import backgroundImg from "../../assets/background.png";
+import { logo } from "../../assets/logos/logo";
 
-async function createBasicPDF() {
-  const pdfDoc = await PDFDocument.create()
-  const page = pdfDoc.addPage([595, 842])
-  const {width, height} = page.getSize()
+async function createBasicPDF(
+  name = "Gui",
+  road = "Rua Brasil",
+  neighborhood = "Centro",
+  city = "Canoas",
+  state = "RS",
+  number = 150,
+  cpfCnpj = "047.804.160.86",
+  clauses = [
+    { description: "Esta é a cláusula 1." },
+    { description: "Esta é a cláusula 2." },
+    { description: "Esta é a cláusula 3." },
+  ]
+) {
+  pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-    const imagePath = backgroundImg
-    const imageBytes = await fetch(imagePath).then(res => res.arrayBuffer());
-  
-    const image = await pdfDoc.embedPng(imageBytes);
-  
-    page.drawImage(image, {
-      x: 0,
-      y: 0,
-      width: width,
-      height: height,
-    });
+  const content = clauses.map((clause) => ({
+    text: clause.description,
+    fontSize: 12,
+    alignment: "justify",
+    margin: [0, 0, 0, 10],
+  }));
 
-    const fontSizeTitle = 13;
-    const fontSizeHeader = 13;
-  
-    const titleText = 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS';
-    const headerText = 'N°1';
-  
-    // Definir estilos para o título
-    const titleStyle = {
-      fontSize: fontSizeTitle,
-      textAlign: 'center',
-      marginBottom: 10,
-    };
-  
-    // Definir estilos para o cabeçalho
-    const headerStyle = {
-      fontSize: fontSizeHeader,
-      textAlign: 'center',
-      marginBottom: 20,
-    };
-  
-    // Adicionar o título ao PDF
-    const titleWidth = page.widthOfString(titleText) * fontSizeTitle / 1000;
-    page.drawText(titleText, {
-      x: (page.getWidth() - titleWidth) / 2,
-      y: page.getHeight() - 50,
-      size: fontSizeTitle,
-      color: rgb(0, 0, 0),
-      ...titleStyle,
-    });
-  
-    // Adicionar o cabeçalho ao PDF
-    const headerWidth = page.widthOfString(headerText) * fontSizeHeader / 1000;
-    page.drawText(headerText, {
-      x: (page.getWidth() - headerWidth) / 2,
-      y: page.getHeight() - 70,
-      size: fontSizeHeader,
-      color: rgb(0, 0, 0),
-      ...headerStyle,
-    });
+  const docDefinition = {
+    pageSize: "A4",
+    content: [
+      {
+        image: logo,
+        width: 150,
+        alignment: "center",
+      },
+      {
+        text: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS",
+        fontSize: 13,
+        bold: true,
+        alignment: "center",
+      },
+      { text: "N°1", fontSize: 13, alignment: "center", margin: [0, 0, 0, 20] },
+      {
+        text: `Entre ${name}, com sede na ${road}, ${number} - ${neighborhood}, ${city}/${state}, registrada no CNPJ, sob o nº ${cpfCnpj}, doravante designada CONTRATANTE, e contratado.razao_social com sede na contratado.endereco registrada no CNPJ nº contratado.cnpj neste ato representada pelo seu sócio gerente, abaixo assinado, doravante designada CONTRATADA, tem entre si justo e acertado este Contrato, mediante as cláusulas e condições que seguem:`,
+        fontSize: 12,
+        alignment: "justify",
+        margin: [0, 0, 0, 10],
+      },
+      ...content,
+    ],
+  };
 
-  const pdfBytes = await pdfDoc.save();
-  return new Uint8Array(pdfBytes);
+  const pdfDoc = pdfMake.createPdf(docDefinition);
+
+  // Retorna uma Promise que resolve com o Uint8Array
+  return new Promise((resolve, reject) => {
+    pdfDoc.getBuffer(
+      (buffer) => {
+        const uint8Array = new Uint8Array(buffer);
+        resolve(uint8Array);
+      },
+      (error) => {
+        reject(error);
+      }
+    );
+  });
 }
 
 function PDFMergeComponent() {
-  const [mergedPDFBytesP, setMergedPDFBytes] = useState(null);
+  const [pdfBlob, setPdfBlob] = useState(null);
   const [uploadedPDF, setUploadedPDF] = useState(null);
   const [mergedPDF, setMergedPDF] = useState(null);
 
@@ -94,11 +99,9 @@ function PDFMergeComponent() {
     }
   };
 
-  const handleDownload = () => {
-    if (mergedPDF) {
-      const pdfUrl = URL.createObjectURL(mergedPDF);
-      window.open(pdfUrl, "_blank");
-    }
+  const handleDownload = async () => {
+    const pdfUrl = URL.createObjectURL(mergedPDF);
+    window.open(pdfUrl, "_blank");
   };
 
   const handleUpload = async (event) => {

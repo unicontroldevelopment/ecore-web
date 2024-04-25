@@ -1,6 +1,7 @@
 import { SendOutlined } from "@ant-design/icons";
 import { Button, Modal } from "antd";
 import dayjs from "dayjs";
+import { PDFDocument } from "pdf-lib";
 import * as React from "react";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
@@ -12,7 +13,7 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
 import { Formats } from "../../../utils/formats";
 import { Options } from "../../../utils/options";
-import { ViewerPDF } from "../../../utils/pdf/createContract";
+import { MyDocument } from "../../../utils/pdf/createContract";
 import { MyViewerReajustment } from "../../../utils/pdf/readjustment";
 
 export default function ManageContracts() {
@@ -262,9 +263,25 @@ export default function ManageContracts() {
     setIsModalVisibleUpdate(true);
   };
 
-  const handleView = (contract) => {
+  const handleView = async (contract) => {
+    console.log("Contrato", contract);
     setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
-    setIsModalVisibleView(true);
+    const pdfByte = await MyDocument(contract);
+
+    const createdPDFDoc = await PDFDocument.load(pdfByte);
+
+    const mergedPDF = await PDFDocument.create();
+    for (const pageNum of createdPDFDoc.getPageIndices()) {
+      const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+      mergedPDF.addPage(page);
+    }
+  
+    const mergedPdfBytes = await mergedPDF.save();
+  
+    const blob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+  
+    const pdfUrl = URL.createObjectURL(blob);
+    window.open(pdfUrl, "_blank");
   };
 
   const handleReajustment = (contract) => {
@@ -374,39 +391,7 @@ export default function ManageContracts() {
         confirm={confirmDelete}
         cancel={cancelDelete}
       />
-      <CustomInput.Upload/>
-      {isModalVisibleView && (
-        <Modal
-          title="Visualizar Documento"
-          open={isModalVisibleView}
-          centered
-          width={1050}
-          onCancel={() => setIsModalVisibleView(false)}
-          footer={[
-            <Button key="back" onClick={() => setIsModalVisibleView(false)}>
-              Voltar
-            </Button>,
-          ]}
-        >
-          <ViewerPDF
-            name={selectContract.name}
-            cpfCnpj={selectContract.cpfcnpj}
-            cep={selectContract.cep}
-            road={selectContract.road}
-            number={selectContract.number}
-            complement={selectContract.complement}
-            neighborhood={selectContract.neighborhood}
-            city={selectContract.city}
-            state={selectContract.state}
-            numberContract={selectContract.numberContract}
-            dateContract={selectContract.date}
-            valueContract={selectContract.value}
-            indexContract={selectContract.index}
-            services={selectContract.contracts_Service}
-            clauses={selectContract.clauses}
-          />
-        </Modal>
-      )}
+      <CustomInput.Upload />
       {isModalVisibleUpdate && (
         <Modal
           title="Editar Contrato"
