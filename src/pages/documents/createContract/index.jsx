@@ -7,6 +7,7 @@ import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
+import ContractSignService from "../../../services/ContractSignService";
 import DocumentsService from "../../../services/DocumentsService";
 import {
   ClauseFive,
@@ -17,13 +18,14 @@ import {
   ClauseTwo,
 } from "../../../utils/clauses/clauses";
 import { Formats } from "../../../utils/formats";
-import { Options } from "../../../utils/options";
 
 export default function CreateContract() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const navigate = useNavigate();
   const service = new DocumentsService();
+  const contractSignService = new ContractSignService();
   const [services, setServices] = React.useState([]);
+  const [signs, setSigns] = React.useState([]);
   const [values, setValues] = React.useState({
     status: "Aguardando..",
     name: "",
@@ -35,7 +37,7 @@ export default function CreateContract() {
     neighborhood: "",
     city: "",
     state: "",
-    tecSignature: "",
+    tecSignature: [],
     contractNumber: "",
     date: dayjs(),
     value: "",
@@ -53,6 +55,7 @@ export default function CreateContract() {
   });
 
   const [selectedDescriptions, setSelectedDescriptions] = React.useState([]);
+  const [selectedSignDescriptions, setSelectedSignDescriptions] = React.useState("");
   const [valueMoney, setValueMoney] = React.useState("");
   const [formatCpfOrCnpj, setFormatCpfOrCnpj] = React.useState("");
   const [formatCep, setFormatCep] = React.useState("");
@@ -86,11 +89,20 @@ export default function CreateContract() {
   }, [values.value]);
 
   const servicesDesc = services.map(service => service.description);
+  const signSocialReason = signs.map(sign => sign.socialReason)
 
   React.useEffect(() => {
-    const fetchServices = async () => {
+    const fetchServicesAndSings = async () => {
       const dataServices = await service.getServices();
+      const signService = await contractSignService.getcontractSigns();
 
+      setSigns(() => {
+        const updatedSigns = signService.data.listUsers.map(sign => ({
+          id: sign.id,
+          socialReason: sign.socialReason
+        }))
+        return updatedSigns;
+      });
       setServices(() => {
         const updatedServices = dataServices.data.listServices.map(service => ({
           id: service.id,
@@ -100,11 +112,16 @@ export default function CreateContract() {
       });
     };
 
-    fetchServices();
+    fetchServicesAndSings();
   }, []);
 
   const descriptionToIdMap = services.reduce((acc, service) => {
     acc[service.description] = service.id;
+    return acc;
+  }, {});
+
+  const descriptionSignToIdMap = signs.reduce((acc, service) => {
+    acc[service.socialReason] = service.id;
     return acc;
   }, {});
 
@@ -126,6 +143,18 @@ export default function CreateContract() {
       }));
     }
   }, [selectedDescriptions]);
+
+  React.useEffect(() => {
+    const newSelectedDescription = selectedSignDescriptions;
+    const newSelectedId = descriptionSignToIdMap[newSelectedDescription];
+  
+    if (values.tecSignature !== newSelectedId) {
+      setValues(prevValues => ({
+        ...prevValues,
+        tecSignature: newSelectedId,
+      }));
+    }
+  }, [selectedSignDescriptions]);
 
   const handleAddClick = () => {
     setValues((prevContract) => ({
@@ -202,6 +231,12 @@ export default function CreateContract() {
     const descriptions = selectedDescriptions.target.value
 
     setSelectedDescriptions(descriptions);
+  };
+
+  const handleSignChange = (selectedDescriptions) => {
+    const descriptions = selectedDescriptions.target.value
+
+    setSelectedSignDescriptions(descriptions);
   };
 
   const handleChange = (eventOrDate, dateString) => {
@@ -407,9 +442,9 @@ export default function CreateContract() {
         <CustomInput.Select
           label="Assinaturas"
           name="tecSignature"
-          value={values.tecSignature}
-          options={Options.Companies()}
-          onChange={handleChange}
+          value={selectedSignDescriptions}
+          options={signSocialReason}
+          onChange={handleSignChange}
         />
       </Form.Fragment>
       <Form.Fragment section="Contrato">

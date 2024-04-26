@@ -1,5 +1,5 @@
-import { SendOutlined } from "@ant-design/icons";
-import { Button, Modal } from "antd";
+import { SendOutlined, UploadOutlined } from "@ant-design/icons";
+import { Button, Modal, Upload, message } from "antd";
 import dayjs from "dayjs";
 import { PDFDocument } from "pdf-lib";
 import * as React from "react";
@@ -10,9 +10,9 @@ import { Table } from "../../../components/table";
 import { ActionsContainer } from "../../../components/table/styles";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
+import ContractSignService from "../../../services/ContractSignService";
 import DocumentsService from "../../../services/DocumentsService";
 import { Formats } from "../../../utils/formats";
-import { Options } from "../../../utils/options";
 import { MyDocument } from "../../../utils/pdf/createContract";
 import { MyViewerReajustment } from "../../../utils/pdf/readjustment";
 
@@ -20,6 +20,7 @@ export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [contracts, setContracts] = React.useState([]);
   const [services, setServices] = React.useState([]);
+  const [signs, setSigns] = React.useState([]);
   const [showViewer, setShowViewer] = React.useState(false);
   const [reajustment, setReajustment] = React.useState({
     newValue: "",
@@ -36,7 +37,7 @@ export default function ManageContracts() {
     neighborhood: "",
     city: "",
     state: "",
-    tecSignature: "",
+    signOnContract: [],
     contractNumber: "",
     date: "",
     value: "",
@@ -48,11 +49,13 @@ export default function ManageContracts() {
     name: "",
   });
   const [valueMoney, setValueMoney] = React.useState("");
-  const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
+  const [uploadedPDF, setUploadedPDF] = React.useState(null);
+  const [mergedPDF, setMergedPDF] = React.useState(null);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
   const [isModalVisibleReajustment, setIsModalVisibleReajustment] =
     React.useState(false);
 
+  const contractService = new ContractSignService();
   const service = new DocumentsService();
 
   React.useEffect(() => {
@@ -74,14 +77,25 @@ export default function ManageContracts() {
         setContracts(updatedContracts);
 
         const dataServices = await service.getServices();
+        const signService = await contractService.getcontractSigns();
 
         setServices(dataServices.data.listServices);
+        setSigns(signService.data.listUsers);
       } catch (error) {
         console.error("Erro ao buscar contratos ou serviços:", error);
       }
     };
     fetchcontracts();
   }, [filter]);
+
+  React.useEffect(() => {
+    console.log("Contratos", contracts);
+  }, [contracts])
+
+  React.useEffect(() => {
+    console.log("Sign:", selectContract.tecSignature);
+  }, [selectContract.tecSignature])
+
 
   const handleChangeFilter = (event) => {
     setFilter((prevState) => ({
@@ -187,6 +201,31 @@ export default function ManageContracts() {
     });
   };
 
+  const handleSignChange = (event) => {
+    const { value } = event.target;
+  
+    setSelectContract((prevState) => {
+      // Selecione o único técnico em tecSignature
+      const tec = prevState.tecSignature;
+  
+      if (value.includes("MARCOS PAULO DE MORAIS DE ALMEIDA - IMUNIZADOR")) {
+        // Encontra o técnico com base no socialReason selecionado
+        const selectedTec = signs.find((sign) => sign.socialReason === "MARCOS PAULO DE MORAIS DE ALMEIDA - IMUNIZADOR");
+        // Atualiza o objeto tecSignature com os dados completos do técnico encontrado
+        return {
+          ...prevState,
+          tecSignature: {
+            contract_id: prevState.id,
+            sign_id: selectedTec.id,
+            Contract_Signature: { ...selectedTec }
+          }
+        };
+      }
+  
+      return prevState;
+    });
+  };
+
   const handleChange = (eventOrDate) => {
     if (eventOrDate.target) {
       const { name, value } = eventOrDate.target;
@@ -263,24 +302,59 @@ export default function ManageContracts() {
     setIsModalVisibleUpdate(true);
   };
 
-  const handleView = async (contract) => {
-    console.log("Contrato", contract);
-    setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
-    const pdfByte = await MyDocument(contract);
-
-    const createdPDFDoc = await PDFDocument.load(pdfByte);
+  const mergePDFs = async (uploadedPDFBytes, createdPDFBytes) => {
+    const uploadedPDFDoc = uploadedPDFBytes
+      ? await PDFDocument.load(uploadedPDFBytes)
+      : null;
+    const createdPDFDoc = await PDFDocument.load(createdPDFBytes);
 
     const mergedPDF = await PDFDocument.create();
+
+    if (uploadedPDFDoc) {
+      for (const pageNum of uploadedPDFDoc.getPageIndices()) {
+        const [page] = await mergedPDF.copyPages(uploadedPDFDoc, [pageNum]);
+        mergedPDF.addPage(page);
+      }
+    }
+
     for (const pageNum of createdPDFDoc.getPageIndices()) {
       const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
       mergedPDF.addPage(page);
     }
-  
+
     const mergedPdfBytes = await mergedPDF.save();
-  
-    const blob = new Blob([mergedPdfBytes], { type: "application/pdf" });
-  
-    const pdfUrl = URL.createObjectURL(blob);
+    return new Blob([mergedPdfBytes], { type: "application/pdf" });
+  };
+
+  const handleView = async (contract) => {
+    setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
+    const pdfByte = await MyDocument(contract);
+
+    let mergedBlob;
+    if (uploadedPDF) {
+      const uploadedPDFDoc = await PDFDocument.load(uploadedPDF);
+      const createdPDFDoc = await PDFDocument.load(pdfByte);
+      mergedBlob = await mergePDFs(
+        pdfByte,
+        uploadedPDF,
+        uploadedPDFDoc.getPageCount(),
+        createdPDFDoc.getPageCount()
+      );
+    } else {
+      const createdPDFDoc = await PDFDocument.load(pdfByte);
+
+      const mergedPDF = await PDFDocument.create();
+      for (const pageNum of createdPDFDoc.getPageIndices()) {
+        const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+        mergedPDF.addPage(page);
+      }
+
+      const mergedPdfBytes = await mergedPDF.save();
+
+      mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+    }
+
+    const pdfUrl = URL.createObjectURL(mergedBlob);
     window.open(pdfUrl, "_blank");
   };
 
@@ -300,6 +374,29 @@ export default function ManageContracts() {
 
   const handleButtonClick = () => {
     setShowViewer(true);
+  };
+
+  const handleUpload = async (event) => {
+    if (
+      !event ||
+      !event.target ||
+      !event.target.files ||
+      event.target.files.length === 0
+    ) {
+      return;
+    }
+    const file = event.target.files[0];
+    message.success(`Carregado ${event.target.files[0].name}`);
+    if (!file) {
+      message.error("Erro ao carregar arquivo!");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const bytes = new Uint8Array(e.target.result);
+      setUploadedPDF(bytes);
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   const options = [
@@ -327,47 +424,58 @@ export default function ManageContracts() {
         <ActionsContainer>
           <Button
             title="Enviar para Assinatura!"
-            style={{ backgroundColor: "#c8afd5", color: "#fff" }}
+            style={{ backgroundColor: "#9400D3", color: "#fff" }}
             shape="circle"
             icon={<SendOutlined />}
           />
           <Button
             title="Receber Assinatura!"
-            style={{ backgroundColor: "#f8c3d7", color: "#fff" }}
+            style={{ backgroundColor: "#FF1493", color: "#fff" }}
             shape="circle"
           />
           <Button
             title="Deletar Assinatura"
-            style={{ backgroundColor: "#ff9292", color: "#fff" }}
-            shape="circle"
-          />
-          <Button
-            title="Gerar Reajuste"
-            onClick={() => handleReajustment(record)}
-            style={{ backgroundColor: "#c7dab6", color: "#fff" }}
+            style={{ backgroundColor: "#7B68EE", color: "#fff" }}
             shape="circle"
           />
         </ActionsContainer>
       ),
     },
     {
-      title: "Aditivo/Reajuste",
+      title: "Aditivo/Reajuste/Proposta",
       key: "actions",
       width: 150,
       render: (text, record) => (
         <ActionsContainer>
           <Button
             title="Gerar Aditivo"
-            style={{ backgroundColor: "#b8daf7", color: "#fff" }}
+            style={{ backgroundColor: "#B0E0E6", color: "#fff" }}
             shape="circle"
             icon={<SendOutlined />}
           />
           <Button
             title="Gerar Reajuste"
             onClick={() => handleReajustment(record)}
-            style={{ backgroundColor: "#f4e59a", color: "#fff" }}
+            style={{ backgroundColor: "#FFFF00", color: "#fff" }}
             shape="circle"
           />
+          <Upload
+            beforeUpload={(file) => {
+              handleUpload({ target: { files: [file] } });
+              return false;
+            }}
+            accept=".pdf"
+            maxCount={1}
+            showUploadList={false}
+          >
+            <Button
+              title="Anexar Proposta"
+              onClick={() => handleUpload(record)}
+              style={{ backgroundColor: "#ed9121", color: "#fff" }}
+              shape="circle"
+              icon={<UploadOutlined />}
+            />
+          </Upload>
         </ActionsContainer>
       ),
     },
@@ -391,7 +499,6 @@ export default function ManageContracts() {
         confirm={confirmDelete}
         cancel={cancelDelete}
       />
-      <CustomInput.Upload />
       {isModalVisibleUpdate && (
         <Modal
           title="Editar Contrato"
@@ -500,9 +607,9 @@ export default function ManageContracts() {
             <CustomInput.Select
               label="Assinaturas"
               name="tecSignature"
-              value={selectContract.tecSignature}
-              options={Options.Companies()}
-              onChange={handleChange}
+              value={selectContract.signOnContract[0].Sign.socialReason}
+              options={signs.map((sign) => sign.socialReason)}
+              onChange={handleSignChange}
             />
           </Form.Fragment>
           <Form.Fragment section="Contrato">
