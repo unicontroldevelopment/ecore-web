@@ -6,10 +6,10 @@ import { Table } from "antd";
     columns,
   }) => {
     const columnsAndActions = [
-      ...columns.map((column) => ({
+      ...columns.map((column, index) => ({
         title: column.title,
         dataIndex: column.dataIndex,
-        key: column.key,
+        key: column.key || 1 + index,
         render: column.render,
       })),
     ];

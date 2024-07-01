@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import { Button, Modal } from "antd";
 import * as React from "react";
 import { Filter } from "../../../components/filter";
@@ -164,34 +166,45 @@ export default function ManageEmployeeInfo() {
           value={filter.name}
           onChange={handleChangeFilter}
         />
-        <Filter.Select
-          label="Perfil"
-          name="role"
-          value={filter.role}
-          onChange={handleChangeFilter}
-          options={Options.Roles()}
-        />
-        <Filter.Select
-          label="Setor"
-          name="department"
-          value={filter.department}
-          onChange={handleChangeFilter}
-          options={Options.Departments()}
-        />
-        <Filter.Select
-          label="Empresas"
-          name="company"
-          value={filter.company}
-          onChange={handleChangeFilter}
-          options={Options.Companies()}
-        />
-        <Filter.Select
-          label="Unidade"
-          name="unit"
-          value={filter.unit}
-          onChange={handleChangeFilter}
-          options={Options.Units()}
-        />
+        <CustomInput.Root columnSize={6}>
+          <Filter.Select
+            label="Perfil"
+            name="role"
+            value={filter.role}
+            onChange={handleChangeFilter}
+            options={Options.Roles()}
+          />
+        </CustomInput.Root>
+
+        <CustomInput.Root columnSize={6}>
+          <Filter.Select
+            label="Setor"
+            name="department"
+            value={filter.department}
+            onChange={handleChangeFilter}
+            options={Options.Departments()}
+          />
+        </CustomInput.Root>
+
+        <CustomInput.Root columnSize={6}>
+          <Filter.Select
+            label="Empresas"
+            name="company"
+            value={filter.company}
+            onChange={handleChangeFilter}
+            options={Options.Companies()}
+          />
+        </CustomInput.Root>
+
+        <CustomInput.Root columnSize={6}>
+          <Filter.Select
+            label="Unidade"
+            name="unit"
+            value={filter.unit}
+            onChange={handleChangeFilter}
+            options={Options.Units()}
+          />
+        </CustomInput.Root>
       </Filter.Fragment>
       <Table.Table
         data={users}

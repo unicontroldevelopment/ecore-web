@@ -9,10 +9,13 @@ import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import ContractSignService from "../../../services/ContractSignService";
 import DocumentsService from "../../../services/DocumentsService";
+import Utils from "../../../services/Utils";
 import {
+  ClauseEight,
   ClauseFive,
   ClauseFour,
   ClauseOne,
+  ClauseSeven,
   ClauseSix,
   ClauseThree,
   ClauseTwo,
@@ -20,10 +23,11 @@ import {
 import { Formats } from "../../../utils/formats";
 
 export default function CreateContract() {
-  VerifyUserRole(["Master", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador", "RH", "Comercial"]);
   const navigate = useNavigate();
   const service = new DocumentsService();
   const contractSignService = new ContractSignService();
+  const utilsService = new Utils();
   const [services, setServices] = React.useState([]);
   const [signs, setSigns] = React.useState([]);
   const [values, setValues] = React.useState({
@@ -37,25 +41,29 @@ export default function CreateContract() {
     neighborhood: "",
     city: "",
     state: "",
-    tecSignature: [],
     contractNumber: "",
     date: dayjs(),
     value: "",
     index: "",
+    signOnContract: null,
     servicesContract: [],
     clauses: [
       { id: 0, text: `${ClauseOne()}`, isExpanded: false },
-      { id: 1, text: "", isExpanded: false },
+      { id: 1, text: `${ClauseTwo()}`, isExpanded: false },
       { id: 2, text: `${ClauseThree()}`, isExpanded: false },
       { id: 3, text: `${ClauseFour()}`, isExpanded: false },
       { id: 4, text: `${ClauseFive()}`, isExpanded: false },
       { id: 5, text: `${ClauseSix()}`, isExpanded: false },
+      { id: 6, text: `${ClauseSeven()}`, isExpanded: false },
+      { id: 7, text: `${ClauseEight()}`, isExpanded: false },
     ],
     propouse: "",
   });
 
   const [selectedDescriptions, setSelectedDescriptions] = React.useState([]);
-  const [selectedSignDescriptions, setSelectedSignDescriptions] = React.useState("");
+  const [selectedSignDescriptions, setSelectedSignDescriptions] =
+    React.useState("");
+  const [tecSign, setTecSign] = React.useState();
   const [valueMoney, setValueMoney] = React.useState("");
   const [formatCpfOrCnpj, setFormatCpfOrCnpj] = React.useState("");
   const [formatCep, setFormatCep] = React.useState("");
@@ -69,7 +77,7 @@ export default function CreateContract() {
     neighborhood: "",
     city: "",
     state: "",
-    tecSignature: "",
+    signOnContract: "",
     contractNumber: "",
     date: "",
     value: "",
@@ -78,36 +86,80 @@ export default function CreateContract() {
   });
 
   React.useEffect(() => {
+    const reservoirService = services.find(
+      (service) => service.description.toLowerCase() === "reservatório de água"
+    );
+
+    const hasReservoirService = values.servicesContract.includes(
+      reservoirService?.id
+    );
+
     setValues((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
-        clause.id === 1
-          ? { ...clause, text: ClauseTwo(Formats.Money(prevValues.value)) }
+        clause.id === 0
+          ? { ...clause, text: ClauseOne(hasReservoirService) }
           : clause
       ),
     }));
+  }, [values.servicesContract]);
+
+  React.useEffect(() => {
+
+    const Fetch = async () => {
+      const valorExtenso = await utilsService.valueExtensible({valor: valueMoney});
+
+      setValues((prevValues) => ({
+        ...prevValues,
+        clauses: prevValues.clauses.map((clause) =>
+          clause.id === 1
+            ? { ...clause, text: ClauseTwo(Formats.Money(prevValues.value), valorExtenso.data) }
+            : clause
+        ),
+      }));
+    };
+    Fetch();
   }, [values.value]);
 
-  const servicesDesc = services.map(service => service.description);
-  const signSocialReason = signs.map(sign => sign.socialReason)
+  React.useEffect(() => {
+    setValues((prevValues) => ({
+      ...prevValues,
+      clauses: prevValues.clauses.map((clause) =>
+        clause.id === 7 ? { ...clause, text: ClauseEight(tecSign, values.date) } : clause
+      ),
+    }));
+  }, [values.signOnContract, values.date]);
+
+  const servicesDesc = services.map((service) => service.description);
+  const signSocialReason = signs.map((sign) => sign.socialReason);
 
   React.useEffect(() => {
     const fetchServicesAndSings = async () => {
       const dataServices = await service.getServices();
       const signService = await contractSignService.getcontractSigns();
 
+      setTecSign(() => {
+        const tecSign = signService.data.listUsers[0];
+        return tecSign;
+      });
+
       setSigns(() => {
-        const updatedSigns = signService.data.listUsers.map(sign => ({
+        const updatedSigns = signService.data.listUsers.map((sign) => ({
           id: sign.id,
-          socialReason: sign.socialReason
-        }))
+          socialReason: sign.socialReason,
+          city: sign.city,
+          state: sign.state,
+        }));
         return updatedSigns;
       });
+
       setServices(() => {
-        const updatedServices = dataServices.data.listServices.map(service => ({
-          id: service.id,
-          description: service.description
-        }))
+        const updatedServices = dataServices.data.listServices.map(
+          (service) => ({
+            id: service.id,
+            description: service.description,
+          })
+        );
         return updatedServices;
       });
     };
@@ -134,10 +186,12 @@ export default function CreateContract() {
   }
 
   React.useEffect(() => {
-    const newSelectedIds = selectedDescriptions.map(desc => descriptionToIdMap[desc]);
-  
+    const newSelectedIds = selectedDescriptions.map(
+      (desc) => descriptionToIdMap[desc]
+    );
+
     if (!arraysAreEqual(values.servicesContract, newSelectedIds)) {
-      setValues(prevValues => ({
+      setValues((prevValues) => ({
         ...prevValues,
         servicesContract: newSelectedIds,
       }));
@@ -147,11 +201,11 @@ export default function CreateContract() {
   React.useEffect(() => {
     const newSelectedDescription = selectedSignDescriptions;
     const newSelectedId = descriptionSignToIdMap[newSelectedDescription];
-  
-    if (values.tecSignature !== newSelectedId) {
-      setValues(prevValues => ({
+
+    if (values.signOnContract !== newSelectedId) {
+      setValues((prevValues) => ({
         ...prevValues,
-        tecSignature: newSelectedId,
+        signOnContract: newSelectedId,
       }));
     }
   }, [selectedSignDescriptions]);
@@ -194,47 +248,50 @@ export default function CreateContract() {
   };
 
   const removeMask = (maskedValue) => {
-    return maskedValue.replace(/[.,]/g, '');
+    return maskedValue.replace(/[.,]/g, "");
   };
 
   const handleFormatsChange = (event) => {
     const { name, value } = event.target;
-  
+
     const unmaskedValue = removeMask(value);
-  
-    if(name === "cpfcnpj") {
+
+    if (name === "cpfcnpj") {
       setValues((prevState) => ({
         ...prevState,
         [name]: unmaskedValue,
       }));
-    
+
       setFormatCpfOrCnpj(Formats.CpfCnpj(value));
-    } else if(name === "value"){
+    } else if (name === "value") {
       setValues((prevState) => ({
         ...prevState,
         [name]: unmaskedValue,
       }));
-    
+
       setValueMoney(Formats.Money(value));
-    } else if (name === "cep"){
+    } else if (name === "cep") {
       setValues((prevState) => ({
         ...prevState,
         [name]: unmaskedValue,
       }));
-    
+
       setFormatCep(Formats.Cep(value));
     }
-
-  }
+  };
 
   const handleServiceChange = (selectedDescriptions) => {
-    const descriptions = selectedDescriptions.target.value
+    const descriptions = selectedDescriptions.target.value;
 
     setSelectedDescriptions(descriptions);
   };
 
   const handleSignChange = (selectedDescriptions) => {
-    const descriptions = selectedDescriptions.target.value
+    const descriptions = selectedDescriptions.target.value;
+    const tecValues = signs.filter(
+      (sign) => sign.socialReason === selectedDescriptions.target.value
+    );
+    setTecSign(tecValues);
 
     setSelectedSignDescriptions(descriptions);
   };
@@ -317,8 +374,8 @@ export default function CreateContract() {
       return;
     }
 
-    const clausesToSend = values.clauses.map(clause => ({
-      description: clause.text
+    const clausesToSend = values.clauses.map((clause) => ({
+      description: clause.text,
     }));
 
     const dataToSend = {
@@ -441,7 +498,7 @@ export default function CreateContract() {
       <Form.Fragment section="Contratado">
         <CustomInput.Select
           label="Assinaturas"
-          name="tecSignature"
+          name="signOnContract"
           value={selectedSignDescriptions}
           options={signSocialReason}
           onChange={handleSignChange}

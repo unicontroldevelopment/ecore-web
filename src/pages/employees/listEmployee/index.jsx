@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Button, Modal } from "antd";
 import dayjs from "dayjs";
 import * as React from "react";
@@ -53,9 +54,7 @@ export default function ListEmployee() {
 
   React.useEffect(() => {
     const fetchUsers = async () => {
-      const request = await service.getEmployees(
-        filter.name,
-      );
+      const request = await service.getEmployees(filter.name);
       setUsers(request.data.listUsers);
     };
     fetchUsers();
@@ -129,32 +128,40 @@ export default function ListEmployee() {
       title: "Nome",
       dataIndex: "name",
       key: "name",
-    }
+    },
   ];
 
   return (
-    <Table.Root title="Lista de funcionários" columnSize={6}>
+    <Table.Root title="Lista de funcionários" columnSize={12}>
       <Filter.Fragment section="Filtros">
-        <Filter.FilterInput
-          label="Nome"
-          name="name"
-          value={filter.name}
-          onChange={handleChangeFilter}
-        />
-        <Filter.Select
-          label="Perfil"
-          name="role"
-          value={filter.role}
-          onChange={handleChangeFilter}
-          options={Options.Roles()}
-        />
-        <Filter.Select
-          label="Setor"
-          name="department"
-          value={filter.department}
-          onChange={handleChangeFilter}
-          options={Options.Departments()}
-        />
+        <CustomInput.Root columnSize={6}>
+          <Filter.FilterInput
+            label="Nome"
+            name="name"
+            value={filter.name}
+            onChange={handleChangeFilter}
+          />
+        </CustomInput.Root>
+
+        <CustomInput.Root columnSize={6}>
+          <Filter.Select
+            label="Perfil"
+            name="role"
+            value={filter.role}
+            onChange={handleChangeFilter}
+            options={Options.Roles()}
+          />
+        </CustomInput.Root>
+
+        <CustomInput.Root columnSize={6}>
+          <Filter.Select
+            label="Setor"
+            name="department"
+            value={filter.department}
+            onChange={handleChangeFilter}
+            options={Options.Departments()}
+          />
+        </CustomInput.Root>
       </Filter.Fragment>
       <Table.Table
         data={users}

@@ -62,6 +62,7 @@ export default class {
   }
   async deleteContract(contractId) {
     try {
+      console.log("ID:", contractId);
       const response = await api.delete(`/contract/${contractId}`);
       return response;
     } catch (error) {
