@@ -27,9 +27,10 @@ export default class {
     }
   }
 
-  async getEmployees(name) {
+  async getEmployees(name, office) {
     const query = {
       name,
+      office
     };
 
     try {

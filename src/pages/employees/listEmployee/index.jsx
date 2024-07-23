@@ -48,17 +48,22 @@ export default function ListEmployee() {
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
   const [filter, setFilter] = React.useState({
     name: "",
+    office: "",
   });
 
   const service = new EmployeeService();
 
   React.useEffect(() => {
     const fetchUsers = async () => {
-      const request = await service.getEmployees(filter.name);
+      const request = await service.getEmployees(filter.name, filter.office);
       setUsers(request.data.listUsers);
     };
     fetchUsers();
   }, [filter]);
+
+  const formatDate = (dateString) => {
+    return dayjs(dateString).format("DD/MM/YYYY");
+  };
 
   const handleChange = (event) => {
     setSelectUser((prevState) => ({
@@ -71,6 +76,20 @@ export default function ListEmployee() {
     setFilter((prevState) => ({
       ...prevState,
       [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleDateAdmission = (event) => {
+    setSelectUser((prevState) => ({
+      ...prevState,
+      dateAdmission: event ? dayjs(event) : null,
+    }));
+  };
+
+  const handleDateResignation = (event) => {
+    setSelectUser((prevState) => ({
+      ...prevState,
+      dateResignation: event ? dayjs(event) : null,
     }));
   };
 
@@ -119,7 +138,12 @@ export default function ListEmployee() {
   };
 
   const handleView = (user) => {
-    setSelectUser(user);
+    const formattedUser = {
+      ...user,
+      birthday: formatDate(user.birthday),
+    };
+
+    setSelectUser(formattedUser);
     setIsModalVisibleView(true);
   };
 
@@ -145,21 +169,11 @@ export default function ListEmployee() {
 
         <CustomInput.Root columnSize={6}>
           <Filter.Select
-            label="Perfil"
-            name="role"
-            value={filter.role}
+            label="Cargo"
+            name="office"
+            value={filter.office}
             onChange={handleChangeFilter}
-            options={Options.Roles()}
-          />
-        </CustomInput.Root>
-
-        <CustomInput.Root columnSize={6}>
-          <Filter.Select
-            label="Setor"
-            name="department"
-            value={filter.department}
-            onChange={handleChangeFilter}
-            options={Options.Departments()}
+            options={Options.Office()}
           />
         </CustomInput.Root>
       </Filter.Fragment>
@@ -185,56 +199,41 @@ export default function ListEmployee() {
           ]}
         >
           <CustomModal.Info label="Nome" value={selectUser.name} />
-          <CustomModal.Info label="Senha" value={selectUser.password} />
-          <CustomModal.Info label="Perfil" value={selectUser.role} />
-          <CustomModal.Info label="Setor" value={selectUser.department} />
+          <CustomModal.Info
+            label="Data de Nascimento"
+            value={selectUser.birthday}
+          />
+          <CustomModal.Info label="CPF" value={selectUser.cpf} />
+          <CustomModal.Info label="CTPS" value={selectUser.ctps} />
+          <CustomModal.Info label="Série" value={selectUser.serie} />
+          <CustomModal.Info label="Cargo" value={selectUser.office} />
+          <CustomModal.Info label="CBO nº" value={selectUser.cbo} />
+          <CustomModal.Info label="Escolaridade" value={selectUser.education} />
+          <CustomModal.Info
+            label="Estado Civil"
+            value={selectUser.maritalStatus}
+          />
+          <CustomModal.Info
+            label="Nacionalidade"
+            value={selectUser.nationality}
+          />
+          <CustomModal.Info label="PIS" value={selectUser.pis} />
+          <CustomModal.Info label="RG" value={selectUser.rg} />
+          <CustomModal.Info label="CEP" value={selectUser.cep} />
+          <CustomModal.Info label="Rua" value={selectUser.road} />
+          <CustomModal.Info label="Número" value={selectUser.number} />
+          <CustomModal.Info label="Complemento" value={selectUser.complement} />
+          <CustomModal.Info label="Bairro" value={selectUser.neighborhood} />
+          <CustomModal.Info label="Cidade" value={selectUser.city} />
+          <CustomModal.Info label="UF" value={selectUser.state} />
+          <CustomModal.Info label="Nível" value={selectUser.level} />
+          <CustomModal.Info label="Departamento" value={selectUser.department} />
           <CustomModal.Info label="Empresa" value={selectUser.company} />
-          <CustomModal.Info label="Unidade" value={selectUser.unit} />
-          <CustomModal.Info
-            label="Usuário rede"
-            value={selectUser.networkUser}
-          />
-          <CustomModal.Info
-            label="Senha rede"
-            value={selectUser.networkPassword}
-          />
-          <CustomModal.Info label="Email" value={selectUser.email} />
-          <CustomModal.Info
-            label="Senha e-mail"
-            value={selectUser.emailPassword}
-          />
-          <CustomModal.Info
-            label="E-mail discord"
-            value={selectUser.discordEmail}
-          />
-          <CustomModal.Info
-            label="Senha discord"
-            value={selectUser.discordPassword}
-          />
-          <CustomModal.Info
-            label="Marca Notebook"
-            value={selectUser.notebookBrand}
-          />
-          <CustomModal.Info
-            label="Nome Notebook"
-            value={selectUser.notebookName}
-          />
-          <CustomModal.Info
-            label="Patrimônio notebook"
-            value={selectUser.notebookProperty}
-          />
-          <CustomModal.Info
-            label="Patrimônio cooler"
-            value={selectUser.coolerProperty}
-          />
-          <CustomModal.Info
-            label="Versão office"
-            value={selectUser.officeVersion}
-          />
-          <CustomModal.Info
-            label="Versão windows"
-            value={selectUser.windowsVersion}
-          />
+          <CustomModal.Info label="Centro de Custo" value={selectUser.costCenter} />
+          <CustomModal.Info label="Data de Admição" value={formatDate(selectUser.dateAdmission)} />
+          <CustomModal.Info label="Data de Demissão" value={formatDate(selectUser.dateResignation)} />
+          <CustomModal.Info label="Salário Inicial" value={selectUser.initialWage} />
+          <CustomModal.Info label="Salário Atual" value={selectUser.currentWage} />
         </Modal>
       )}
       {isModalVisibleUpdate && (
@@ -269,8 +268,182 @@ export default function ListEmployee() {
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
+              <CustomInput.DateInput
+                label="Data de Nascimento"
+                name="birthday"
+                onChange={handleChange}
+                value={selectUser.birthday}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="CPF"
+                name="cpf"
+                value={selectUser.cpf}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="CTPS"
+                name="ctps"
+                value={selectUser.ctps}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Série"
+                type="text"
+                name="serie"
+                value={selectUser.serie}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
               <CustomInput.Select
-                label="Selecione um setor"
+                label="Cargo"
+                type="text"
+                name="office"
+                value={selectUser.office}
+                onChange={handleChange}
+                options={Options.Office()}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="CBO nº"
+                name="cbo"
+                value={selectUser.cbo}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Escolaridade"
+                type="text"
+                name="education"
+                value={selectUser.education}
+                onChange={handleChange}
+                options={Options.Departments()}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Estado Civil"
+                type="text"
+                name="maritalStatus"
+                value={selectUser.maritalStatus}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Nacionalidade"
+                type="text"
+                name="nationality"
+                value={selectUser.nationality}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="PIS"
+                type="text"
+                name="pis"
+                value={selectUser.pis}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="RG"
+                type="text"
+                name="rg"
+                value={selectUser.rg}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="Endereço do Colaborador">
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="CEP"
+                type="text"
+                name="cep"
+                value={selectUser.cep}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Rua"
+                type="text"
+                name="road"
+                value={selectUser.road}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Número"
+                type="text"
+                name="number"
+                value={selectUser.number}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Complemento"
+                type="text"
+                name="complement"
+                value={selectUser.complement}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Bairro"
+                type="text"
+                name="neighborhood"
+                value={selectUser.neighborhood}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Cidade"
+                type="text"
+                name="city"
+                value={selectUser.city}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="UF"
+                type="text"
+                name="state"
+                value={selectUser.state}
+                onChange={handleChange}
+              />
+            </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="Dados da Função">
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Nível"
+                type="text"
+                name="level"
+                value={selectUser.level}
+                onChange={handleChange}
+                options={Options.Companies()}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Select
+                label="Departamento"
                 name="department"
                 value={selectUser.department}
                 onChange={handleChange}
@@ -279,7 +452,7 @@ export default function ListEmployee() {
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
               <CustomInput.Select
-                label="Selecione uma empresa"
+                label="Empresa"
                 name="company"
                 value={selectUser.company}
                 onChange={handleChange}
@@ -288,156 +461,45 @@ export default function ListEmployee() {
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
               <CustomInput.Select
-                label="Selecione uma unidade"
-                name="unit"
-                value={selectUser.unit}
+                label="Centro de Custo"
+                name="costCenter"
+                value={selectUser.costCenter}
                 onChange={handleChange}
                 options={Options.Units()}
               />
             </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Acesso Ecore Web">
             <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Usuário (E-mail)"
-                type="text"
-                name="user"
-                value={selectUser.email}
-                disabled={true}
+              <CustomInput.DateInput
+                label="Data de Admissão"
+                name="dateAdmission"
+                value={selectUser.dateAdmission}
+                onChange={handleDateAdmission}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Perfil"
-                name="role"
-                value={selectUser.role}
-                onChange={handleChange}
-                options={Options.Roles()}
+              <CustomInput.DateInput
+                label="Data de Demissão"
+                name="dateResignation"
+                value={selectUser.dateResignation}
+                onChange={handleDateResignation}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
               <CustomInput.Input
-                label="Senha"
+                label="Salário Inicial"
                 type="text"
-                name="password"
-                value={selectUser.password}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="E-mail">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="E-mail"
-                type="text"
-                name="email"
-                value={selectUser.email}
+                name="initialWage"
+                value={selectUser.initialWage}
                 onChange={handleChange}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
               <CustomInput.Input
-                label="Senha e-mail"
+                label="Salário Atual"
                 type="text"
-                name="emailPassword"
-                value={selectUser.emailPassword}
+                name="currentWage"
+                value={selectUser.currentWage}
                 onChange={handleChange}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Acesso à rede">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Usuário rede"
-                type="text"
-                name="networkUser"
-                value={selectUser.networkUser}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Senha rede"
-                type="text"
-                name="networkPassword"
-                value={selectUser.networkPassword}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Discord">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="E-mail discord"
-                type="text"
-                name="discordEmail"
-                value={selectUser.discordEmail}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Senha discord"
-                type="text"
-                name="discordPassword"
-                value={selectUser.discordPassword}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Notebook">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Marca Notebook"
-                name="notebookBrand"
-                value={selectUser.notebookBrand}
-                onChange={handleChange}
-                options={Options.NotebookBrands()}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Nome Notebook"
-                type="text"
-                name="notebookName"
-                value={selectUser.notebookName}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Patrimônio Notebook"
-                type="text"
-                name="notebookProperty"
-                value={selectUser.notebookProperty}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Patrimônio cooler"
-                type="text"
-                name="coolerProperty"
-                value={selectUser.coolerProperty}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Versão Office"
-                name="officeVersion"
-                value={selectUser.officeVersion}
-                onChange={handleChange}
-                options={Options.OfficeVersions()}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Select
-                label="Versão sistema operacional"
-                name="windowsVersion"
-                value={selectUser.windowsVersion}
-                onChange={handleChange}
-                options={Options.OSVersions()}
               />
             </CustomInput.Root>
           </Form.Fragment>

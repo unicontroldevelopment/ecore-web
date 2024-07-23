@@ -14,17 +14,11 @@ import { Table } from "antd";
       })),
     ];
   
-    const paginationConfig = {
-      defaultPageSize: 10,
-      showSizeChanger: true,
-      pageSizeOptions: ["10", "15", "20", "30", "50"],
-    };
-  
     return (
       <Table
         columns={columnsAndActions}
         dataSource={data}
-        pagination={paginationConfig}
+        pagination={false}
         rowKey="id"
       />
     );

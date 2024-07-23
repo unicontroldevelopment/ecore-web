@@ -1,4 +1,4 @@
-import { Button } from "antd";
+import { Button, Upload } from "antd";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -57,8 +57,9 @@ export default function CreateContract() {
       { id: 6, text: `${ClauseSeven()}`, isExpanded: false },
       { id: 7, text: `${ClauseEight()}`, isExpanded: false },
     ],
-    propouse: "",
   });
+
+  const [file, setFile] = React.useState();
 
   const [selectedDescriptions, setSelectedDescriptions] = React.useState([]);
   const [selectedSignDescriptions, setSelectedSignDescriptions] =
@@ -296,6 +297,14 @@ export default function CreateContract() {
     setSelectedSignDescriptions(descriptions);
   };
 
+  const handleFileChange = (e) => {
+    const fileEvent = e.target.files[0];
+    if (fileEvent) {
+      setFile(fileEvent);
+      console.log("File EVENT", fileEvent);
+    }
+  };
+
   const handleChange = (eventOrDate, dateString) => {
     if (eventOrDate.target) {
       const { name, value } = eventOrDate.target;
@@ -324,13 +333,6 @@ export default function CreateContract() {
         }));
       }
     }
-  };
-
-  const handleFileUpload = (fileInfo) => {
-    setValues((prevValues) => ({
-      ...prevValues,
-      propouse: fileInfo,
-    }));
   };
 
   const areRequiredFieldsFilled = () => {
@@ -374,6 +376,9 @@ export default function CreateContract() {
       return;
     }
 
+    const formData = new FormData();
+    formData.append('file', file);
+
     const clausesToSend = values.clauses.map((clause) => ({
       description: clause.text,
     }));
@@ -384,6 +389,11 @@ export default function CreateContract() {
     };
 
     const response = await service.createContract(dataToSend);
+
+    if(file && response) {
+      formData.append('id', response.data.contract.id)
+      await utilsService.uploadPDF(formData); 
+    } 
 
     if (response.request.status === 500) {
       Toast.Error("Contrato já cadastrado!");
@@ -575,9 +585,22 @@ export default function CreateContract() {
           ))}
         </div>
       </Form.Fragment>
-      <Form.Fragment section="Proposta">
-        <CustomInput.Upload onFileUpload={handleFileUpload} />
-      </Form.Fragment>
+      <Upload
+            beforeUpload={(file) => {
+              handleFileChange({ target: { files: [file] } });
+              return false;
+            }}
+            accept=".pdf"
+            maxCount={1}
+            showUploadList={false}
+          >
+            <Button
+              title="Anexar Proposta"
+              onClick={(e) => handleFileChange(e)}
+              style={{ backgroundColor: "#ed9121", color: "#fff", marginBottom: "10%"}}
+              shape="default"
+            >Anexar Proposta</Button>
+          </Upload>
     </Form.Root>
   );
 }

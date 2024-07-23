@@ -188,7 +188,7 @@ export default function CreateEmployee() {
             name="office"
             value={values.office}
             onChange={handleChange}
-            options={Options.Roles()}
+            options={Options.Office()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>

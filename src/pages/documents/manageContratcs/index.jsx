@@ -6,10 +6,9 @@ import {
   InfoCircleFilled,
   QuestionCircleOutlined,
   SendOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
 import { Tooltip } from "@mui/material";
-import { Button, Modal, Popconfirm, Upload, message } from "antd";
+import { Button, Modal, Popconfirm, Upload } from "antd";
 import dayjs from "dayjs";
 import { PDFDocument } from "pdf-lib";
 import * as React from "react";
@@ -17,6 +16,7 @@ import { AiOutlineCheck } from "react-icons/ai";
 import { FaFileUpload } from "react-icons/fa";
 import { MdPersonRemoveAlt1 } from "react-icons/md";
 import { TiArrowForward } from "react-icons/ti";
+import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
@@ -28,12 +28,14 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import ContractSignService from "../../../services/ContractSignService";
 import D4SignService from "../../../services/D4SignService";
 import DocumentsService from "../../../services/DocumentsService";
+import Utils from "../../../services/Utils";
 import { Formats } from "../../../utils/formats";
 import formatData from "../../../utils/formats/formatData";
 import { MyDocument } from "../../../utils/pdf/createContract";
 
 export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "RH", "Comercial"]);
+  const navigate = useNavigate();
   const [contracts, setContracts] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [services, setServices] = React.useState([]);
@@ -67,6 +69,7 @@ export default function ManageContracts() {
   const [filter, setFilter] = React.useState({
     name: "",
   });
+  const [file, setFile] = React.useState();
   const [valueMoney, setValueMoney] = React.useState("");
   const [uploadedPDF, setUploadedPDF] = React.useState(null);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
@@ -99,36 +102,61 @@ export default function ManageContracts() {
   const contractService = new ContractSignService();
   const d4SignService = new D4SignService();
   const service = new DocumentsService();
+  const utilsService = new Utils();
+
+  //Fetchs -------------------------------------------------------------------------------------
+  const fetchContracts = async () => {
+    try {
+      const request = await service.getContracts(filter.name);
+      const dataContracts = request.data.listContracts;
+
+      const updatedContracts = dataContracts.map((contract) => {
+        return {
+          ...contract,
+          clauses: contract.clauses.map((clause) => ({
+            ...clause,
+            isExpanded: false,
+          })),
+        };
+      });
+
+      setContracts(updatedContracts);
+    } catch (error) {
+      console.error("Erro ao buscar contratos:", error);
+    }
+  };
+
+  const fetchServices = async () => {
+    try {
+      const dataServices = await service.getServices();
+      setServices(dataServices.data.listServices);
+    } catch (error) {
+      console.error("Erro ao buscar serviços:", error);
+    }
+  };
+
+  const fetchSigns = async () => {
+    try {
+      const signService = await contractService.getcontractSigns();
+      setSigns(signService.data.listUsers);
+    } catch (error) {
+      console.error("Erro ao buscar assinaturas:", error);
+    }
+  };
+
+  //Effect
 
   React.useEffect(() => {
-    const fetchcontracts = async () => {
-      try {
-        const request = await service.getContracts(filter.name);
-        const dataContracts = request.data.listContracts;
-
-        const updatedContracts = dataContracts.map((contract) => {
-          return {
-            ...contract,
-            clauses: contract.clauses.map((clause) => ({
-              ...clause,
-              isExpanded: false,
-            })),
-          };
-        });
-
-        setContracts(updatedContracts);
-
-        const dataServices = await service.getServices();
-        const signService = await contractService.getcontractSigns();
-
-        setServices(dataServices.data.listServices);
-        setSigns(signService.data.listUsers);
-      } catch (error) {
-        console.error("Erro ao buscar contratos ou serviços:", error);
-      }
+    const fetchData = async () => {
+      await Promise.all([fetchContracts(), fetchServices(), fetchSigns()]);
     };
-    fetchcontracts();
+    fetchData();
   }, [filter]);
+
+  React.useEffect(() => {
+    console.log(selectContract);
+    console.log("FILE", file);
+  }, [selectContract, file]);
 
   //Changes -----------------------------------------------------------------------------------------
   const handleChangeFilter = (event) => {
@@ -278,7 +306,6 @@ export default function ManageContracts() {
   //D4Sign -----------------------------------------------------------------------------------------
 
   const verificaCorDoStatus = (status) => {
-    console.log("status", status);
     if (status === "1") {
       return "#8cff00";
     } else if (status === "2") {
@@ -467,6 +494,9 @@ export default function ManageContracts() {
         return;
       }
 
+      const formData = new FormData();
+      formData.append("file", file);
+
       const numericNumber = Number(updateData.number);
       const numericContractNumber = Number(updateData.contractNumber);
 
@@ -474,19 +504,21 @@ export default function ManageContracts() {
         updateData.number = numericNumber;
         updateData.contractNumber = numericContractNumber;
 
+        const { propouse, ...contractData } = updateData;
+
         const response = await service.updateContract(
           updateData.id,
-          updateData
+          contractData
         );
 
         if (response.status === 200) {
-          const updatedData = contracts.map((contract) =>
-            contract.id === updateData.id
-              ? { ...contract, ...updateData }
-              : contract
-          );
+          if (file && response) {
+            formData.append("id", updateData.id);
+            await utilsService.updatePDF(formData);
+            setFile(null);
+          }
 
-          setContracts(updatedData);
+          await fetchContracts();
           Toast.Success("Contrato atualizado com sucesso!");
 
           setIsModalVisibleUpdate(false);
@@ -543,13 +575,21 @@ export default function ManageContracts() {
   };
 
   //PDFs -----------------------------------------------------------------------------------------
-  const mergePDFs = async (uploadedPDFBytes, createdPDFBytes) => {
-    const uploadedPDFDoc = uploadedPDFBytes
-      ? await PDFDocument.load(uploadedPDFBytes)
-      : null;
-    const createdPDFDoc = await PDFDocument.load(createdPDFBytes);
+  const handleFileChange = (e) => {
+    const fileEvent = e.target.files[0];
+    if (fileEvent) {
+      setFile(fileEvent);
+      console.log("File EVENT", fileEvent);
+    }
+  };
 
+  const mergePDFs = async (uploadedPDFDoc, createdPDFDoc) => {
     const mergedPDF = await PDFDocument.create();
+
+    for (const pageNum of createdPDFDoc.getPageIndices()) {
+      const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+      mergedPDF.addPage(page);
+    }
 
     if (uploadedPDFDoc) {
       for (const pageNum of uploadedPDFDoc.getPageIndices()) {
@@ -558,68 +598,50 @@ export default function ManageContracts() {
       }
     }
 
-    for (const pageNum of createdPDFDoc.getPageIndices()) {
-      const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-      mergedPDF.addPage(page);
-    }
-
     const mergedPdfBytes = await mergedPDF.save();
     return new Blob([mergedPdfBytes], { type: "application/pdf" });
   };
 
   const handleView = async (contract) => {
-    setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
     const pdfByte = await MyDocument(contract);
 
+    if (!pdfByte) {
+      console.error("PDF byte array is null or undefined");
+      return;
+    }
+
     let mergedBlob;
-    if (uploadedPDF) {
-      const uploadedPDFDoc = await PDFDocument.load(uploadedPDF);
-      const createdPDFDoc = await PDFDocument.load(pdfByte);
-      mergedBlob = await mergePDFs(
-        pdfByte,
-        uploadedPDF,
-        uploadedPDFDoc.getPageCount(),
-        createdPDFDoc.getPageCount()
-      );
-    } else {
-      const createdPDFDoc = await PDFDocument.load(pdfByte);
 
-      const mergedPDF = await PDFDocument.create();
-      for (const pageNum of createdPDFDoc.getPageIndices()) {
-        const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-        mergedPDF.addPage(page);
-      }
-
-      const mergedPdfBytes = await mergedPDF.save();
-
-      mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+      if (contract.propouse.file?.data) {
+        const arrayBuffer = contract.propouse.file.data;
+        const propouseData = new Uint8Array(arrayBuffer);
+  
+        try {
+          const uploadedPDFDoc = await PDFDocument.load(propouseData);
+          const createdPDFDoc = await PDFDocument.load(pdfByte);
+          mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
+        } catch (error) {
+          console.error("Error loading PDFs: ", error);
+          return;
+        }
+      } else {
+        try {
+          const createdPDFDoc = await PDFDocument.load(pdfByte);
+          const mergedPDF = await PDFDocument.create();
+          for (const pageNum of createdPDFDoc.getPageIndices()) {
+            const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+            mergedPDF.addPage(page);
+          }
+          const mergedPdfBytes = await mergedPDF.save();
+          mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+        } catch (error) {
+          console.error("Error creating PDF: ", error);
+          return;
+        }
     }
 
     const pdfUrl = URL.createObjectURL(mergedBlob);
     window.open(pdfUrl, "_blank");
-  };
-
-  const handleUpload = async (event) => {
-    if (
-      !event ||
-      !event.target ||
-      !event.target.files ||
-      event.target.files.length === 0
-    ) {
-      return;
-    }
-    const file = event.target.files[0];
-    message.success(`Carregado ${event.target.files[0].name}`);
-    if (!file) {
-      message.error("Erro ao carregar arquivo!");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const bytes = new Uint8Array(e.target.result);
-      setUploadedPDF(bytes);
-    };
-    reader.readAsArrayBuffer(file);
   };
 
   //Reajuste/Aditivo -----------------------------------------------------------------------------------------
@@ -713,7 +735,6 @@ export default function ManageContracts() {
       dataIndex: "status",
       key: "status",
       render: (text, row) => {
-        console.log("ROW", row);
         return row.contract.statusName &&
           row.contract.statusName.length > 10 ? (
           <Tooltip title={row.contract.statusName.toUpperCase()}>
@@ -723,8 +744,9 @@ export default function ManageContracts() {
                 backgroundColor: verificaCorDoStatus(row.contract.statusId),
                 color: "#ffffff",
                 borderRadius: "5px",
-                padding: "4px",
-                margin: "0px 15px",
+                padding: "4px 15px",
+                margin: "15px",
+                display: "inline-block",
               }}
             >
               {row.contract.statusName.toUpperCase().substring(0, 10)}...
@@ -833,7 +855,7 @@ export default function ManageContracts() {
       ),
     },
     {
-      title: "D4Sign/Proposta/Opções",
+      title: "D4Sign/Opções",
       key: "actions",
       width: 150,
       render: (text, record) => (
@@ -845,26 +867,9 @@ export default function ManageContracts() {
             icon={<ControlFilled />}
             onClick={() => handleD4Sign(record)}
           />
-          <Upload
-            beforeUpload={(file) => {
-              handleUpload({ target: { files: [file] } });
-              return false;
-            }}
-            accept=".pdf"
-            maxCount={1}
-            showUploadList={false}
-          >
-            <Button
-              title="Anexar Proposta"
-              onClick={() => handleUpload(record)}
-              style={{ backgroundColor: "#ed9121", color: "#fff" }}
-              shape="circle"
-              icon={<UploadOutlined />}
-            />
-          </Upload>
           <Button
             title="Aditivo/Reajuste"
-            style={{ backgroundColor: "#708090", color: "#fff" }}
+            style={{ backgroundColor: "#FF7F50", color: "#fff" }}
             shape="circle"
             onClick={() => handleButtonClick(record)}
             icon={<EllipsisOutlined />}
@@ -901,459 +906,491 @@ export default function ManageContracts() {
   ];
 
   return (
-    <Table.Root title="Lista de Contratos" columnSize={6}>
-      <Filter.Fragment section="Filtro">
+    <>
+      {loading && <Loading />}
+      <Table.Root title="Lista de Contratos" columnSize={6}>
+        <CustomInput.Root columnSize={24}>
         <Filter.FilterInput
-          label="Nome do Cliente"
-          name="name"
-          onChange={handleChangeFilter}
-          value={filter.name}
+            label="Nome do Cliente"
+            name="name"
+            onChange={handleChangeFilter}
+            value={filter.name}
+          />
+        </CustomInput.Root>
+        <Filter.Fragment section="Filtro">
+        </Filter.Fragment>
+        <Table.Table
+          data={contracts}
+          columns={options}
+          onView={handleView}
+          onUpdate={handleUpdate}
+          confirm={confirmDelete}
+          cancel={cancelDelete}
         />
-      </Filter.Fragment>
-      <Table.Table
-        data={contracts}
-        columns={options}
-        onView={handleView}
-        onUpdate={handleUpdate}
-        confirm={confirmDelete}
-        cancel={cancelDelete}
-      />
-      {isModalVisibleUpdate && (
-        <Modal
-          title="Editar Contrato"
-          open={isModalVisibleUpdate}
-          centered
-          style={{ top: 20 }}
-          onCancel={() => setIsModalVisibleUpdate(false)}
-          width={1200}
-          footer={[
-            <Button
-              key="submit"
-              type="primary"
-              onClick={() => confirmUpdate(selectContract)}
-            >
-              Atualizar
-            </Button>,
-            <Button key="back" onClick={() => setIsModalVisibleUpdate(false)}>
-              Voltar
-            </Button>,
-          ]}
-        >
-          <Form.Fragment section="Contratante">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Nome"
-                type="text"
-                name="name"
-                value={selectContract.name}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="CPF ou CNPJ"
-                type="text"
-                name="cpfCnpj"
-                value={selectContract.cpfcnpj}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="CEP"
-                type="text"
-                name="cep"
-                value={selectContract.cep}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Rua"
-                type="text"
-                name="road"
-                value={selectContract.road}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={3}>
-              <CustomInput.Input
-                label="Número"
-                type="number"
-                name="number"
-                value={selectContract.number}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={3}>
-              <CustomInput.Input
-                label="Complemento"
-                type="text"
-                name="complement"
-                value={selectContract.complement}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Bairro"
-                type="text"
-                name="neighborhood"
-                value={selectContract.neighborhood}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Cidade"
-                type="text"
-                name="city"
-                value={selectContract.city}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="UF"
-                type="text"
-                name="state"
-                value={selectContract.state}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Contratado">
-            <CustomInput.Select
-              label="Assinaturas"
-              name="signOnContract"
-              value={
-                selectContract.signOnContract[0].Contract_Signature.socialReason
-              }
-              options={signs.map((sign) => sign.socialReason)}
-              onChange={handleSignChange}
-            />
-          </Form.Fragment>
-          <Form.Fragment section="Contrato">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Número"
-                type="text"
-                name="contractNumber"
-                value={selectContract.contractNumber}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.DateInput
-                label="Data de Início"
-                value={selectContract.date}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Valor"
-                type="text"
-                name="value"
-                value={valueMoney}
-                onChange={handleValueChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Índice"
-                type="number"
-                name="index"
-                value={selectContract.index}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Select
-              label="Serviços"
-              name="contracts_Service"
-              value={selectContract.contracts_Service.map(
-                (service) => service.Services.description
-              )}
-              onChange={handleServiceChange}
-              multiple={true}
-              options={services.map((service) => service.description)}
-            />
-          </Form.Fragment>
-          <Form.Fragment section="Clausulas">
-            <div style={{ width: "100%" }}>
-              <Button
-                variant="contained"
-                style={{ marginBottom: "20px" }}
-                color="primary"
-                onClick={handleAddClick}
-              >
-                Adicionar Cláusula
-              </Button>
-              {selectContract.clauses.map((clause, index) => (
-                <CustomInput.LongText
-                  key={clause.currentId}
-                  label={`Cláusula Nº${index + 1}`}
-                  value={clause.description}
-                  isExpanded={clause.isExpanded}
-                  onChange={(e) =>
-                    handleClauseChange(clause.id, e.target.value)
-                  }
-                  onExpandToggle={() => toggleExpand(clause.id)}
-                  onDelete={() => handleDeleteClause(clause.id)}
-                />
-              ))}
-            </div>
-          </Form.Fragment>
-        </Modal>
-      )}
-      {showOptions && (
-        <Modal
-          title="Outras opções do contrato"
-          open={showOptions}
-          centered
-          width={1500}
-          onCancel={() => setShowOptions(false)}
-          footer={[
-            <Button key="back" onClick={() => setShowOptions(false)}>
-              Voltar
-            </Button>,
-          ]}
-        >
-          <Table.TableClean columns={columns} data={optionsData} />
-        </Modal>
-      )}
-      {d4signController && (
-        <>
-          {loading && <Loading />}
+        {isModalVisibleUpdate && (
           <Modal
-            title="Controle de assinaturas"
-            open={d4signController}
+            title="Editar Contrato"
+            open={isModalVisibleUpdate}
             centered
-            width={1500}
-            onCancel={() => setD4signController(false)}
+            style={{ top: 20 }}
+            onCancel={() => {
+                  setIsModalVisibleUpdate(false); 
+                  setFile(null);
+                }}
+            width={1200}
             footer={[
-              <Button key="back" onClick={() => setD4signController(false)}>
+              <Button
+                key="submit"
+                type="primary"
+                onClick={() => confirmUpdate(selectContract)}
+              >
+                Atualizar
+              </Button>,
+              <Button
+                key="back"
+                onClick={() => {
+                  setIsModalVisibleUpdate(false); 
+                  setFile(null);
+                }}
+              >
                 Voltar
               </Button>,
             ]}
           >
-            <Table.TableClean columns={d4SignColumns} data={d4SignOptions} />
+            <Form.Fragment section="Contratante">
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="Nome"
+                  type="text"
+                  name="name"
+                  value={selectContract.name}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="CPF ou CNPJ"
+                  type="text"
+                  name="cpfCnpj"
+                  value={selectContract.cpfcnpj}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="CEP"
+                  type="text"
+                  name="cep"
+                  value={selectContract.cep}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="Rua"
+                  type="text"
+                  name="road"
+                  value={selectContract.road}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={3}>
+                <CustomInput.Input
+                  label="Número"
+                  type="number"
+                  name="number"
+                  value={selectContract.number}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={3}>
+                <CustomInput.Input
+                  label="Complemento"
+                  type="text"
+                  name="complement"
+                  value={selectContract.complement}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="Bairro"
+                  type="text"
+                  name="neighborhood"
+                  value={selectContract.neighborhood}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="Cidade"
+                  type="text"
+                  name="city"
+                  value={selectContract.city}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="UF"
+                  type="text"
+                  name="state"
+                  value={selectContract.state}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+            </Form.Fragment>
+            <Form.Fragment section="Contratado">
+              <CustomInput.Select
+                label="Assinaturas"
+                name="signOnContract"
+                value={
+                  selectContract.signOnContract[0].Contract_Signature
+                    .socialReason
+                }
+                options={signs.map((sign) => sign.socialReason)}
+                onChange={handleSignChange}
+              />
+            </Form.Fragment>
+            <Form.Fragment section="Contrato">
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="Número"
+                  type="text"
+                  name="contractNumber"
+                  value={selectContract.contractNumber}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.DateInput
+                  label="Data de Início"
+                  value={selectContract.date}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="Valor"
+                  type="text"
+                  name="value"
+                  value={valueMoney}
+                  onChange={handleValueChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Root columnSize={6}>
+                <CustomInput.Input
+                  label="Índice"
+                  type="number"
+                  name="index"
+                  value={selectContract.index}
+                  onChange={handleChange}
+                />
+              </CustomInput.Root>
+              <CustomInput.Select
+                label="Serviços"
+                name="contracts_Service"
+                value={selectContract.contracts_Service.map(
+                  (service) => service.Services.description
+                )}
+                onChange={handleServiceChange}
+                multiple={true}
+                options={services.map((service) => service.description)}
+              />
+            </Form.Fragment>
+            <Form.Fragment section="Clausulas">
+              <div style={{ width: "100%" }}>
+                <Button
+                  variant="contained"
+                  style={{ marginBottom: "20px" }}
+                  color="primary"
+                  onClick={handleAddClick}
+                >
+                  Adicionar Cláusula
+                </Button>
+                {selectContract.clauses.map((clause, index) => (
+                  <CustomInput.LongText
+                    key={clause.currentId}
+                    label={`Cláusula Nº${index + 1}`}
+                    value={clause.description}
+                    isExpanded={clause.isExpanded}
+                    onChange={(e) =>
+                      handleClauseChange(clause.id, e.target.value)
+                    }
+                    onExpandToggle={() => toggleExpand(clause.id)}
+                    onDelete={() => handleDeleteClause(clause.id)}
+                  />
+                ))}
+              </div>
+              <Upload
+                beforeUpload={(file) => {
+                  handleFileChange({ target: { files: [file] } });
+                  return false;
+                }}
+                accept=".pdf"
+                maxCount={1}
+                showUploadList={false}
+              >
+                <Button
+                  title="Anexar Proposta"
+                  style={{ backgroundColor: "#ed9121", color: "#fff" }}
+                  shape="default"
+                >
+                  Anexar Proposta
+                </Button>
+              </Upload>
+            </Form.Fragment>
           </Modal>
-        </>
-      )}
-      {d4SignOpenInfo && (
-        <Modal
-          title="Informações do Documento"
-          open={d4SignOpenInfo}
-          centered
-          width={800}
-          onCancel={() => setD4SignOpenInfo(false)}
-          footer={[
-            <Button key="back" onClick={() => setD4SignOpenInfo(false)}>
-              Voltar
-            </Button>,
-          ]}
-        >
-          <h1>E-mails cadastrados</h1>
-          {signatures.map((signatarios, index) =>
-            signatarios.list !== null ? (
-              signatarios.list.map((signatario, index) => {
-                const verificaCor = () => {
-                  if (signatario.signed === "0") {
-                    return "#c72424";
-                  } else if (signatario.signed === "1") {
-                    return "#1eb300";
-                  }
-                };
-                const verificaSeJaAssinou = () => {
-                  if (signatario.signed === "0") {
-                    return (
-                      <div>
-                        <TiArrowForward
+        )}
+        {showOptions && (
+          <Modal
+            title="Outras opções do contrato"
+            open={showOptions}
+            centered
+            width={1500}
+            onCancel={() => setShowOptions(false)}
+            footer={[
+              <Button key="back" onClick={() => setShowOptions(false)}>
+                Voltar
+              </Button>,
+            ]}
+          >
+            <Table.TableClean columns={columns} data={optionsData} />
+          </Modal>
+        )}
+        {d4signController && (
+          <>
+            {loading && <Loading />}
+            <Modal
+              title="Controle de assinaturas"
+              open={d4signController}
+              centered
+              width={1500}
+              onCancel={() => setD4signController(false)}
+              footer={[
+                <Button key="back" onClick={() => setD4signController(false)}>
+                  Voltar
+                </Button>,
+              ]}
+            >
+              <Table.TableClean columns={d4SignColumns} data={d4SignOptions} />
+            </Modal>
+          </>
+        )}
+        {d4SignOpenInfo && (
+          <Modal
+            title="Informações do Documento"
+            open={d4SignOpenInfo}
+            centered
+            width={800}
+            onCancel={() => setD4SignOpenInfo(false)}
+            footer={[
+              <Button key="back" onClick={() => setD4SignOpenInfo(false)}>
+                Voltar
+              </Button>,
+            ]}
+          >
+            <h1>E-mails cadastrados</h1>
+            {signatures.map((signatarios, index) =>
+              signatarios.list !== null ? (
+                signatarios.list.map((signatario, index) => {
+                  const verificaCor = () => {
+                    if (signatario.signed === "0") {
+                      return "#c72424";
+                    } else if (signatario.signed === "1") {
+                      return "#1eb300";
+                    }
+                  };
+                  const verificaSeJaAssinou = () => {
+                    if (signatario.signed === "0") {
+                      return (
+                        <div>
+                          <TiArrowForward
+                            style={{
+                              marginLeft: "10px",
+                            }}
+                            cursor={"pointer"}
+                            size={20}
+                            color={"#05628F"}
+                            onClick={async () => {
+                              const data = {
+                                id_doc: signatarios.uuidDoc,
+                                email: signatario.email,
+                              };
+                              await d4SignService
+                                .resendSignature(data)
+                                .then(() => {
+                                  setD4SignOpenInfo(false);
+                                  Toast.Success("E-mail reenviado com sucesso");
+                                });
+                            }}
+                          />
+                          <MdPersonRemoveAlt1
+                            style={{
+                              marginLeft: "10px",
+                            }}
+                            cursor={"pointer"}
+                            size={20}
+                            color={"#c72424"}
+                            onClick={async () => {
+                              setLoading(true);
+                              const data = {
+                                id_doc: signatarios.uuidDoc,
+                                id_assinatura: signatario.key_signer,
+                                email_assinatura: signatario.email,
+                              };
+                              await d4SignService
+                                .cancelSignature(data)
+                                .then(() => {
+                                  setD4SignOpenInfo(false);
+                                  setSignatures([]);
+                                  Toast.Success("E-mail removido com sucesso");
+                                  setLoading(false);
+                                });
+                            }}
+                          />
+                        </div>
+                      );
+                    } else if (signatario.signed === "1") {
+                      return (
+                        <AiOutlineCheck
                           style={{
                             marginLeft: "10px",
                           }}
-                          cursor={"pointer"}
                           size={20}
-                          color={"#05628F"}
-                          onClick={async () => {
-                            const data = {
-                              id_doc: signatarios.uuidDoc,
-                              email: signatario.email,
-                            };
-                            await d4SignService
-                              .resendSignature(data)
-                              .then(() => {
-                                setD4SignOpenInfo(false);
-                                Toast.Success("E-mail reenviado com sucesso");
-                              });
-                          }}
+                          color={"#1eb300"}
                         />
-                        <MdPersonRemoveAlt1
-                          style={{
-                            marginLeft: "10px",
-                          }}
-                          cursor={"pointer"}
-                          size={20}
-                          color={"#c72424"}
-                          onClick={async () => {
-                            setLoading(true);
-                            const data = {
-                              id_doc: signatarios.uuidDoc,
-                              id_assinatura: signatario.key_signer,
-                              email_assinatura: signatario.email,
-                            };
-                            await d4SignService
-                              .cancelSignature(data)
-                              .then(() => {
-                                setD4SignOpenInfo(false);
-                                setSignatures([]);
-                                Toast.Success("E-mail removido com sucesso");
-                                setLoading(false);
-                              });
-                          }}
-                        />
-                      </div>
-                    );
-                  } else if (signatario.signed === "1") {
-                    return (
-                      <AiOutlineCheck
-                        style={{
-                          marginLeft: "10px",
-                        }}
-                        size={20}
-                        color={"#1eb300"}
-                      />
-                    );
-                  }
-                };
+                      );
+                    }
+                  };
 
-                return (
-                  <div
-                    key={index}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: "10px",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    {signatario.email.length > 20 ? (
-                      <Tooltip title={signatario.email}>
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: "10px",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      {signatario.email.length > 20 ? (
+                        <Tooltip title={signatario.email}>
+                          <p
+                            style={{
+                              color: verificaCor(),
+                              cursor: "pointer",
+                            }}
+                          >
+                            {signatario.email.substring(0, 20)}...
+                          </p>
+                        </Tooltip>
+                      ) : (
                         <p
                           style={{
                             color: verificaCor(),
                             cursor: "pointer",
                           }}
                         >
-                          {signatario.email.substring(0, 20)}...
+                          {signatario.email}
                         </p>
-                      </Tooltip>
-                    ) : (
-                      <p
-                        style={{
-                          color: verificaCor(),
-                          cursor: "pointer",
-                        }}
-                      >
-                        {signatario.email}
-                      </p>
-                    )}
-                    {verificaSeJaAssinou()}
-                  </div>
-                );
-              })
-            ) : (
-              <p key={index}>Nenhum e-mail cadastrado</p>
-            )
-          )}
-        </Modal>
-      )}
-      {d4SignRegisterSignature && (
-        <Modal
-          title="Cadastrar E-mail das assinaturas"
-          open={d4SignRegisterSignature}
-          centered
-          width={500}
-          onCancel={() => setD4SignRegisterSignature(false)}
-          footer={[
-            <Button
-              key="register"
-              style={{
-                backgroundColor: "#4168b0",
-                color: "white",
-              }}
-              onClick={() => handleInsertSign(email)}
-            >
-              Cadastrar
-            </Button>,
-            <Button
-              key="back"
-              onClick={() => setD4SignRegisterSignature(false)}
-            >
-              Voltar
-            </Button>,
-          ]}
-        >
-          <CustomInput.Input
-            label="E-mail"
-            type="text"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Modal>
-      )}
-
-      {isModalVisibleCreate && (
-        <Modal
-          title={`Criar ${currentType}`}
-          open={isModalVisibleCreate}
-          centered
-          width={800}
-          onCancel={() => setIsModalVisibleCreate(false)}
-          footer={[
-            <Button key="back" onClick={() => setIsModalVisibleCreate(false)}>
-              Voltar
-            </Button>,
-            <Button
-              key="submit"
-              type="primary"
-              onClick={
-                currentType === "Aditivo"
-                  ? handleCreateAdditive
-                  : handleCreateReajustment
-              }
-            >
-              Criar
-            </Button>,
-          ]}
-        >
-          {currentType === "Aditivo" ? (
+                      )}
+                      {verificaSeJaAssinou()}
+                    </div>
+                  );
+                })
+              ) : (
+                <p key={index}>Nenhum e-mail cadastrado</p>
+              )
+            )}
+          </Modal>
+        )}
+        {d4SignRegisterSignature && (
+          <Modal
+            title="Cadastrar E-mail das assinaturas"
+            open={d4SignRegisterSignature}
+            centered
+            width={500}
+            onCancel={() => setD4SignRegisterSignature(false)}
+            footer={[
+              <Button
+                key="register"
+                style={{
+                  backgroundColor: "#4168b0",
+                  color: "white",
+                }}
+                onClick={() => handleInsertSign(email)}
+              >
+                Cadastrar
+              </Button>,
+              <Button
+                key="back"
+                onClick={() => setD4SignRegisterSignature(false)}
+              >
+                Voltar
+              </Button>,
+            ]}
+          >
             <CustomInput.Input
-              label="Descrição do Aditivo"
-              name="aditivoDescription"
-              value={reajustment.aditivoDescription}
-              onChange={handleReajustmentValues}
+              label="E-mail"
+              type="text"
+              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-          ) : (
-            <>
+          </Modal>
+        )}
+
+        {isModalVisibleCreate && (
+          <Modal
+            title={`Criar ${currentType}`}
+            open={isModalVisibleCreate}
+            centered
+            width={800}
+            onCancel={() => setIsModalVisibleCreate(false)}
+            footer={[
+              <Button key="back" onClick={() => setIsModalVisibleCreate(false)}>
+                Voltar
+              </Button>,
+              <Button
+                key="submit"
+                type="primary"
+                onClick={
+                  currentType === "Aditivo"
+                    ? handleCreateAdditive
+                    : handleCreateReajustment
+                }
+              >
+                Criar
+              </Button>,
+            ]}
+          >
+            {currentType === "Aditivo" ? (
               <CustomInput.Input
-                label="Novo Valor de Contrato"
-                name="newValue"
-                value={reajustment.newValue}
+                label="Descrição do Aditivo"
+                name="aditivoDescription"
+                value={reajustment.aditivoDescription}
                 onChange={handleReajustmentValues}
               />
-              <CustomInput.Input
-                label="Novo Indice"
-                name="newIndex"
-                value={reajustment.newIndex}
-                onChange={handleReajustmentValues}
-              />
-            </>
-          )}
-        </Modal>
-      )}
-    </Table.Root>
+            ) : (
+              <>
+                <CustomInput.Input
+                  label="Novo Valor de Contrato"
+                  name="newValue"
+                  value={reajustment.newValue}
+                  onChange={handleReajustmentValues}
+                />
+                <CustomInput.Input
+                  label="Novo Indice"
+                  name="newIndex"
+                  value={reajustment.newIndex}
+                  onChange={handleReajustmentValues}
+                />
+              </>
+            )}
+          </Modal>
+        )}
+      </Table.Root>
+    </>
   );
 }

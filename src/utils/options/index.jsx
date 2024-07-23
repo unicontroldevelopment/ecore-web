@@ -4,6 +4,7 @@ import { EPIs } from "./EPI";
 import { EmailType } from "./EmailType";
 import { NotebookBrands } from "./NotebookBrands";
 import { OSVersions } from "./OSVersions";
+import { Office } from "./Office";
 import { OfficeVersions } from "./OfficeVersions";
 import { Roles } from "./Roles";
 import { Type } from "./Type";
@@ -21,5 +22,6 @@ export const Options = {
   EmailType,
   Users,
   Type,
-  EPIs
+  EPIs,
+  Office
 };
