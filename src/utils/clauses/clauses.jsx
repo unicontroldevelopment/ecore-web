@@ -14,8 +14,7 @@ export const ClauseThree = () => {
 };
 
 export const ClauseFour = () => {
-  return `CLAUSULA QUARTA – DA RESCISAO: 
-  O presente contrato poderá ser rescindido a qualquer tempo, por qualquer das partes, mediante aviso formal e escrito com 30 (trinta) dias de antecedência, sem ônus para a parte denunciante.
+  return `CLAUSULA QUARTA – DA RESCISAO: O presente contrato poderá ser rescindido a qualquer tempo, por qualquer das partes, mediante aviso formal e escrito com 30 (trinta) dias de antecedência, sem ônus para a parte denunciante.
   \n Fica estabelecido que na hipótese de a rescisão ocorrer em razão de paralisação, suspensão ou abandono da execução dos serviços pela CONTRATADA, ficará esta obrigada a pagar à CONTRATANTE uma multa rescisória em valor equivalente a 10% (dez por cento) do valor das três últimas faturas pagas pela CONTRATANTE pela execução dos serviços até o momento da rescisão.`;
 };
 

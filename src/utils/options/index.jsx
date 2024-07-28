@@ -1,7 +1,12 @@
 import { Companies } from "./Companies";
+import { CostCenter } from "./CostCenter";
 import { Departments } from "./Departments";
+import { Documents } from "./Documents";
 import { EPIs } from "./EPI";
+import { Education } from "./Education";
 import { EmailType } from "./EmailType";
+import { Level } from "./Level";
+import { MaritalStatus } from "./MaritalStatus";
 import { NotebookBrands } from "./NotebookBrands";
 import { OSVersions } from "./OSVersions";
 import { Office } from "./Office";
@@ -23,5 +28,10 @@ export const Options = {
   Users,
   Type,
   EPIs,
-  Office
+  Office,
+  Documents,
+  Level,
+  MaritalStatus,
+  Education,
+  CostCenter
 };

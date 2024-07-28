@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import {
   CloseOutlined,
   ControlFilled,
@@ -16,7 +17,6 @@ import { AiOutlineCheck } from "react-icons/ai";
 import { FaFileUpload } from "react-icons/fa";
 import { MdPersonRemoveAlt1 } from "react-icons/md";
 import { TiArrowForward } from "react-icons/ti";
-import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
@@ -29,13 +29,18 @@ import ContractSignService from "../../../services/ContractSignService";
 import D4SignService from "../../../services/D4SignService";
 import DocumentsService from "../../../services/DocumentsService";
 import Utils from "../../../services/Utils";
+import {
+  ClauseOneAdditive,
+  ClauseThreeAdditive,
+  ClauseTwoAdditive,
+} from "../../../utils/clauses/additiveClauses";
 import { Formats } from "../../../utils/formats";
 import formatData from "../../../utils/formats/formatData";
+import { Additive } from "../../../utils/pdf/additive";
 import { MyDocument } from "../../../utils/pdf/createContract";
 
 export default function ManageContracts() {
-  VerifyUserRole(["Master", "Administrador", "RH", "Comercial"]);
-  const navigate = useNavigate();
+  VerifyUserRole(["Master", "Administrador", "Comercial"]);
   const [contracts, setContracts] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [services, setServices] = React.useState([]);
@@ -69,9 +74,18 @@ export default function ManageContracts() {
   const [filter, setFilter] = React.useState({
     name: "",
   });
+  const [additive, setAdditive] = React.useState({
+    contract_id: null,
+    newValue: null,
+    oldValue: null,
+    clauses: [
+      { id: 0, description: `${ClauseOneAdditive()}`, isExpanded: false },
+      { id: 1, description: `${ClauseTwoAdditive()}`, isExpanded: false },
+      { id: 2, description: `${ClauseThreeAdditive()}`, isExpanded: false },
+    ],
+  });
   const [file, setFile] = React.useState();
   const [valueMoney, setValueMoney] = React.useState("");
-  const [uploadedPDF, setUploadedPDF] = React.useState(null);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
   const [isModalVisibleReajustment, setIsModalVisibleReajustment] =
     React.useState(false);
@@ -97,6 +111,7 @@ export default function ManageContracts() {
     statusComment: "",
     whoCanceled: "null",
   });
+  const extenseDate = new Date().getMonth() + 1;
 
   //Services API
   const contractService = new ContractSignService();
@@ -154,9 +169,18 @@ export default function ManageContracts() {
   }, [filter]);
 
   React.useEffect(() => {
-    console.log(selectContract);
-    console.log("FILE", file);
-  }, [selectContract, file]);
+    const Fetch = async () => {
+      setAdditive((prevValues) => ({
+        ...prevValues,
+        clauses: prevValues.clauses.map((clause) =>
+          clause.id === 1
+            ? { ...clause, description: ClauseTwoAdditive(additive.oldValue, additive.newValue) }
+            : clause
+        ),
+      }));
+    };
+    Fetch();
+  }, [additive.newValue, additive.oldValue]);
 
   //Changes -----------------------------------------------------------------------------------------
   const handleChangeFilter = (event) => {
@@ -185,6 +209,17 @@ export default function ManageContracts() {
 
   const toggleExpand = (id) => {
     setSelectContract((prevContract) => ({
+      ...prevContract,
+      clauses: prevContract.clauses.map((clause) =>
+        clause.id === id
+          ? { ...clause, isExpanded: !clause.isExpanded }
+          : clause
+      ),
+    }));
+  };
+
+  const toggleExpandAdditive = (id) => {
+    setAdditive((prevContract) => ({
       ...prevContract,
       clauses: prevContract.clauses.map((clause) =>
         clause.id === id
@@ -358,6 +393,7 @@ export default function ManageContracts() {
             setLoading(false);
             setD4signController(false);
             Toast.Success("Contrato cancelado com sucesso!");
+            window.location.reload();
           }))
       : Toast.Error("Não é possível cancelar um documento finalizado");
   };
@@ -366,7 +402,7 @@ export default function ManageContracts() {
     setLoading(true);
     const data = {
       id_document: d4SignData.uuidDoc,
-      message: "Favor, Assinar!",
+      message: "Por Favor, Assinar!",
       skip_email: "0",
       workflow: "0",
     };
@@ -384,6 +420,7 @@ export default function ManageContracts() {
               Toast.Error("Documento sem signatários cadastrados");
             } else {
               Toast.Success("E-mail enviado com sucesso");
+              window.location.reload();
             }
           };
           verificaSeJaEnviouEmail();
@@ -394,14 +431,62 @@ export default function ManageContracts() {
     setLoading(false);
   };
 
+  const blobToBase64 = (blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
   const handleD4SignRegister = async () => {
-    const pdfBase64 = await MyDocument(selectContract);
+    const pdfByte = await MyDocument(selectContract);
+
+    let mergedBlob;
+    let base64D4Sign;
+
+    if (selectContract.propouse.file?.data) {
+      const arrayBuffer = selectContract.propouse.file.data;
+      const propouseData = new Uint8Array(arrayBuffer);
+
+      try {
+        const uploadedPDFDoc = await PDFDocument.load(propouseData);
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
+
+        const base64 = await blobToBase64(mergedBlob);
+        base64D4Sign = base64;
+      } catch (error) {
+        console.error("Error loading PDFs: ", error);
+        return;
+      }
+    } else {
+      try {
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        const mergedPDF = await PDFDocument.create();
+        for (const pageNum of createdPDFDoc.getPageIndices()) {
+          const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+          mergedPDF.addPage(page);
+        }
+        const mergedPdfBytes = await mergedPDF.save();
+        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+
+        const base64 = await blobToBase64(mergedBlob);
+        base64D4Sign = base64;
+      } catch (error) {
+        console.error("Error creating PDF: ", error);
+        return;
+      }
+    }
 
     const data = {
       name: `Contrato ${selectContract.contractNumber} ${
         selectContract.name
       } ${formatData(new Date().getTime())}`,
-      file: pdfBase64,
+      file: base64D4Sign,
       contractId: selectContract.id,
     };
 
@@ -416,6 +501,7 @@ export default function ManageContracts() {
 
       setContracts(updatedData);
       Toast.Success("Contrato cadastrado com sucesso!");
+      window.location.reload();
     }
   };
 
@@ -444,6 +530,7 @@ export default function ManageContracts() {
         setEmail("");
         setD4SignRegisterSignature(false);
         Toast.Success("E-mail cadastrado com sucesso");
+        window.location.reload();
       });
     } else {
       Toast.Error("Preencha o campo E-mail");
@@ -520,7 +607,6 @@ export default function ManageContracts() {
 
           await fetchContracts();
           Toast.Success("Contrato atualizado com sucesso!");
-
           setIsModalVisibleUpdate(false);
         }
 
@@ -579,7 +665,6 @@ export default function ManageContracts() {
     const fileEvent = e.target.files[0];
     if (fileEvent) {
       setFile(fileEvent);
-      console.log("File EVENT", fileEvent);
     }
   };
 
@@ -612,32 +697,32 @@ export default function ManageContracts() {
 
     let mergedBlob;
 
-      if (contract.propouse.file?.data) {
-        const arrayBuffer = contract.propouse.file.data;
-        const propouseData = new Uint8Array(arrayBuffer);
-  
-        try {
-          const uploadedPDFDoc = await PDFDocument.load(propouseData);
-          const createdPDFDoc = await PDFDocument.load(pdfByte);
-          mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
-        } catch (error) {
-          console.error("Error loading PDFs: ", error);
-          return;
+    if (contract.propouse.file?.data) {
+      const arrayBuffer = contract.propouse.file.data;
+      const propouseData = new Uint8Array(arrayBuffer);
+
+      try {
+        const uploadedPDFDoc = await PDFDocument.load(propouseData);
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
+      } catch (error) {
+        console.error("Error loading PDFs: ", error);
+        return;
+      }
+    } else {
+      try {
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        const mergedPDF = await PDFDocument.create();
+        for (const pageNum of createdPDFDoc.getPageIndices()) {
+          const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+          mergedPDF.addPage(page);
         }
-      } else {
-        try {
-          const createdPDFDoc = await PDFDocument.load(pdfByte);
-          const mergedPDF = await PDFDocument.create();
-          for (const pageNum of createdPDFDoc.getPageIndices()) {
-            const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-            mergedPDF.addPage(page);
-          }
-          const mergedPdfBytes = await mergedPDF.save();
-          mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
-        } catch (error) {
-          console.error("Error creating PDF: ", error);
-          return;
-        }
+        const mergedPdfBytes = await mergedPDF.save();
+        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+      } catch (error) {
+        console.error("Error creating PDF: ", error);
+        return;
+      }
     }
 
     const pdfUrl = URL.createObjectURL(mergedBlob);
@@ -645,14 +730,16 @@ export default function ManageContracts() {
   };
 
   //Reajuste/Aditivo -----------------------------------------------------------------------------------------
-  const handleReajustment = (contract) => {
-    setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
-    setIsModalVisibleReajustment(true);
-  };
-
   const handleReajustmentValues = (event) => {
     const { name, value } = event.target;
     setReajustment((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+  const handleAdditiveValues = (event) => {
+    const { name, value } = event.target;
+    setAdditive((prevState) => ({
       ...prevState,
       [name]: value,
     }));
@@ -668,8 +755,34 @@ export default function ManageContracts() {
     setIsModalVisibleCreate(true);
   };
 
-  const handleCreateAdditive = () => {
-    console.log("Criar Aditivo");
+  const handleCreateAdditive = async () => {
+    const pdfByte = await Additive(
+      selectContract.name,
+      selectContract.cpfcnpj,
+      selectContract.road,
+      selectContract.number,
+      selectContract.complement,
+      selectContract.neighborhood,
+      selectContract.city,
+      selectContract.state,
+      selectContract.signOnContract,
+      additive.clauses,
+      extenseDate,
+      selectContract.signOnContract
+    );
+
+    const createdPDFDoc = await PDFDocument.load(pdfByte);
+    const mergedPDF = await PDFDocument.create();
+    for (const pageNum of createdPDFDoc.getPageIndices()) {
+      const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+      mergedPDF.addPage(page);
+    }
+    const mergedPdfBytes = await mergedPDF.save();
+    const pdfAdditive = new Blob([mergedPdfBytes], { type: "application/pdf" });
+
+    const pdfUrl = URL.createObjectURL(pdfAdditive);
+    window.open(pdfUrl, "_blank");
+
     setIsModalVisibleAdditive(false);
     setIsModalVisibleCreate(false);
   };
@@ -883,8 +996,10 @@ export default function ManageContracts() {
     {
       key: "name",
       type: "Aditivo",
-      description: selectContract.name ? selectContract.name : "Nenhum aditivo",
-      exists: !!selectContract.name,
+      description: selectContract.additive
+        ? selectContract.name
+        : "Nenhum aditivo",
+      exists: !!selectContract.additive,
     },
     {
       key: "city",
@@ -892,7 +1007,7 @@ export default function ManageContracts() {
       description: selectContract.name
         ? `Valor: ${selectContract.name}`
         : "Nenhum reajuste",
-      exists: !!selectContract.reajuste,
+      exists: !!selectContract.name,
     },
   ];
 
@@ -910,15 +1025,14 @@ export default function ManageContracts() {
       {loading && <Loading />}
       <Table.Root title="Lista de Contratos" columnSize={6}>
         <CustomInput.Root columnSize={24}>
-        <Filter.FilterInput
+          <Filter.FilterInput
             label="Nome do Cliente"
             name="name"
             onChange={handleChangeFilter}
             value={filter.name}
           />
         </CustomInput.Root>
-        <Filter.Fragment section="Filtro">
-        </Filter.Fragment>
+        <Filter.Fragment section="Filtro"></Filter.Fragment>
         <Table.Table
           data={contracts}
           columns={options}
@@ -934,9 +1048,9 @@ export default function ManageContracts() {
             centered
             style={{ top: 20 }}
             onCancel={() => {
-                  setIsModalVisibleUpdate(false); 
-                  setFile(null);
-                }}
+              setIsModalVisibleUpdate(false);
+              setFile(null);
+            }}
             width={1200}
             footer={[
               <Button
@@ -949,7 +1063,7 @@ export default function ManageContracts() {
               <Button
                 key="back"
                 onClick={() => {
-                  setIsModalVisibleUpdate(false); 
+                  setIsModalVisibleUpdate(false);
                   setFile(null);
                 }}
               >
@@ -1155,6 +1269,7 @@ export default function ManageContracts() {
               </Button>,
             ]}
           >
+            <h1>Em Construção</h1>
             <Table.TableClean columns={columns} data={optionsData} />
           </Modal>
         )}
@@ -1366,23 +1481,64 @@ export default function ManageContracts() {
             ]}
           >
             {currentType === "Aditivo" ? (
-              <CustomInput.Input
-                label="Descrição do Aditivo"
-                name="aditivoDescription"
-                value={reajustment.aditivoDescription}
-                onChange={handleReajustmentValues}
-              />
+              <>
+                <Form.Fragment section="Dados do Aditivo">
+                  <CustomInput.Root columnSize={12}>
+                    <CustomInput.Input
+                      label="Antigo Valor"
+                      name="oldValue"
+                      value={additive.oldValue}
+                      onChange={handleAdditiveValues}
+                    />
+                  </CustomInput.Root>
+                  <CustomInput.Root columnSize={12}>
+                    <CustomInput.Input
+                      label="Novo Valor"
+                      name="newValue"
+                      value={additive.newValue}
+                      onChange={handleAdditiveValues}
+                    />
+                  </CustomInput.Root>
+                </Form.Fragment>
+                <Form.Fragment section="Clausula Aditivo">
+                  <div style={{ width: "100%" }}>
+                    <Button
+                      variant="contained"
+                      style={{ marginBottom: "20px" }}
+                      color="primary"
+                      onClick={handleAddClick}
+                    >
+                      Adicionar Cláusula
+                    </Button>
+                    {additive.clauses.map((clause, index) => (
+                      <CustomInput.LongText
+                        key={clause.id}
+                        label={`Cláusula Nº${index + 1}`}
+                        value={clause.description}
+                        isExpanded={clause.isExpanded}
+                        onChange={(e) =>
+                          handleClauseChange(clause.id, e.target.value)
+                        }
+                        onExpandToggle={() => toggleExpandAdditive(clause.id)}
+                        onDelete={() => handleDeleteClause(clause.id)}
+                      />
+                    ))}
+                  </div>
+                </Form.Fragment>
+              </>
             ) : (
               <>
                 <CustomInput.Input
                   label="Novo Valor de Contrato"
                   name="newValue"
+                  type="number"
                   value={reajustment.newValue}
                   onChange={handleReajustmentValues}
                 />
                 <CustomInput.Input
                   label="Novo Indice"
                   name="newIndex"
+                  type="number"
                   value={reajustment.newIndex}
                   onChange={handleReajustmentValues}
                 />

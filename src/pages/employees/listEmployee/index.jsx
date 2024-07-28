@@ -41,8 +41,8 @@ export default function ListEmployee() {
     costCenter: "",
     dateAdmission: dayjs(),
     dateResignation: null,
-    initialWage: "",
-    currentWage: "",
+    initialWage: null,
+    currentWage: null,
   });
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
@@ -153,6 +153,11 @@ export default function ListEmployee() {
       dataIndex: "name",
       key: "name",
     },
+    {
+      title: "Cargo",
+      dataIndex: "office",
+      key: "office"
+    }
   ];
 
   return (
@@ -325,16 +330,17 @@ export default function ListEmployee() {
                 name="education"
                 value={selectUser.education}
                 onChange={handleChange}
-                options={Options.Departments()}
+                options={Options.Education()}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
+              <CustomInput.Select
                 label="Estado Civil"
                 type="text"
                 name="maritalStatus"
                 value={selectUser.maritalStatus}
                 onChange={handleChange}
+                options={Options.MaritalStatus()}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
@@ -438,7 +444,7 @@ export default function ListEmployee() {
                 name="level"
                 value={selectUser.level}
                 onChange={handleChange}
-                options={Options.Companies()}
+                options={Options.Level()}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
@@ -465,7 +471,7 @@ export default function ListEmployee() {
                 name="costCenter"
                 value={selectUser.costCenter}
                 onChange={handleChange}
-                options={Options.Units()}
+                options={Options.CostCenter()}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>

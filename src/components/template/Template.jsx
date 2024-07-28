@@ -106,11 +106,11 @@ const Template = (props) => {
       children: [
         {
           key: "5-1",
-          label: <Link to="/documents/create">Cadastrar Serviço</Link>,
+          label: <Link to="/documents/createService">Cadastrar Serviço</Link>,
         },
         {
           key: "5-2",
-          label: <Link to="/dashboard">Gerar Documentos</Link>,
+          label: <Link to="/documents/createDocument">Gerar Documentos</Link>,
         },
         {
           key: "5-3",

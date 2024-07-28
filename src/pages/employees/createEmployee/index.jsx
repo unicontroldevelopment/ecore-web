@@ -6,6 +6,7 @@ import { CustomInput } from "../../../components/input/index";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import EmployeeService from "../../../services/EmployeeService";
+import { Formats } from "../../../utils/formats";
 import { Options } from "../../../utils/options";
 
 export default function CreateEmployee() {
@@ -39,9 +40,13 @@ export default function CreateEmployee() {
     costCenter: "",
     dateAdmission: dayjs(),
     dateResignation: null,
-    initialWage: "",
-    currentWage: "",
+    initialWage: null,
+    currentWage: null,
   });
+  const [valueMoney, setValueMoney] = React.useState("");
+  const [currentMoney, setCurrentMoney] = React.useState("");
+  const [formatCpfOrCnpj, setFormatCpfOrCnpj] = React.useState("");
+  const [formatCep, setFormatCep] = React.useState("");
 
   const [messageError, setMessageError] = React.useState({
     name: "",
@@ -49,7 +54,6 @@ export default function CreateEmployee() {
   });
 
   const handleChange = (event) => {
-    console.log(event);
     if (event.target) {
         const { name, value } = event.target;
         setValues((prevState) => ({
@@ -106,6 +110,46 @@ export default function CreateEmployee() {
     return isAllFieldsFilled;
   };
 
+  const removeMask = (maskedValue) => {
+    return maskedValue.replace(/[.,]/g, "");
+  };
+
+  const handleFormatsChange = (event) => {
+    const { name, value } = event.target;
+
+    const unmaskedValue = removeMask(value);
+
+    if (name === "cpf") {
+      setValues((prevState) => ({
+        ...prevState,
+        [name]: unmaskedValue,
+      }));
+
+      setFormatCpfOrCnpj(Formats.CpfCnpj(value));
+    } else if (name === "initialWage") {
+      setValues((prevState) => ({
+        ...prevState,
+        [name]: unmaskedValue,
+      }));
+
+      setValueMoney(Formats.Money(value));
+    } else if (name === "cep") {
+      setValues((prevState) => ({
+        ...prevState,
+        [name]: unmaskedValue,
+      }));
+
+      setFormatCep(Formats.Cep(value));
+    } else if (name === "currentWage") {
+      setValues((prevState) => ({
+        ...prevState,
+        [name]: unmaskedValue,
+      }));
+
+      setCurrentMoney(Formats.Money(value));
+    } 
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const emptyField = areRequiredFieldsFilled();
@@ -159,8 +203,8 @@ export default function CreateEmployee() {
           <CustomInput.Input
           label="CPF"
           name="cpf"
-          value={values.cpf}
-          onChange={handleChange}
+          value={formatCpfOrCnpj}
+          onChange={handleFormatsChange}
           errorText={messageError.cpf}
           />
         </CustomInput.Root>
@@ -206,16 +250,17 @@ export default function CreateEmployee() {
             name="education"
             value={values.education}
             onChange={handleChange}
-            options={Options.Departments()}
+            options={Options.Education()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
+          <CustomInput.Select
             label="Estado Civil"
             type="text"
             name="maritalStatus"
             value={values.maritalStatus}
             onChange={handleChange}
+            options={Options.MaritalStatus()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -252,8 +297,8 @@ export default function CreateEmployee() {
             label="CEP"
             type="text"
             name="cep"
-            value={values.cep}
-            onChange={handleChange}
+            value={formatCep}
+            onChange={handleFormatsChange}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -319,7 +364,7 @@ export default function CreateEmployee() {
             name="level"
             value={values.level}
             onChange={handleChange}
-            options={Options.Companies()}
+            options={Options.Level()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -346,7 +391,7 @@ export default function CreateEmployee() {
             name="costCenter"
             value={values.costCenter}
             onChange={handleChange}
-            options={Options.Units()}
+            options={Options.CostCenter()}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -370,8 +415,8 @@ export default function CreateEmployee() {
             label="Salário Inicial"
             type="text"
             name="initialWage"
-            value={values.initialWage}
-            onChange={handleChange}
+            value={valueMoney}
+            onChange={handleFormatsChange}
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
@@ -379,8 +424,8 @@ export default function CreateEmployee() {
             label="Salário Atual"
             type="text"
             name="currentWage"
-            value={values.currentWage}
-            onChange={handleChange}
+            value={currentMoney}
+            onChange={handleFormatsChange}
           />
         </CustomInput.Root>
       </Form.Fragment>

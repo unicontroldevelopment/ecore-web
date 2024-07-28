@@ -15,6 +15,7 @@ import "moment/locale/pt-br";
 import AccessDenied from "./pages/accessDenied";
 import Dashboard from "./pages/dashboard/Dashboard";
 import CreateContract from "./pages/documents/createContract";
+import CreateDocument from "./pages/documents/createDocument";
 import CreateService from "./pages/documents/createService";
 import ManageContracts from "./pages/documents/manageContratcs";
 import CreateEmail from "./pages/emails/createEmail";
@@ -156,11 +157,21 @@ const App = () => {
                 }
               />
               <Route
-                path="/documents/create"
+                path="/documents/createService"
                 element={
                   <PrivatePage>
                     <Template>
                       <CreateService />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/documents/createDocument"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <CreateDocument />
                     </Template>
                   </PrivatePage>
                 }

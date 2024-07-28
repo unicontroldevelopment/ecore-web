@@ -16,7 +16,7 @@ export default function CreateEmployeeInfo() {
   const [employees, setEmployees] = React.useState([]);
   const [values, setValues] = React.useState({
     name: "",
-    role: "",
+    role: [],
     password: "",
     passwordConfirmation: "",
     department: "",
@@ -36,7 +36,6 @@ export default function CreateEmployeeInfo() {
     windowsVersion: "",
     employeeId: "",
   });
-
   const [messageError, setMessageError] = React.useState({
     name: "",
     email: "",
@@ -227,6 +226,7 @@ export default function CreateEmployeeInfo() {
           <CustomInput.Select
             label="Perfil"
             name="role"
+            multiple
             value={values.role}
             onChange={handleChange}
             options={Options.Roles()}

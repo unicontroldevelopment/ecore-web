@@ -3,10 +3,29 @@ import { api } from "./api";
 export default class {
   async createDocument(documentData) {
     try {
-      const response = await api.post("/cadastrarDocumento", documentData);
+      const formData = new FormData();
+      
+      // Envie a string base64 diretamente
+      formData.append('file', documentData.file);
+
+      if (documentData.file_anexo) {
+        formData.append('file_anexo', documentData.file_anexo);
+      }
+  
+      // Adiciona outros dados
+      formData.append('name', documentData.name);
+      formData.append('contractId', documentData.contractId);
+  
+      const response = await api.post("/cadastrarDocumento", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
       return response;
     } catch (error) {
-      return error;
+      console.error("Error creating document:", error);
+      throw error; // Lança o erro para tratamento adicional, se necessário
     }
   }
   async getDocument(documentId) {

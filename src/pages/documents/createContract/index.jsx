@@ -23,7 +23,7 @@ import {
 import { Formats } from "../../../utils/formats";
 
 export default function CreateContract() {
-  VerifyUserRole(["Master", "Administrador", "RH", "Comercial"]);
+  VerifyUserRole(["Master", "Administrador", "Comercial"]);
   const navigate = useNavigate();
   const service = new DocumentsService();
   const contractSignService = new ContractSignService();
@@ -301,7 +301,6 @@ export default function CreateContract() {
     const fileEvent = e.target.files[0];
     if (fileEvent) {
       setFile(fileEvent);
-      console.log("File EVENT", fileEvent);
     }
   };
 

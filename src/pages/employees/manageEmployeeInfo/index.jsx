@@ -17,7 +17,7 @@ export default function ManageEmployeeInfo() {
   const [users, setUsers] = React.useState([]);
   const [selectUser, setSelectUser] = React.useState({
     name: "",
-    role: "",
+    role: [],
     password: "",
     passwordConfirmation: "",
     department: "",
@@ -67,6 +67,17 @@ export default function ManageEmployeeInfo() {
       ...prevState,
       [event.target.name]: event.target.value,
     }));
+  };
+
+  const handleRoleChange = (event) => {
+    setSelectUser((prevUser) => {
+      if (!prevUser) return null;
+
+      return {
+        ...prevUser,
+        role: event.target.value.map(role => ({ role: { name: role } }))
+      };
+    });
   };
 
   const handleChangeFilter = (event) => {
@@ -135,7 +146,7 @@ export default function ManageEmployeeInfo() {
       title: "Perfil",
       key: "role",
       dataIndex: "role",
-      render: (text, record) => <span>{record.role ?? "-"}</span>,
+      render: (text, record) => <span>{record.role.map(roles => roles.role.name).join(', ') ?? "-"}</span>,
     },
     {
       title: "Setor",
@@ -229,7 +240,7 @@ export default function ManageEmployeeInfo() {
         >
           <CustomModal.Info label="Nome" value={selectUser.name} />
           <CustomModal.Info label="Senha" value={selectUser.password} />
-          <CustomModal.Info label="Perfil" value={selectUser.role} />
+          <CustomModal.Info label="Perfil" value={selectUser.role.map(roles => roles.role.name).join(', ')} />
           <CustomModal.Info label="Setor" value={selectUser.department} />
           <CustomModal.Info label="Empresa" value={selectUser.company} />
           <CustomModal.Info label="Unidade" value={selectUser.unit} />
@@ -353,8 +364,9 @@ export default function ManageEmployeeInfo() {
               <CustomInput.Select
                 label="Perfil"
                 name="role"
-                value={selectUser.role}
-                onChange={handleChange}
+                multiple
+                value={selectUser.role.map(role => role.role.name)}
+                onChange={handleRoleChange}
                 options={Options.Roles()}
               />
             </CustomInput.Root>
