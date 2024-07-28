@@ -8,6 +8,7 @@ export function Input({
   name,
   value,
   onChange,
+  onBlur,
   errorText,
   disabled,
 }) {
@@ -22,22 +23,23 @@ export function Input({
   }, [errorText]);
 
   return (
-    <TextField
-      sx={{
-        width: "100%",
-        minHeight: 64,
-      }}
-      label={label}
-      variant="outlined"
-      type={type}
-      name={name}
-      autoComplete="on"
-      size="small"
-      onChange={onChange}
-      value={value}
-      error={error}
-      helperText={errorText}
-      disabled={disabled}
-    />
+      <TextField
+        sx={{
+          width: "100%",
+          minHeight: 64,
+        }}
+        label={label}
+        variant="outlined"
+        type={type}
+        name={name}
+        autoComplete="on"
+        size="small"
+        onChange={onChange}
+        onBlur={onBlur}
+        value={value}
+        error={error}
+        helperText={errorText}
+        disabled={disabled}
+      />
   );
 }

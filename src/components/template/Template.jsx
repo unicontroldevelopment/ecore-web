@@ -49,19 +49,11 @@ const Template = (props) => {
       children: [
         {
           key: "2-1",
-          label: <Link to="/dashboard">Grupo</Link>,
+          label: <Link to="/emails/create">Cadastrar E-mail</Link>,
         },
         {
           key: "2-2",
-          label: <Link to="/dashboard">Franqueados</Link>,
-        },
-        {
-          key: "2-3",
-          label: <Link to="/dashboard">Newsis</Link>,
-        },
-        {
-          key: "2-4",
-          label: <Link to="/dashboard">Labs</Link>,
+          label: <Link to="/emails/list">Lista de Emails</Link>,
         },
       ],
     },
@@ -72,11 +64,11 @@ const Template = (props) => {
       children: [
         {
           key: "3-1",
-          label: <Link to="/dashboard">Cadastrar</Link>,
+          label: <Link to="/serveraccess/create">Cadastrar</Link>,
         },
         {
           key: "3-2",
-          label: <Link to="/dashboard">Listar</Link>,
+          label: <Link to="/serveraccess/list">Listar</Link>,
         },
       ],
     },
@@ -95,11 +87,11 @@ const Template = (props) => {
         },
         {
           key: "4-3",
-          label: <Link to="/dashboard">Gerenciar Informações</Link>,
+          label: <Link to="/employee/createInfo">Cadastrar Informações</Link>,
         },
         {
           key: "4-4",
-          label: <Link to="/dashboard">Cadastrar Informações</Link>,
+          label: <Link to="/employee/manageInfo">Gerenciar Informações</Link>,
         },
         {
           key: "4-5",
@@ -114,15 +106,21 @@ const Template = (props) => {
       children: [
         {
           key: "5-1",
-          label: <Link to="/dashboard">Gerar Documentos</Link>,
+          label: <Link to="/documents/createService">Cadastrar Serviço</Link>,
         },
         {
           key: "5-2",
-          label: <Link to="/dashboard">Gerar Contratos</Link>,
+          label: <Link to="/documents/createDocument">Gerar Documentos</Link>,
         },
         {
           key: "5-3",
-          label: <Link to="/dashboard">Gerenciar Contratos</Link>,
+          label: <Link to="/documents/generateContract">Gerar Contratos</Link>,
+        },
+        {
+          key: "5-4",
+          label: (
+            <Link to="/documents/manageContracts">Gerenciar Contratos</Link>
+          ),
         },
       ],
     },
@@ -148,15 +146,15 @@ const Template = (props) => {
       children: [
         {
           key: "7-1",
-          label: <Link to="/dashboard">Cadastrar Produto</Link>,
+          label: <Link to="/stock/registerProduct">Cadastrar Produto</Link>,
         },
         {
           key: "7-2",
-          label: <Link to="/dashboard">Cadastrar Uniforme/EPI</Link>,
+          label: <Link to="/stock/registerEPI">Cadastrar Uniforme/EPI</Link>,
         },
         {
           key: "7-3",
-          label: <Link to="/dashboard">Controle de Estoque</Link>,
+          label: <Link to="/stock/control">Controle de Estoque</Link>,
         },
         {
           key: "7-4",
@@ -164,7 +162,18 @@ const Template = (props) => {
         },
         {
           key: "7-5",
-          label: <Link to="/dashboard">Movimentações</Link>,
+          label: <Link to="/stock/movements">Movimentações</Link>,
+        },
+      ],
+    },
+    {
+      key: "8",
+      icon: <FaBoxes />,
+      label: "Laboratório",
+      children: [
+        {
+          key: "8-1",
+          label: <Link to="/teste">Aba de Testes</Link>,
         },
       ],
     },

@@ -1,13 +1,13 @@
 /* eslint-disable react/prop-types */
-import { useNavigate } from "react-router-dom";
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Toast } from "../components/toasts";
 
+import Loading from "../components/animations/Loading";
 import { api } from "../services/api";
 import EmployeeService from "../services/EmployeeService";
 import { UserTypeContext } from "./UserTypeContext";
-import Loading from "../components/animations/Loading";
 
 const employeeService = new EmployeeService();
 
@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("token");
       if (recoveredUser && token) {
         setUser(recoveredUser);
-        await context.setUserType(recoveredUser.role);
+        await context.setUserType(recoveredUser.role.map(role => role.role.name));
         api.defaults.headers.Authorization = `Bearer ${token}`;
       }
       setLoading(false);

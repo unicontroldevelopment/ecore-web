@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 import TextField from "@mui/material/TextField";
-import { Col } from "antd";
 import * as React from "react";
 
 export const FilterInput = ({
@@ -23,11 +22,9 @@ export const FilterInput = ({
   }, [errorText]);
 
   return (
-    <Col span={6}>
         <TextField
       sx={{
         width: "100%",
-        minHeight: 64,
       }}
       label={label}
       variant="outlined"
@@ -41,6 +38,5 @@ export const FilterInput = ({
       helperText={errorText}
       disabled={disabled}
     />
-    </Col>
   );
 }

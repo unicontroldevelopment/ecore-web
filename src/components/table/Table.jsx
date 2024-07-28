@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
-import { Button, Popconfirm, Table } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons";
+import { Button, Popconfirm, Table } from "antd";
 import { ActionsContainer } from "./styles";
 
 export const CustomTable = ({
@@ -26,15 +26,18 @@ export const CustomTable = ({
     {
       title: "Ações",
       key: "actions",
+      width: 150,
       render: (text, record) => (
         <ActionsContainer>
           <Button
+            title="Visualizar"
             style={{ backgroundColor: "#3f8ece", color: "#fff" }}
             onClick={() => onView(record)}
             icon={<EyeOutlined />}
             shape="circle"
           />
           <Button
+            title="Editar"
             style={{ backgroundColor: "#36db6a", color: "#fff" }}
             onClick={() => onUpdate(record)}
             icon={<EditOutlined />}
@@ -50,6 +53,7 @@ export const CustomTable = ({
             icon={<QuestionCircleOutlined style={{ color: "red" }} />}
           >
             <Button
+              title="Deletar"
               style={{ backgroundColor: "#da4444", color: "#fff" }}
               icon={<DeleteOutlined />}
               shape="circle"
@@ -60,10 +64,10 @@ export const CustomTable = ({
     },
   ];
 
-  console.log(columnsAndActions);
-
   const paginationConfig = {
-    defaultPageSize: 15,
+    defaultPageSize: 10,
+    showSizeChanger: true,
+    pageSizeOptions: ["10", "15", "20", "30", "50"],
   };
 
   return (

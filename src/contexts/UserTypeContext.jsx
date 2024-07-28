@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState, createContext } from "react";
+import { createContext, useEffect, useState } from "react";
 
 const UserTypeContext = createContext();
 
@@ -19,3 +19,4 @@ const UserTypeProvider = ({ children }) => {
 };
 
 export { UserTypeContext, UserTypeProvider };
+

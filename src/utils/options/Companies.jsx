@@ -1,3 +1,8 @@
 export const Companies = () => {
-  return ["Unicontrol", "Fitolog", "Corelog", "ECORE", "Labs", "Newsis"];
+  return [
+    "UNICONTROL CONTROLE DE PRAGAS LTDA",
+    "UNICONTROL CONTROLE DE PRAGAS S/A - FILIAL FARROUPILHA",
+    "FITOLOG LICENCIAMENTO DE FRANQUIAS LTDA",
+    "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA",
+  ];
 };

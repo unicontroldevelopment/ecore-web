@@ -8,12 +8,25 @@ function VerifyUserRole(roles) {
 
   React.useEffect(() => {
     const verifyUser = () => {
-      if (!roles.includes(userTypeContext.userType)) {
+      if (!Array.isArray(userTypeContext.userType) || !userTypeContext.userType.length) return;
+
+      const userRoles = userTypeContext.userType.map(role => {
+        if (typeof role === 'object' && role.role) {
+          return role.role.name;
+        }
+        return role;
+      });
+
+      const hasAccess = userRoles.some(userRole => roles.includes(userRole));
+
+      if (!hasAccess) {
         navigate("/accessDenied");
       }
     };
     verifyUser();
-  }, []);
+  }, [navigate, roles, userTypeContext.userType]);
+
+  return null;
 }
 
 export default VerifyUserRole;
