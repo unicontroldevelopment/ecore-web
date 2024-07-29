@@ -174,7 +174,13 @@ export default function ManageContracts() {
         ...prevValues,
         clauses: prevValues.clauses.map((clause) =>
           clause.id === 1
-            ? { ...clause, description: ClauseTwoAdditive(additive.oldValue, additive.newValue) }
+            ? {
+                ...clause,
+                description: ClauseTwoAdditive(
+                  additive.oldValue,
+                  additive.newValue
+                ),
+              }
             : clause
         ),
       }));

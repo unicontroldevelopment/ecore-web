@@ -15,7 +15,7 @@ import "moment/locale/pt-br";
 import AccessDenied from "./pages/accessDenied";
 import Dashboard from "./pages/dashboard/Dashboard";
 import CreateContract from "./pages/documents/createContract";
-// import CreateDocument from "./pages/documents/createDocument";
+import CreateDocument from "./pages/documents/createDocument";
 import CreateService from "./pages/documents/createService";
 import ManageContracts from "./pages/documents/manageContratcs";
 import CreateEmail from "./pages/emails/createEmail";
@@ -166,7 +166,7 @@ const App = () => {
                   </PrivatePage>
                 }
               />
-              {/* <Route
+              <Route
                 path="/documents/createDocument"
                 element={
                   <PrivatePage>
@@ -175,7 +175,7 @@ const App = () => {
                     </Template>
                   </PrivatePage>
                 }
-              /> */}
+              />
               <Route
                 path="/documents/generateContract"
                 element={

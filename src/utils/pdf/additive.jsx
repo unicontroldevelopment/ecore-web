@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
+import * as pdfFonts from "pdfmake/build/vfs_fonts";
 import { logo } from "../../assets/logos/logo";
 import { Formats } from "../formats";
 
@@ -15,7 +15,7 @@ export const Additive = (
   state,
   signOnContract,
   clauses,
-  date,
+  date
 ) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
   const content = clauses.map((clause) => ({
@@ -55,7 +55,11 @@ export const Additive = (
       },
       ...content,
       {
-        text: `\n\n - \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t${tecSign.city}/${tecSign.state}, ${new Date().getDate()} de ${Formats.ExtenseMonth(date)} de ${new Date().getFullYear()}.\n\n `
+        text: `\n\n - \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t${
+          tecSign.city
+        }/${tecSign.state}, ${new Date().getDate()} de ${Formats.ExtenseMonth(
+          date
+        )} de ${new Date().getFullYear()}.\n\n `,
       },
       {
         text: `\nCONTRATANTE \nNOME: ${name} \n${
@@ -65,7 +69,6 @@ export const Additive = (
       {
         text: `UNICONTROL \nNOME: ${tecSign.responsibleName}\nCPF: ${tecSign.cpf}`,
       },
-
     ],
   };
 
