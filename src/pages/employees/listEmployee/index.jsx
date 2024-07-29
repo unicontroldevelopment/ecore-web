@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Button, Modal } from "antd";
 import dayjs from "dayjs";
 import * as React from "react";
@@ -156,8 +155,8 @@ export default function ListEmployee() {
     {
       title: "Cargo",
       dataIndex: "office",
-      key: "office"
-    }
+      key: "office",
+    },
   ];
 
   return (
@@ -232,13 +231,31 @@ export default function ListEmployee() {
           <CustomModal.Info label="Cidade" value={selectUser.city} />
           <CustomModal.Info label="UF" value={selectUser.state} />
           <CustomModal.Info label="Nível" value={selectUser.level} />
-          <CustomModal.Info label="Departamento" value={selectUser.department} />
+          <CustomModal.Info
+            label="Departamento"
+            value={selectUser.department}
+          />
           <CustomModal.Info label="Empresa" value={selectUser.company} />
-          <CustomModal.Info label="Centro de Custo" value={selectUser.costCenter} />
-          <CustomModal.Info label="Data de Admição" value={formatDate(selectUser.dateAdmission)} />
-          <CustomModal.Info label="Data de Demissão" value={formatDate(selectUser.dateResignation)} />
-          <CustomModal.Info label="Salário Inicial" value={selectUser.initialWage} />
-          <CustomModal.Info label="Salário Atual" value={selectUser.currentWage} />
+          <CustomModal.Info
+            label="Centro de Custo"
+            value={selectUser.costCenter}
+          />
+          <CustomModal.Info
+            label="Data de Admição"
+            value={formatDate(selectUser.dateAdmission)}
+          />
+          <CustomModal.Info
+            label="Data de Demissão"
+            value={formatDate(selectUser.dateResignation)}
+          />
+          <CustomModal.Info
+            label="Salário Inicial"
+            value={selectUser.initialWage}
+          />
+          <CustomModal.Info
+            label="Salário Atual"
+            value={selectUser.currentWage}
+          />
         </Modal>
       )}
       {isModalVisibleUpdate && (

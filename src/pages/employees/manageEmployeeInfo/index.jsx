@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 import { Button, Modal } from "antd";
 import * as React from "react";
 import { Filter } from "../../../components/filter";
@@ -75,7 +73,7 @@ export default function ManageEmployeeInfo() {
 
       return {
         ...prevUser,
-        role: event.target.value.map(role => ({ role: { name: role } }))
+        role: event.target.value.map((role) => ({ role: { name: role } })),
       };
     });
   };
@@ -146,7 +144,11 @@ export default function ManageEmployeeInfo() {
       title: "Perfil",
       key: "role",
       dataIndex: "role",
-      render: (text, record) => <span>{record.role.map(roles => roles.role.name).join(', ') ?? "-"}</span>,
+      render: (text, record) => (
+        <span>
+          {record.role.map((roles) => roles.role.name).join(", ") ?? "-"}
+        </span>
+      ),
     },
     {
       title: "Setor",
@@ -240,7 +242,10 @@ export default function ManageEmployeeInfo() {
         >
           <CustomModal.Info label="Nome" value={selectUser.name} />
           <CustomModal.Info label="Senha" value={selectUser.password} />
-          <CustomModal.Info label="Perfil" value={selectUser.role.map(roles => roles.role.name).join(', ')} />
+          <CustomModal.Info
+            label="Perfil"
+            value={selectUser.role.map((roles) => roles.role.name).join(", ")}
+          />
           <CustomModal.Info label="Setor" value={selectUser.department} />
           <CustomModal.Info label="Empresa" value={selectUser.company} />
           <CustomModal.Info label="Unidade" value={selectUser.unit} />
@@ -365,7 +370,7 @@ export default function ManageEmployeeInfo() {
                 label="Perfil"
                 name="role"
                 multiple
-                value={selectUser.role.map(role => role.role.name)}
+                value={selectUser.role.map((role) => role.role.name)}
                 onChange={handleRoleChange}
                 options={Options.Roles()}
               />
