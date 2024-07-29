@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "serve -s dist",
-    "start": "npm run build && npm run serve"
+    "start": "npm run serve"
   },
   "dependencies": {
     "@ant-design/icons": "^5.3.1",
