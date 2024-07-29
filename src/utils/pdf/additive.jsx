@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import pdfMake from "pdfmake/build/pdfmake";
-import * as pdfFonts from "pdfmake/build/vfs_fonts";
+import pdfFonts from "pdfmake/build/vfs_fonts";
 import { logo } from "../../assets/logos/logo";
 import { Formats } from "../formats";
 
