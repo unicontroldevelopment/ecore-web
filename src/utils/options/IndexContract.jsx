@@ -1,5 +1,5 @@
 export const IndexContract = () => [
-    "Dissídio da categoria",
+    "Dissídio da Categoria",
     "IGPM",
     "IPCA",
   ];
