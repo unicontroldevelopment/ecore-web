@@ -161,10 +161,20 @@ export default function CreateContract() {
     setValues((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
+        clause.id === 2 ? { ...clause, text: ClauseThree(values.index) } : clause
+      ),
+    }));
+  }, [values.index]);
+
+  React.useEffect(() => {
+    setValues((prevValues) => ({
+      ...prevValues,
+      clauses: prevValues.clauses.map((clause) =>
         clause.id === 7 ? { ...clause, text: ClauseEight(tecSign, values.date) } : clause
       ),
     }));
   }, [values.signOnContract, values.date]);
+
 
   const servicesDesc = services.map((service) => service.description);
   const signSocialReason = signs.map((sign) => sign.socialReason);

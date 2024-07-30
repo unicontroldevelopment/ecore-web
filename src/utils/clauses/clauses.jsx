@@ -9,8 +9,8 @@ export const ClauseTwo = (valueContract, valueExtensible) => {
   \n PARÁGRAFO PRIMEIRO: Após o vencimento incidirá multa de 05% (cinco por cento) sobre o valor das faturas, juros legais de 02% (dois por cento) ao mês, acrescidos da recuperação de despesas financeiras, nas mesmas taxas praticadas pelos Bancos do mercado.`;
 };
 
-export const ClauseThree = () => {
-  return "CLAUSULA TERCEIRA – ATUALIZAÇAO DE VALORES: O valor consignado na CLÁUSULA SEGUNDA refere-se à data de inicio deste contrato, sendo fixo e irreajustável pelo período de 12 (doze) meses. Apos o periodo de 12 meses o contrato será reajustado com base no DISSIDIO DA CA.";
+export const ClauseThree = (index) => {
+  return `CLAUSULA TERCEIRA – ATUALIZAÇAO DE VALORES: O valor consignado na CLÁUSULA SEGUNDA refere-se à data de inicio deste contrato, sendo fixo e irreajustável pelo período de 12 (doze) meses. Apos o periodo de 12 meses o contrato será reajustado com base no ${index} ou por negociação entre ambas as partes.`;
 };
 
 export const ClauseFour = () => {
