@@ -5,6 +5,7 @@ import { Documents } from "./Documents";
 import { EPIs } from "./EPI";
 import { Education } from "./Education";
 import { EmailType } from "./EmailType";
+import { IndexContract } from "./IndexContract";
 import { Level } from "./Level";
 import { MaritalStatus } from "./MaritalStatus";
 import { NotebookBrands } from "./NotebookBrands";
@@ -33,5 +34,6 @@ export const Options = {
   Level,
   MaritalStatus,
   Education,
-  CostCenter
+  CostCenter,
+  IndexContract,
 };
