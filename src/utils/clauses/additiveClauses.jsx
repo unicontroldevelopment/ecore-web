@@ -6,6 +6,7 @@ export const ClauseOneAdditive = () => {
   };
 
 export const ClauseTwoAdditive = (oldValue = 0, newValue = 0) => {
+
     return `CLÁUSULA SEGUNDA: O valor da mensalidade passa de R$ ${oldValue} reais para R$ ${newValue} reais mensais.
     \nValor do adendo: R$ ${newValue -= oldValue} reais. \n\n`
 }
