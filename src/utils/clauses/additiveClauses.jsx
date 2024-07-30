@@ -1,8 +1,9 @@
 
 export const ClauseOneAdditive = () => {  
     return `CLÁUSULA PRIMEIRA: O presente CONTRATO tem como objeto a INCLUSAO de
-    - Limpeza de Preventiva na tubulação dos ralos: Mensal;
-    - Até 01 chamado por mês para desentupimento dos ralos. \n`
+    -
+    -
+    -  \n`
   };
 
 export const ClauseTwoAdditive = (oldValue = 0, newValue = 0) => {

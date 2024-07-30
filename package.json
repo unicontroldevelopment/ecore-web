@@ -8,8 +8,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev": "react-scripts start",
-    "heroku-postbuild": "npm run build"
+    "dev": "react-scripts start"
   },
   "dependencies": {
     "@ant-design/icons": "^5.3.1",

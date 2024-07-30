@@ -21,6 +21,7 @@ import {
   ClauseTwo,
 } from "../../../utils/clauses/clauses";
 import { Formats } from "../../../utils/formats";
+import { Options } from "../../../utils/options";
 
 export default function CreateContract() {
   VerifyUserRole(["Master", "Administrador", "Comercial"]);
@@ -104,6 +105,40 @@ export default function CreateContract() {
       ),
     }));
   }, [values.servicesContract]);
+
+  React.useEffect(() => {
+    const fetchAddress = async () => {
+      if (values.cep.length === 9) {
+        try {
+          const response = await utilsService.find(values.cep);
+          if (response) {
+            setValues(prevValues => ({
+              ...prevValues,
+              road: response.data.logradouro,
+              neighborhood: response.data.bairro,
+              city: response.data.localidade,
+              state: response.data.uf
+            }));
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+    fetchAddress();
+  }, [values.cep]);
+
+  React.useEffect(() => {
+    if (values.cep.length !== 9) {
+      setValues(prevValues => ({
+        ...prevValues,
+        road: "",
+        neighborhood: "",
+        city: "",
+        state: ""
+      }));
+    }
+  }, [values.cep]);
 
   React.useEffect(() => {
 
@@ -543,13 +578,14 @@ export default function CreateContract() {
           />
         </CustomInput.Root>
         <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
+          <CustomInput.Select
             label="Índice"
             type="text"
             name="index"
             value={values.index}
             onChange={handleChange}
             errorText={messageError.index}
+            options={Options.IndexContract()}
           />
         </CustomInput.Root>
         <CustomInput.Select

@@ -35,6 +35,7 @@ import {
 } from "../../../utils/clauses/additiveClauses";
 import { Formats } from "../../../utils/formats";
 import formatData from "../../../utils/formats/formatData";
+import { Options } from "../../../utils/options";
 import { Additive } from "../../../utils/pdf/additive";
 import { MyDocument } from "../../../utils/pdf/createContract";
 import { Reajustment } from "../../../utils/pdf/reajustment";
@@ -47,6 +48,7 @@ export default function ManageContracts() {
   const [signs, setSigns] = React.useState([]);
   const [email, setEmail] = React.useState("");
   const [showOptions, setShowOptions] = React.useState(false);
+  const [additivePropouse, setAdditivePropouse] = React.useState(null);
   const [selectContract, setSelectContract] = React.useState({
     status: "",
     d4sign: "",
@@ -96,6 +98,7 @@ export default function ManageContracts() {
   const [d4signController, setD4signController] = React.useState(false);
   const [isModalVisibleCreate, setIsModalVisibleCreate] = React.useState(false);
   const [currentType, setCurrentType] = React.useState("");
+  const [formatCep, setFormatCep] = React.useState("");
   const [d4SignOpenInfo, setD4SignOpenInfo] = React.useState(false);
   const [d4SignRegisterSignature, setD4SignRegisterSignature] =
     React.useState(false);
@@ -171,6 +174,40 @@ export default function ManageContracts() {
     };
     fetchData();
   }, [filter]);
+
+  React.useEffect(() => {
+    const fetchAddress = async () => {
+      if (selectContract.cep.length === 9) {
+        try {
+          const response = await utilsService.findCep(selectContract.cep);
+          if (response) {
+            setSelectContract((prevValues) => ({
+              ...prevValues,
+              road: response.data.logradouro,
+              neighborhood: response.data.bairro,
+              city: response.data.localidade,
+              state: response.data.uf,
+            }));
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+    fetchAddress();
+  }, [selectContract.cep]);
+
+  React.useEffect(() => {
+    if (selectContract.cep.length !== 9) {
+      setSelectContract((prevValues) => ({
+        ...prevValues,
+        road: "",
+        neighborhood: "",
+        city: "",
+        state: "",
+      }));
+    }
+  }, [selectContract.cep]);
 
   React.useEffect(() => {
     const Fetch = async () => {
@@ -250,19 +287,6 @@ export default function ManageContracts() {
 
   const removeMask = (maskedValue) => {
     return maskedValue.replace(/[.,]/g, "");
-  };
-
-  const handleValueChange = (event) => {
-    const { name, value } = event.target;
-
-    const unmaskedValue = removeMask(value);
-
-    setSelectContract((prevState) => ({
-      ...prevState,
-      [name]: unmaskedValue,
-    }));
-
-    setValueMoney(Formats.Money(value));
   };
 
   const handleServiceChange = (event) => {
@@ -345,6 +369,29 @@ export default function ManageContracts() {
         ...prevState,
         date: eventOrDate ? dayjs(eventOrDate) : null,
       }));
+    }
+  };
+
+  const handleFormatChange = (eventOrDate) => {
+    if (eventOrDate.target) {
+      const { name, value } = eventOrDate.target;
+
+      if (name === "cpfcnpj") {
+        setSelectContract((prevState) => ({
+          ...prevState,
+          [name]: Formats.CpfCnpj(value),
+        }));
+      } else if (name === "value") {
+        setSelectContract((prevState) => ({
+          ...prevState,
+          [name]: Formats.Money(value),
+        }));
+      } else if (name === "cep") {
+        setSelectContract((prevState) => ({
+          ...prevState,
+          [name]: Formats.Cep(value),
+        }));
+      }
     }
   };
 
@@ -668,7 +715,6 @@ export default function ManageContracts() {
       setValueMoney(Formats.Money(contract.value));
     }
 
-;
     setLoading(false);
     setIsModalVisibleUpdate(true);
   };
@@ -679,6 +725,15 @@ export default function ManageContracts() {
     if (fileEvent) {
       setFile(fileEvent);
     }
+  };
+
+  const handleFileAdditiveChange = (e) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setAdditivePropouse(e.target.result);
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   const mergePDFs = async (uploadedPDFDoc, createdPDFDoc) => {
@@ -781,17 +836,14 @@ export default function ManageContracts() {
       selectContract.signOnContract,
       additive.clauses,
       extenseDate,
-      selectContract.signOnContract,
+      selectContract.signOnContract
     );
 
     let mergedBlob;
 
-    if (selectContract.propouse.file?.data) {
-      const arrayBuffer = selectContract.propouse.file.data;
-      const propouseData = new Uint8Array(arrayBuffer);
-
+    if (additivePropouse) {
       try {
-        const uploadedPDFDoc = await PDFDocument.load(propouseData);
+        const uploadedPDFDoc = await PDFDocument.load(additivePropouse);
         const createdPDFDoc = await PDFDocument.load(pdfByte);
         mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
       } catch (error) {
@@ -829,33 +881,18 @@ export default function ManageContracts() {
     );
 
     let mergedBlob;
-
-    if (selectContract.propouse.file?.data) {
-      const arrayBuffer = selectContract.propouse.file.data;
-      const propouseData = new Uint8Array(arrayBuffer);
-
-      try {
-        const uploadedPDFDoc = await PDFDocument.load(propouseData);
-        const createdPDFDoc = await PDFDocument.load(pdfByte);
-        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
-      } catch (error) {
-        console.error("Error loading PDFs: ", error);
-        return;
+    try {
+      const createdPDFDoc = await PDFDocument.load(pdfByte);
+      const mergedPDF = await PDFDocument.create();
+      for (const pageNum of createdPDFDoc.getPageIndices()) {
+        const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+        mergedPDF.addPage(page);
       }
-    } else {
-      try {
-        const createdPDFDoc = await PDFDocument.load(pdfByte);
-        const mergedPDF = await PDFDocument.create();
-        for (const pageNum of createdPDFDoc.getPageIndices()) {
-          const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-          mergedPDF.addPage(page);
-        }
-        const mergedPdfBytes = await mergedPDF.save();
-        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
-      } catch (error) {
-        console.error("Error creating PDF: ", error);
-        return;
-      }
+      const mergedPdfBytes = await mergedPDF.save();
+      mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+    } catch (error) {
+      console.error("Error creating PDF: ", error);
+      return;
     }
 
     const pdfUrl = URL.createObjectURL(mergedBlob);
@@ -1159,7 +1196,7 @@ export default function ManageContracts() {
                   type="text"
                   name="cpfCnpj"
                   value={selectContract.cpfcnpj}
-                  onChange={handleChange}
+                  onChange={handleFormatChange}
                 />
               </CustomInput.Root>
               <CustomInput.Root columnSize={6}>
@@ -1168,7 +1205,7 @@ export default function ManageContracts() {
                   type="text"
                   name="cep"
                   value={selectContract.cep}
-                  onChange={handleChange}
+                  onChange={handleFormatChange}
                 />
               </CustomInput.Root>
               <CustomInput.Root columnSize={6}>
@@ -1260,17 +1297,18 @@ export default function ManageContracts() {
                   label="Valor"
                   type="text"
                   name="value"
-                  value={valueMoney}
-                  onChange={handleValueChange}
+                  value={selectContract.value}
+                  onChange={handleFormatChange}
                 />
               </CustomInput.Root>
               <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
+                <CustomInput.Select
                   label="Índice"
                   type="number"
                   name="index"
                   value={selectContract.index}
                   onChange={handleChange}
+                  options={Options.IndexContract()}
                 />
               </CustomInput.Root>
               <CustomInput.Select
@@ -1554,7 +1592,9 @@ export default function ManageContracts() {
           >
             {currentType === "Aditivo" ? (
               <>
-                <Form.Fragment section={`Dados do Aditivo - Cliente ${selectContract.name}`}>
+                <Form.Fragment
+                  section={`Dados do Aditivo - Cliente ${selectContract.name}`}
+                >
                   <CustomInput.Root columnSize={12}>
                     <CustomInput.Input
                       label="Antigo Valor"
@@ -1596,25 +1636,45 @@ export default function ManageContracts() {
                       />
                     ))}
                   </div>
+                  <Upload
+                    beforeUpload={(file) => {
+                      handleFileAdditiveChange({ target: { files: [file] } });
+                      return false;
+                    }}
+                    accept=".pdf"
+                    maxCount={1}
+                    showUploadList={false}
+                  >
+                    <Button
+                      title="Anexar Proposta do Aditivo"
+                      style={{ backgroundColor: "#ed9121", color: "#fff" }}
+                      shape="default"
+                    >
+                      Anexar Proposta do Aditivo
+                    </Button>
+                  </Upload>
                 </Form.Fragment>
               </>
             ) : (
               <>
-                <Form.Fragment section={`Dados do Reajuste - Cliente ${selectContract.name}`}>
+                <Form.Fragment
+                  section={`Dados do Reajuste - Cliente ${selectContract.name}`}
+                >
                   <CustomInput.Root columnSize={12}>
                     <CustomInput.Input
-                      label="Índice"
+                      label="Porcentagem do Índice"
                       name="index"
                       value={reajustment.index}
                       onChange={handleReajustmentValues}
                     />
                   </CustomInput.Root>
                   <CustomInput.Root columnSize={12}>
-                    <CustomInput.Input
-                      label="Tipo de Reajuste"
+                    <CustomInput.Select
+                      label="Indíce"
                       name="type"
                       value={reajustment.type}
                       onChange={handleReajustmentValues}
+                      options={Options.IndexContract()}
                     />
                   </CustomInput.Root>
                 </Form.Fragment>

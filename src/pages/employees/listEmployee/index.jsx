@@ -1,6 +1,7 @@
 import { Button, Modal } from "antd";
 import dayjs from "dayjs";
 import * as React from "react";
+import Loading from "../../../components/animations/Loading";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input/index";
@@ -14,6 +15,7 @@ import { Options } from "../../../utils/options";
 export default function ListEmployee() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
   const [selectUser, setSelectUser] = React.useState({
     name: "",
     birthday: dayjs(),
@@ -54,11 +56,19 @@ export default function ListEmployee() {
 
   React.useEffect(() => {
     const fetchUsers = async () => {
-      const request = await service.getEmployees(filter.name, filter.office);
-      setUsers(request.data.listUsers);
+      setLoading(true); 
+      try {
+        const request = await service.getEmployees(filter.name, filter.office);
+        setUsers(request.data.listUsers);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchUsers();
   }, [filter]);
+
 
   const formatDate = (dateString) => {
     return dayjs(dateString).format("DD/MM/YYYY");
@@ -160,7 +170,9 @@ export default function ListEmployee() {
   ];
 
   return (
-    <Table.Root title="Lista de funcionários" columnSize={12}>
+    <>
+    {loading && <Loading />}
+       <Table.Root title="Lista de funcionários" columnSize={12}>
       <Filter.Fragment section="Filtros">
         <CustomInput.Root columnSize={6}>
           <Filter.FilterInput
@@ -529,5 +541,6 @@ export default function ListEmployee() {
         </Modal>
       )}
     </Table.Root>
+    </>
   );
 }

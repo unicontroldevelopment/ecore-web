@@ -8,7 +8,7 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
 
 export default function CreateService() {
-  VerifyUserRole(["Master", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador", "Comercial"]);
   const navigate = useNavigate();
   const service = new DocumentsService();
   const [values, setValues] = React.useState({

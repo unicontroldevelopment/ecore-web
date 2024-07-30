@@ -33,4 +33,12 @@ export default class {
       return error.response;
     }
   }
+  async findCep(cep) {
+    try {
+      const response = await api.post("/cep", { cep} );
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }
