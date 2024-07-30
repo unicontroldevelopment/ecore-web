@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
-import { baciaDoJacui, canoas } from "../../assets/folhas/folhas";
 
 export const Reajustment = (index, type, signOnContract) => {
   const newValue = (valorAtual, indiceReajuste) => {
@@ -15,26 +14,10 @@ export const Reajustment = (index, type, signOnContract) => {
 
   const tecSign = signOnContract[0].Contract_Signature;
 
-  let background
-
-  if(tecSign.city === "Canoas") {
-    background = canoas
-  } else if (tecSign.city === "Bacia do Jacui") {
-    background = baciaDoJacui
-  }
-
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
   const docDefinition = {
     pageSize: "A4",
-    background: [
-      {
-          image: background,
-          width: 595.28,
-          height: 841.89,
-          absolutePosition: { x: 0, y: 0 },
-      }
-  ],
     content: [
       {
         text: `\n\n\n\n\n${tecSign.city}, 25 de janeiro de 2024`,
