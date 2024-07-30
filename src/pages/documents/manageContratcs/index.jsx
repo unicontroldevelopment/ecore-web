@@ -37,6 +37,7 @@ import { Formats } from "../../../utils/formats";
 import formatData from "../../../utils/formats/formatData";
 import { Additive } from "../../../utils/pdf/additive";
 import { MyDocument } from "../../../utils/pdf/createContract";
+import { Reajustment } from "../../../utils/pdf/reajustment";
 
 export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "Comercial"]);
@@ -46,10 +47,6 @@ export default function ManageContracts() {
   const [signs, setSigns] = React.useState([]);
   const [email, setEmail] = React.useState("");
   const [showOptions, setShowOptions] = React.useState(false);
-  const [reajustment, setReajustment] = React.useState({
-    newValue: "",
-    newIndex: "",
-  });
   const [selectContract, setSelectContract] = React.useState({
     status: "",
     d4sign: "",
@@ -82,6 +79,12 @@ export default function ManageContracts() {
       { id: 1, description: `${ClauseTwoAdditive()}`, isExpanded: false },
       { id: 2, description: `${ClauseThreeAdditive()}`, isExpanded: false },
     ],
+  });
+  const [reajustment, setReajustment] = React.useState({
+    contract_id: null,
+    value: null,
+    index: null,
+    type: "",
   });
   const [file, setFile] = React.useState();
   const [valueMoney, setValueMoney] = React.useState("");
@@ -120,6 +123,7 @@ export default function ManageContracts() {
 
   //Fetchs -------------------------------------------------------------------------------------
   const fetchContracts = async () => {
+    setLoading(true);
     try {
       const request = await service.getContracts(filter.name);
       const dataContracts = request.data.listContracts;
@@ -133,10 +137,11 @@ export default function ManageContracts() {
           })),
         };
       });
-
       setContracts(updatedContracts);
+      setLoading(false);
     } catch (error) {
       console.error("Erro ao buscar contratos:", error);
+      setLoading(false);
     }
   };
 
@@ -235,7 +240,7 @@ export default function ManageContracts() {
   };
 
   const handleClauseChange = (id, newText) => {
-    setSelectContract((prevValues) => ({
+    setAdditive((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
         clause.id === id ? { ...clause, description: newText } : clause
@@ -648,6 +653,7 @@ export default function ManageContracts() {
   };
 
   const handleUpdate = (contract) => {
+    setLoading(true);
     const updatedContractsService = contract.clauses.map((service) => ({
       ...service,
       currentId: service.id,
@@ -662,6 +668,8 @@ export default function ManageContracts() {
       setValueMoney(Formats.Money(contract.value));
     }
 
+;
+    setLoading(false);
     setIsModalVisibleUpdate(true);
   };
 
@@ -773,27 +781,86 @@ export default function ManageContracts() {
       selectContract.signOnContract,
       additive.clauses,
       extenseDate,
-      selectContract.signOnContract
+      selectContract.signOnContract,
     );
 
-    const createdPDFDoc = await PDFDocument.load(pdfByte);
-    const mergedPDF = await PDFDocument.create();
-    for (const pageNum of createdPDFDoc.getPageIndices()) {
-      const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-      mergedPDF.addPage(page);
-    }
-    const mergedPdfBytes = await mergedPDF.save();
-    const pdfAdditive = new Blob([mergedPdfBytes], { type: "application/pdf" });
+    let mergedBlob;
 
-    const pdfUrl = URL.createObjectURL(pdfAdditive);
+    if (selectContract.propouse.file?.data) {
+      const arrayBuffer = selectContract.propouse.file.data;
+      const propouseData = new Uint8Array(arrayBuffer);
+
+      try {
+        const uploadedPDFDoc = await PDFDocument.load(propouseData);
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
+      } catch (error) {
+        console.error("Error loading PDFs: ", error);
+        return;
+      }
+    } else {
+      try {
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        const mergedPDF = await PDFDocument.create();
+        for (const pageNum of createdPDFDoc.getPageIndices()) {
+          const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+          mergedPDF.addPage(page);
+        }
+        const mergedPdfBytes = await mergedPDF.save();
+        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+      } catch (error) {
+        console.error("Error creating PDF: ", error);
+        return;
+      }
+    }
+
+    const pdfUrl = URL.createObjectURL(mergedBlob);
     window.open(pdfUrl, "_blank");
 
     setIsModalVisibleAdditive(false);
     setIsModalVisibleCreate(false);
   };
 
-  const handleCreateReajustment = () => {
-    console.log("Criar Reajuste");
+  const handleCreateReajustment = async () => {
+    const pdfByte = await Reajustment(
+      reajustment.index,
+      reajustment.type,
+      selectContract.signOnContract
+    );
+
+    let mergedBlob;
+
+    if (selectContract.propouse.file?.data) {
+      const arrayBuffer = selectContract.propouse.file.data;
+      const propouseData = new Uint8Array(arrayBuffer);
+
+      try {
+        const uploadedPDFDoc = await PDFDocument.load(propouseData);
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
+      } catch (error) {
+        console.error("Error loading PDFs: ", error);
+        return;
+      }
+    } else {
+      try {
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        const mergedPDF = await PDFDocument.create();
+        for (const pageNum of createdPDFDoc.getPageIndices()) {
+          const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+          mergedPDF.addPage(page);
+        }
+        const mergedPdfBytes = await mergedPDF.save();
+        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+      } catch (error) {
+        console.error("Error creating PDF: ", error);
+        return;
+      }
+    }
+
+    const pdfUrl = URL.createObjectURL(mergedBlob);
+    window.open(pdfUrl, "_blank");
+
     setIsModalVisibleReajustment(false);
     setIsModalVisibleCreate(false);
   };
@@ -1009,10 +1076,10 @@ export default function ManageContracts() {
     {
       key: "city",
       type: "Reajuste",
-      description: selectContract.name
+      description: selectContract.reajustment
         ? `Valor: ${selectContract.name}`
         : "Nenhum reajuste",
-      exists: !!selectContract.name,
+      exists: !!selectContract.reajustment,
     },
   ];
 
@@ -1487,7 +1554,7 @@ export default function ManageContracts() {
           >
             {currentType === "Aditivo" ? (
               <>
-                <Form.Fragment section="Dados do Aditivo">
+                <Form.Fragment section={`Dados do Aditivo - Cliente ${selectContract.name}`}>
                   <CustomInput.Root columnSize={12}>
                     <CustomInput.Input
                       label="Antigo Valor"
@@ -1533,20 +1600,24 @@ export default function ManageContracts() {
               </>
             ) : (
               <>
-                <CustomInput.Input
-                  label="Novo Valor de Contrato"
-                  name="newValue"
-                  type="number"
-                  value={reajustment.newValue}
-                  onChange={handleReajustmentValues}
-                />
-                <CustomInput.Input
-                  label="Novo Indice"
-                  name="newIndex"
-                  type="number"
-                  value={reajustment.newIndex}
-                  onChange={handleReajustmentValues}
-                />
+                <Form.Fragment section={`Dados do Reajuste - Cliente ${selectContract.name}`}>
+                  <CustomInput.Root columnSize={12}>
+                    <CustomInput.Input
+                      label="Índice"
+                      name="index"
+                      value={reajustment.index}
+                      onChange={handleReajustmentValues}
+                    />
+                  </CustomInput.Root>
+                  <CustomInput.Root columnSize={12}>
+                    <CustomInput.Input
+                      label="Tipo de Reajuste"
+                      name="type"
+                      value={reajustment.type}
+                      onChange={handleReajustmentValues}
+                    />
+                  </CustomInput.Root>
+                </Form.Fragment>
               </>
             )}
           </Modal>

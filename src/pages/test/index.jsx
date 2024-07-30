@@ -1,42 +1,67 @@
 /* eslint-disable react/prop-types */
-import { Button, Upload } from 'antd';
+import { Button } from "antd";
+import { PDFDocument } from "pdf-lib";
 import * as React from "react";
-import { Toast } from '../../components/toasts';
-import Utils from '../../services/Utils';
+import { CustomInput } from "../../components/input";
+import { Reajustment } from "../../utils/pdf/reajustment";
 
 const FileUpload = () => {
-  const service = new Utils();
+  const [values, setValues] = React.useState({
+    index: null,
+    type: "",
+  });
 
-  const handleUpload = async ({ file }) => {
-    const formData = new FormData();
-    formData.append('file', file);
+  const handleChange = (event) => {
+    const { name, value } = event.target;
 
+    setValues((prevValue) => ({
+      ...prevValue,
+      [name]: value,
+    }));
+  };
+
+  const handleCreateReajustment = async () => {
+    const pdfByte = await Reajustment(values.index, values.type);
+
+    let mergedBlob;
     try {
-      const response = await service.uploadPDF(formData);
-      if (response.status === 500) {
-        Toast.Error("DEU ERRO!");
-      } else {
-        Toast.Success("Arquivo anexado com sucesso!");
+      const createdPDFDoc = await PDFDocument.load(pdfByte);
+      const mergedPDF = await PDFDocument.create();
+      for (const pageNum of createdPDFDoc.getPageIndices()) {
+        const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+        mergedPDF.addPage(page);
       }
+      const mergedPdfBytes = await mergedPDF.save();
+      mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
     } catch (error) {
-      console.error('Error uploading file', error);
-      Toast.Error("Erro ao anexar o arquivo!");
+      console.error("Error creating PDF: ", error);
+      return;
     }
+
+    const pdfUrl = URL.createObjectURL(mergedBlob);
+    window.open(pdfUrl, "_blank");
   };
 
   return (
-    <div>
-      <Upload
-        beforeUpload={(file) => {
-          handleUpload({ file });
-          return false;
-        }}
-        accept=".pdf"
-        showUploadList={false}
-      >
-        <Button>Upload PDF</Button>
-      </Upload>
-    </div>
+    <>
+      <CustomInput.Input
+        name="index"
+        label="Indice"
+        type="number"
+        value={values.index}
+        onChange={handleChange}
+      />
+      <CustomInput.Input
+        name="type"
+        label="Tipo de Indice"
+        type="text"
+        value={values.type}
+        onChange={handleChange}
+      />
+      <Button key="submit" type="primary" onClick={handleCreateReajustment}>
+        Criar
+      </Button>
+    </>
   );
 };
 

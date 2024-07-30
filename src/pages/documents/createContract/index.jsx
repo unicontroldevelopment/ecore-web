@@ -595,7 +595,6 @@ export default function CreateContract() {
           >
             <Button
               title="Anexar Proposta"
-              onClick={(e) => handleFileChange(e)}
               style={{ backgroundColor: "#ed9121", color: "#fff", marginBottom: "10%"}}
               shape="default"
             >Anexar Proposta</Button>

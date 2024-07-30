@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
-import { FormControl, InputLabel } from '@mui/material';
-import { DatePicker as AntDatePicker } from 'antd';
+import { FormControl, InputLabel } from "@mui/material";
+import { DatePicker as AntDatePicker } from "antd";
 import dayjs from "dayjs";
-import styled from 'styled-components';
+import styled from "styled-components";
 
 const StyledDatePicker = styled(AntDatePicker)`
   &.ant-picker {
@@ -17,7 +17,7 @@ const StyledDatePicker = styled(AntDatePicker)`
 `;
 
 export function DateInput({ label, name, value, onChange }) {
-    const dateInputId = `date-picker-${label.replace(/\s+/g, '-').toLowerCase()}`;
+  const dateInputId = `date-picker-${label.replace(/\s+/g, "-").toLowerCase()}`;
   return (
     <FormControl variant="outlined" fullWidth>
       <InputLabel htmlFor={dateInputId}>{label}</InputLabel>
@@ -27,7 +27,7 @@ export function DateInput({ label, name, value, onChange }) {
         value={value ? dayjs(value) : null}
         onChange={(date, dateString) => onChange(date, dateString)}
         format="DD/MM/YYYY"
-        style={{ marginTop: '16px' }}
+        style={{ marginTop: "16px", marginBottom: "43px", maxHeight: 43 }}
       />
     </FormControl>
   );
