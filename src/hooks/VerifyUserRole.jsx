@@ -24,7 +24,7 @@ function VerifyUserRole(roles) {
       }
     };
     verifyUser();
-  }, [navigate, roles, userTypeContext.userType]);
+  }, []);
 
   return null;
 }
