@@ -134,8 +134,9 @@ export default function ManageContracts() {
       const updatedContracts = dataContracts.map((contract) => {
         return {
           ...contract,
-          clauses: contract.clauses.map((clause) => ({
+          clauses: contract.clauses.map((clause, index) => ({
             ...clause,
+            currentId: index,
             isExpanded: false,
           })),
         };
@@ -277,6 +278,15 @@ export default function ManageContracts() {
   };
 
   const handleClauseChange = (id, newText) => {
+    setSelectContract((prevValues) => ({
+      ...prevValues,
+      clauses: prevValues.clauses.map((clause) =>
+        clause.id === id ? { ...clause, description: newText } : clause
+      ),
+    }));
+  };
+
+  const handleClauseAdditiveChange = (id, newText) => {
     setAdditive((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
@@ -770,7 +780,6 @@ export default function ManageContracts() {
     }
 
     let mergedBlob;
-
     if (contract.propouse?.file.data) {
       const arrayBuffer = contract.propouse.file.data;
       const propouseData = new Uint8Array(arrayBuffer);
@@ -1340,7 +1349,7 @@ export default function ManageContracts() {
                 </Button>
                 {selectContract.clauses.map((clause, index) => (
                   <CustomInput.LongText
-                    key={clause.currentId}
+                    key={clause.id}
                     label={`Cláusula Nº${index + 1}`}
                     value={clause.description}
                     isExpanded={clause.isExpanded}
@@ -1635,7 +1644,7 @@ export default function ManageContracts() {
                         value={clause.description}
                         isExpanded={clause.isExpanded}
                         onChange={(e) =>
-                          handleClauseChange(clause.id, e.target.value)
+                          handleClauseAdditiveChange(clause.id, e.target.value)
                         }
                         onExpandToggle={() => toggleExpandAdditive(clause.id)}
                         onDelete={() => handleDeleteClause(clause.id)}

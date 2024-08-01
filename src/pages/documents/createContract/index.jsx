@@ -96,11 +96,20 @@ export default function CreateContract() {
       reservoirService?.id
     );
 
+    const selectedServices = services.filter((service) =>
+      values.servicesContract.includes(service.id)
+    );
+  
+    const selectedServiceDescriptions = selectedServices.map(
+      (service) => service.description
+    );
+
+
     setValues((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
         clause.id === 0
-          ? { ...clause, text: ClauseOne(hasReservoirService) }
+          ? { ...clause, text: ClauseOne(hasReservoirService, selectedServiceDescriptions) }
           : clause
       ),
     }));
