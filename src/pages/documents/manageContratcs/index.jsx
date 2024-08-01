@@ -771,7 +771,7 @@ export default function ManageContracts() {
 
     let mergedBlob;
 
-    if (contract.propouse.file?.data) {
+    if (contract.propouse?.file.data) {
       const arrayBuffer = contract.propouse.file.data;
       const propouseData = new Uint8Array(arrayBuffer);
 
