@@ -110,7 +110,7 @@ export default function CreateContract() {
     const fetchAddress = async () => {
       if (values.cep.length === 9) {
         try {
-          const response = await utilsService.find(values.cep);
+          const response = await utilsService.findCep(values.cep);
           if (response) {
             setValues(prevValues => ({
               ...prevValues,
