@@ -395,6 +395,23 @@ export default function ManageContracts() {
     }
   };
 
+  const handleFormatAdditiveChange = (eventOrDate) => {
+    if (eventOrDate.target) {
+      const { name, value } = eventOrDate.target;
+      if (name === "oldValue") {
+        setAdditive((prevState) => ({
+          ...prevState,
+          [name]: Formats.Money(value),
+        }));
+      } else {
+        setAdditive((prevState) => ({
+          ...prevState,
+          [name]: Formats.Money(value),
+        }));
+      }
+  };
+}
+
   //D4Sign -----------------------------------------------------------------------------------------
 
   const verificaCorDoStatus = (status) => {
@@ -1600,7 +1617,7 @@ export default function ManageContracts() {
                       label="Antigo Valor"
                       name="oldValue"
                       value={additive.oldValue}
-                      onChange={handleAdditiveValues}
+                      onChange={handleFormatAdditiveChange}
                     />
                   </CustomInput.Root>
                   <CustomInput.Root columnSize={12}>
@@ -1608,7 +1625,7 @@ export default function ManageContracts() {
                       label="Novo Valor"
                       name="newValue"
                       value={additive.newValue}
-                      onChange={handleAdditiveValues}
+                      onChange={handleFormatAdditiveChange}
                     />
                   </CustomInput.Root>
                 </Form.Fragment>
