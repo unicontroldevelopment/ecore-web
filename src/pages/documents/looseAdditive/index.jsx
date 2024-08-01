@@ -10,9 +10,9 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import ContractSignService from "../../../services/ContractSignService";
 import Utils from "../../../services/Utils";
 import {
-    ClauseOneAdditive,
-    ClauseThreeAdditive,
-    ClauseTwoAdditive,
+  ClauseOneAdditive,
+  ClauseThreeAdditive,
+  ClauseTwoAdditive,
 } from "../../../utils/clauses/additiveClauses";
 import { Formats } from "../../../utils/formats";
 import { Options } from "../../../utils/options";
@@ -526,6 +526,29 @@ export default function LooseAdditive() {
                 onChange={handleFormatChange}
               />
             </CustomInput.Root>
+            <div style={{ width: "100%" }}>
+                    <Button
+                      variant="contained"
+                      style={{ marginBottom: "20px" }}
+                      color="primary"
+                      onClick={handleAddClick}
+                    >
+                      Adicionar Cláusula
+                    </Button>
+                    {values.clauses.map((clause, index) => (
+                      <CustomInput.LongText
+                        key={clause.id}
+                        label={`Cláusula Nº${index + 1}`}
+                        value={clause.description}
+                        isExpanded={clause.isExpanded}
+                        onChange={(e) =>
+                          handleClauseChange(clause.id, e.target.value)
+                        }
+                        onExpandToggle={() => toggleExpand(clause.id)}
+                        onDelete={() => handleDeleteClause(clause.id)}
+                      />
+                    ))}
+                  </div>
           </Form.Fragment>
           <Upload
             beforeUpload={(file) => {
