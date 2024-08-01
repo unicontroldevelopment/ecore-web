@@ -2,25 +2,27 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import {
-  baciaDoJacui,
-  canaa,
-  canoas,
-  erechim,
-  esteio,
-  floresDaCunha,
-  limao,
-  lucena,
-  master,
-  poaCentro,
-  poaZN,
-  recife,
-  saoLourenco,
-  vacaria,
-  valeDosSinos,
+    baciaDoJacui,
+    canaa,
+    canoas,
+    erechim,
+    esteio,
+    floresDaCunha,
+    limao,
+    lucena,
+    master,
+    poaCentro,
+    poaZN,
+    recife,
+    saoLourenco,
+    vacaria,
+    valeDosSinos,
 } from "../../assets/folhas/folhas";
 import { Formats } from "../formats";
 
-export const Reajustment = (index, type, signOnContract, value, name, date) => {
+export const LooseReajustmentPDF = (index, type, signOnContract, value, name, date) => {
+  pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
   const newValue = (valorAtual, indiceReajuste) => {
     const newFloat = parseFloat(valorAtual.replace(",", "."));
     const reajustmentDecimal = indiceReajuste / 100;
@@ -33,7 +35,7 @@ export const Reajustment = (index, type, signOnContract, value, name, date) => {
     return value;
   };
 
-  const tecSign = signOnContract[0].Contract_Signature;
+  const tecSign = signOnContract[0];
 
   let background;
 
@@ -114,21 +116,21 @@ export const Reajustment = (index, type, signOnContract, value, name, date) => {
     background = undefined;
   }
 
-  pdfMake.vfs = pdfFonts.pdfMake.vfs;
-
   const docDefinition = {
     pageSize: "A4",
     background: background
-    ? {
-        image: background,
-        width: 595.28,
-        height: 841.89,
-        absolutePosition: { x: 0, y: 0 },
-      }
-    : undefined,
+      ? {
+          image: background,
+          width: 595.28,
+          height: 841.89,
+          absolutePosition: { x: 0, y: 0 },
+        }
+      : undefined,
     content: [
       {
-        text: `\n\n\n\n\n${tecSign.city}, ${new Date().getDate()} de ${Formats.ExtenseMonth(
+        text: `\n\n\n\n\n${
+          tecSign.city
+        }, ${new Date().getDate()} de ${Formats.ExtenseMonth(
           date
         )} de ${new Date().getFullYear()}.`,
         alignment: "right",
@@ -148,39 +150,79 @@ export const Reajustment = (index, type, signOnContract, value, name, date) => {
       },
       {
         text: `\nA presente proposta tem como objetivo, por parte da ${tecSign.socialReason}, o reajuste anual de seu contrato, previsto para o mês ${Formats.ExtenseMonth(
-          date
-        )} de ${new Date().getFullYear()}. Índice de ${index}%.`,
+            date
+          )} de ${new Date().getFullYear()}. Índice de ${index}%.`,
         alignment: "justify",
         margin: [0, 0, 0, 20],
       },
       {
         table: {
-          widths: [150, '*'],
+          widths: [150, "*"],
           body: [
             [
-              { text: 'Preço Atual', bold: true, fillColor: '#4F81BD', color: 'white' }, 
-            { text: `${value}`, alignment: 'right', fillColor: 'white', color: 'black' }
+              {
+                text: "Preço Atual",
+                bold: true,
+                fillColor: "#4F81BD",
+                color: "white",
+              },
+              {
+                text: `R$ ${value}`,
+                alignment: "right",
+                fillColor: "white",
+                color: "black",
+              },
             ],
             [
-              { text: 'Novo Valor', bold: true, fillColor: '#4F81BD', color: 'white' }, 
-              { text: `R$ ${newValue(value, index)}`, alignment: 'right', fillColor: 'white', color: 'black' }
+              {
+                text: "Novo Valor",
+                bold: true,
+                fillColor: "#4F81BD",
+                color: "white",
+              },
+              {
+                text: `R$ ${newValue(value, index)}`,
+                alignment: "right",
+                fillColor: "white",
+                color: "black",
+              },
             ],
             [
-              { text: 'Índice Reajuste', bold: true, fillColor: '#4F81BD', color: 'white' }, 
-              { text: `${type}`, alignment: 'right', fillColor: 'white', color: 'black' }
+              {
+                text: "Índice Reajuste",
+                bold: true,
+                fillColor: "#4F81BD",
+                color: "white",
+              },
+              {
+                text: `${type}`,
+                alignment: "right",
+                fillColor: "white",
+                color: "black",
+              },
             ],
             [
-              { text: 'Porcentagem Índice', bold: true, fillColor: '#4F81BD', color: 'white' }, 
-              { text: `${index}%`, alignment: 'right', fillColor: 'white', color: 'black' }
-            ]
-          ]
+              {
+                text: "Porcentagem Índice",
+                bold: true,
+                fillColor: "#4F81BD",
+                color: "white",
+              },
+              {
+                text: `${index}%`,
+                alignment: "right",
+                fillColor: "white",
+                color: "black",
+              },
+            ],
+          ],
         },
         layout: {
           hLineColor: function (i, node) {
-            return i === 0 || i === node.table.body.length ? 'black' : 'gray';
+            return i === 0 || i === node.table.body.length ? "black" : "gray";
           },
           vLineColor: function (i, node) {
-            return i === 0 || i === node.table.widths.length ? 'black' : 'gray';
+            return i === 0 || i === node.table.widths.length ? "black" : "gray";
           },
         },
         margin: [100, 0, 100, 0],
@@ -202,24 +244,24 @@ export const Reajustment = (index, type, signOnContract, value, name, date) => {
       {
         columns: [
           {
-            width: 'auto',
-            text: 'Mobile: +55 (51) 98404.1466',
-            link: 'tel:+5551984041466',
-            decoration: 'underline'
+            width: "auto",
+            text: "Mobile: +55 (51) 98404.1466",
+            link: "tel:+5551984041466",
+            decoration: "underline",
           },
           {
-            width: 'auto',
-            text: '|'
+            width: "auto",
+            text: "|",
           },
           {
-            width: 'auto',
-            text: 'Web: http://www.unicontrol.net.br',
-            link: 'http://www.unicontrol.net.br',
-            decoration: 'underline'
-          }
+            width: "auto",
+            text: "Web: http://www.unicontrol.net.br",
+            link: "http://www.unicontrol.net.br",
+            decoration: "underline",
+          },
         ],
-        alignment: 'center',
-        margin: [170, 0, 0, 10]
+        alignment: "center",
+        margin: [170, 0, 0, 10],
       },
     ],
   };
