@@ -780,7 +780,6 @@ export default function ManageContracts() {
     }
 
     let mergedBlob;
-    console.log("Contrato", contract);
     if (contract.propouse?.file.data) {
       const arrayBuffer = contract.propouse.file.data;
       const propouseData = new Uint8Array(arrayBuffer);
