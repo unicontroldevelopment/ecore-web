@@ -122,6 +122,12 @@ const Template = (props) => {
             <Link to="/documents/manageContracts">Gerenciar Contratos</Link>
           ),
         },
+        {
+          key: "5-5",
+          label: (
+            <Link to="/documents/looseAdditive">Criar Aditivo Avulso</Link>
+          ),
+        },
       ],
     },
     {

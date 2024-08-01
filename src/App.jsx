@@ -17,6 +17,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import CreateContract from "./pages/documents/createContract";
 import CreateDocument from "./pages/documents/createDocument";
 import CreateService from "./pages/documents/createService";
+import LooseAdditive from "./pages/documents/looseAdditive";
 import ManageContracts from "./pages/documents/manageContratcs";
 import CreateEmail from "./pages/emails/createEmail";
 import ListEmails from "./pages/emails/listEmails";
@@ -192,6 +193,16 @@ const App = () => {
                   <PrivatePage>
                     <Template>
                       <ManageContracts />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/documents/looseAdditive"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <LooseAdditive />
                     </Template>
                   </PrivatePage>
                 }
