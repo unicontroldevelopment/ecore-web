@@ -1,5 +1,6 @@
 import { Button, Modal } from "antd";
 import * as React from "react";
+import Loading from "../../../components/animations/Loading";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input/index";
@@ -11,7 +12,7 @@ import EmployeeService from "../../../services/EmployeeService";
 import { Options } from "../../../utils/options";
 
 export default function ManageEmployeeInfo() {
-  VerifyUserRole(["Master", "Administrador"]);
+  VerifyUserRole(["Master", "Administrador", "RH"]);
   const [users, setUsers] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [selectUser, setSelectUser] = React.useState({
@@ -175,7 +176,7 @@ export default function ManageEmployeeInfo() {
 
   return (
     <>
-      {loading && <Loading />}
+      {loading && <Loading/>}
       <Table.Root title="Lista de funcionários" columnSize={6}>
         <Filter.Fragment section="Filtros">
           <Filter.FilterInput

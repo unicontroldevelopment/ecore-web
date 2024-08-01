@@ -6,10 +6,23 @@ export const ClauseOneAdditive = () => {
     -  \n`
   };
 
-export const ClauseTwoAdditive = (oldValue = 0, newValue = 0) => {
+  export const ClauseTwoAdditive = (oldValue = "0,00", newValue = "0,00") => {
+    if (oldValue && newValue) {
+        const oldFloat = parseFloat(oldValue.replace(',', '.'));
+        const newFloat = parseFloat(newValue.replace(',', '.'));
 
-    return `CLÁUSULA SEGUNDA: O valor da mensalidade passa de R$ ${oldValue} reais para R$ ${newValue} reais mensais.
-    \nValor do adendo: R$ ${newValue -= oldValue} reais. \n\n`
+        const difference = newFloat - oldFloat;
+
+        const formattedOldValue = oldFloat.toFixed(2).replace('.', ',');
+        const formattedNewValue = newFloat.toFixed(2).replace('.', ',');
+        const formattedDifference = difference.toFixed(2).replace('.', ',');
+
+        return `CLÁUSULA SEGUNDA: O valor da mensalidade passa de R$ ${formattedOldValue} reais para R$ ${formattedNewValue} reais mensais.
+        \nValor do adendo: R$ ${formattedDifference} reais. \n\n`;
+    } else {
+        return `CLÁUSULA SEGUNDA: O valor da mensalidade passa de R$ reais para R$ reais mensais.
+        \nValor do adendo: R$ reais. \n\n`;
+    }
 }
 
 export const ClauseThreeAdditive = () => {

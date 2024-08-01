@@ -728,7 +728,7 @@ export default function ManageContracts() {
   };
 
   const handleFileAdditiveChange = (e) => {
-    const file = event.target.files[0];
+    const file = e.target.files[0];
     const reader = new FileReader();
     reader.onload = (e) => {
       setAdditivePropouse(e.target.result);
