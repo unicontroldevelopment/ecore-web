@@ -419,8 +419,18 @@ export default function ManageContracts() {
           [name]: Formats.Money(value),
         }));
       }
+    }
   };
-}
+
+  const handleFormatReajustmentChange = (eventOrDate) => {
+    if (eventOrDate.target) {
+      const { name, value } = eventOrDate.target;
+        setReajustment((prevState) => ({
+          ...prevState,
+          [name]: Formats.Money(value),
+        }));
+    }
+  };
 
   //D4Sign -----------------------------------------------------------------------------------------
 
@@ -668,26 +678,26 @@ export default function ManageContracts() {
       const formData = new FormData();
       formData.append("file", file);
 
-        const { propouse, ...contractData } = updateData;
+      const { propouse, ...contractData } = updateData;
 
-        const response = await service.updateContract(
-          updateData.id,
-          contractData
-        );
+      const response = await service.updateContract(
+        updateData.id,
+        contractData
+      );
 
-        if (response.status === 200) {
-          if (file && response) {
-            formData.append("id", updateData.id);
-            await utilsService.updatePDF(formData);
-            setFile(null);
-          }
-
-          await fetchContracts();
-          Toast.Success("Contrato atualizado com sucesso!");
-          setIsModalVisibleUpdate(false);
+      if (response.status === 200) {
+        if (file && response) {
+          formData.append("id", updateData.id);
+          await utilsService.updatePDF(formData);
+          setFile(null);
         }
 
-        return response;
+        await fetchContracts();
+        Toast.Success("Contrato atualizado com sucesso!");
+        setIsModalVisibleUpdate(false);
+      }
+
+      return response;
     } catch (error) {
       Toast.Error(error);
       return error;
@@ -892,7 +902,10 @@ export default function ManageContracts() {
     const pdfByte = await Reajustment(
       reajustment.index,
       reajustment.type,
-      selectContract.signOnContract
+      selectContract.signOnContract,
+      reajustment.value,
+      selectContract.name,
+      extenseDate
     );
 
     let mergedBlob;
@@ -1675,6 +1688,14 @@ export default function ManageContracts() {
                 <Form.Fragment
                   section={`Dados do Reajuste - Cliente ${selectContract.name}`}
                 >
+                  <CustomInput.Root columnSize={12}>
+                    <CustomInput.Input
+                      label="Valor Atual"
+                      name="value"
+                      value={reajustment.value}
+                      onChange={handleFormatReajustmentChange}
+                    />
+                  </CustomInput.Root>
                   <CustomInput.Root columnSize={12}>
                     <CustomInput.Input
                       label="Porcentagem do Índice"

@@ -125,7 +125,7 @@ const Template = (props) => {
         {
           key: "5-5",
           label: (
-            <Link to="/documents/looseAdditive">Criar Aditivo Avulso</Link>
+            <Link to="/documents/looseAdditive">Criar Aditivo/Reajuste</Link>
           ),
         },
       ],

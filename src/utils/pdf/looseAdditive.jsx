@@ -54,6 +54,8 @@ export const LooseAdditivePDF = (
 
   const tecSign = signOnContract[0];
 
+  console.log(signOnContract);
+
   let background;
 
   if (tecSign.socialReason === "UNICONTROL CONTROLE DE PRAGAS LTDA") {

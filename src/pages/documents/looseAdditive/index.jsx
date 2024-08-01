@@ -15,7 +15,9 @@ import {
     ClauseTwoAdditive,
 } from "../../../utils/clauses/additiveClauses";
 import { Formats } from "../../../utils/formats";
+import { Options } from "../../../utils/options";
 import { LooseAdditivePDF } from "../../../utils/pdf/looseAdditive";
+import { LooseReajustmentPDF } from "../../../utils/pdf/looseReajustment";
 
 export default function LooseAdditive() {
   VerifyUserRole(["Master", "Administrador", "Comercial"]);
@@ -35,6 +37,7 @@ export default function LooseAdditive() {
     city: "",
     state: "",
     signOnContract: null,
+    documentType: "",
     clauses: [
       { id: 0, description: `${ClauseOneAdditive()}`, isExpanded: false },
       { id: 1, description: `${ClauseTwoAdditive()}`, isExpanded: false },
@@ -42,6 +45,9 @@ export default function LooseAdditive() {
     ],
     newValue: null,
     oldValue: null,
+    currentValue: null,
+    index: null,
+    type: "",
   });
 
   const extenseDate = new Date().getMonth() + 1;
@@ -222,6 +228,16 @@ export default function LooseAdditive() {
           ...prevState,
           [name]: Formats.Money(value),
         }));
+      } else if (name === "currentValue") {
+        setValues((prevState) => ({
+          ...prevState,
+          [name]: Formats.Money(value),
+        }));
+      } else if (name === "adjustedValue") {
+        setValues((prevState) => ({
+          ...prevState,
+          [name]: Formats.Money(value),
+        }));
       } else if (name === "cep") {
         setValues((prevState) => ({
           ...prevState,
@@ -231,20 +247,17 @@ export default function LooseAdditive() {
     }
   };
 
-  const handleSignChange = (selectedDescriptions) => {
-    const descriptions = selectedDescriptions.target.value;
-    const tecValues = tecSign.filter(
-      (sign) => sign.socialReason === selectedDescriptions.target.value
-    );
-    setTecSign(tecValues);
+  const handleSignChange = (event) => {
+    const { value, name } = event.target;
 
-    const { name } = selectedDescriptions.target;
+    setSelectedSignDescriptions(value);
+
+    const tecValues = tecSign.filter((sign) => sign.socialReason === value);
+
     setValues((prevState) => ({
       ...prevState,
       [name]: tecValues,
     }));
-
-    setSelectedSignDescriptions(descriptions);
   };
 
   const handleFileChange = (e) => {
@@ -274,8 +287,6 @@ export default function LooseAdditive() {
       "neighborhood",
       "city",
       "state",
-      "newValue",
-      "oldValue",
     ];
     let newErrors = {};
     let isAllFieldsFilled = true;
@@ -302,50 +313,76 @@ export default function LooseAdditive() {
       return;
     }
 
-    const pdfByte = await LooseAdditivePDF(
-      values.name,
-      values.cpfcnpj,
-      values.road,
-      values.number,
-      values.complement,
-      values.neighborhood,
-      values.city,
-      values.state,
-      values.signOnContract,
-      values.clauses,
-      extenseDate,
-      values.signOnContract
-    );
+    if (values.documentType === "Aditivo") {
+      const pdfByte = await LooseAdditivePDF(
+        values.name,
+        values.cpfcnpj,
+        values.road,
+        values.number,
+        values.complement,
+        values.neighborhood,
+        values.city,
+        values.state,
+        values.signOnContract,
+        values.clauses,
+        extenseDate,
+        values.signOnContract
+      );
 
-    let mergedBlob;
+      let mergedBlob;
 
-    if (file) {
-      try {
-        const uploadedPDFDoc = await PDFDocument.load(file);
-        const createdPDFDoc = await PDFDocument.load(pdfByte);
-        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
-      } catch (error) {
-        console.error("Error loading PDFs: ", error);
-        return;
-      }
-    } else {
-      try {
-        const createdPDFDoc = await PDFDocument.load(pdfByte);
-        const mergedPDF = await PDFDocument.create();
-        for (const pageNum of createdPDFDoc.getPageIndices()) {
-          const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-          mergedPDF.addPage(page);
+      if (file) {
+        try {
+          const uploadedPDFDoc = await PDFDocument.load(file);
+          const createdPDFDoc = await PDFDocument.load(pdfByte);
+          mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
+        } catch (error) {
+          console.error("Error loading PDFs: ", error);
+          return;
         }
-        const mergedPdfBytes = await mergedPDF.save();
-        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
-      } catch (error) {
-        console.error("Error creating PDF: ", error);
-        return;
+      } else {
+        try {
+          const createdPDFDoc = await PDFDocument.load(pdfByte);
+          const mergedPDF = await PDFDocument.create();
+          for (const pageNum of createdPDFDoc.getPageIndices()) {
+            const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+            mergedPDF.addPage(page);
+          }
+          const mergedPdfBytes = await mergedPDF.save();
+          mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+        } catch (error) {
+          console.error("Error creating PDF: ", error);
+          return;
+        }
       }
-    }
 
-    const pdfUrl = URL.createObjectURL(mergedBlob);
-    window.open(pdfUrl, "_blank");
+      const pdfUrl = URL.createObjectURL(mergedBlob);
+      window.open(pdfUrl, "_blank");
+    } else {
+
+      let mergedBlob;
+
+      const pdfByte = await LooseReajustmentPDF(
+        values.index,
+        values.type,
+        values.signOnContract,
+        values.currentValue,
+        values.name,
+        extenseDate,
+      );
+
+      const createdPDFDoc = await PDFDocument.load(pdfByte);
+      const mergedPDF = await PDFDocument.create();
+      for (const pageNum of createdPDFDoc.getPageIndices()) {
+        const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+        mergedPDF.addPage(page);
+      }
+      const mergedPdfBytes = await mergedPDF.save();
+      mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+
+      const pdfUrl = URL.createObjectURL(mergedBlob);
+      window.open(pdfUrl, "_blank");
+    }
   };
 
   const handleCancel = () => {
@@ -358,6 +395,17 @@ export default function LooseAdditive() {
       handleCancel={handleCancel}
       handleSubmit={handleSubmit}
     >
+      <Form.Fragment section="Tipo de Documento">
+        <CustomInput.Select
+          label="Tipo"
+          name="documentType"
+          value={values.documentType}
+          options={["Aditivo", "Reajuste"]}
+          onChange={(e) =>
+            setValues((prev) => ({ ...prev, documentType: e.target.value }))
+          }
+        />
+      </Form.Fragment>
       <Form.Fragment section="Contratante">
         <CustomInput.Root columnSize={6}>
           <CustomInput.Input
@@ -448,75 +496,88 @@ export default function LooseAdditive() {
           />
         </CustomInput.Root>
       </Form.Fragment>
-      <Form.Fragment section="Contratado">
-        <CustomInput.Select
-          label="Assinaturas"
-          name="signOnContract"
-          value={selectedSignDescriptions}
-          options={signSocialReason}
-          onChange={(e) => handleSignChange(e)}
-        />
-      </Form.Fragment>
-      <Form.Fragment section="Valores">
-        <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
-            label="Antigo Valor"
-            type="text"
-            name="oldValue"
-            value={values.oldValue}
-            onChange={handleFormatChange}
+      <Form.Fragment section="Assinatura">
+          <CustomInput.Select
+            label="Assinaturas"
+            name="signOnContract"
+            value={selectedSignDescriptions}
+            options={signSocialReason}
+            onChange={handleSignChange}
           />
-        </CustomInput.Root>
-        <CustomInput.Root columnSize={6}>
-          <CustomInput.Input
-            label="Novo Valor"
-            type="text"
-            name="newValue"
-            value={values.newValue}
-            onChange={handleFormatChange}
-          />
-        </CustomInput.Root>
-      </Form.Fragment>
-      <Form.Fragment section="Cláusulas">
-        <div style={{ width: "100%" }}>
-          <Button
-            variant="contained"
-            style={{ marginBottom: "20px" }}
-            color="primary"
-            onClick={handleAddClick}
+        </Form.Fragment>
+      {values.documentType === "Aditivo" && (
+        <>
+          <Form.Fragment section="Valores">
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Antigo Valor"
+                type="text"
+                name="oldValue"
+                value={values.oldValue}
+                onChange={handleFormatChange}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={6}>
+              <CustomInput.Input
+                label="Novo Valor"
+                type="text"
+                name="newValue"
+                value={values.newValue}
+                onChange={handleFormatChange}
+              />
+            </CustomInput.Root>
+          </Form.Fragment>
+          <Upload
+            beforeUpload={(file) => {
+              handleFileChange({ target: { files: [file] } });
+              return false;
+            }}
+            accept=".pdf"
+            maxCount={1}
+            showUploadList={false}
           >
-            Adicionar Cláusula
-          </Button>
-          {values.clauses.map((clause, index) => (
-            <CustomInput.LongText
-              key={clause.id}
-              label={`Cláusula Nº${index + 1}`}
-              value={clause.description}
-              isExpanded={clause.isExpanded}
-              onChange={(e) => handleClauseChange(clause.id, e.target.value)}
-              onExpandToggle={() => toggleExpand(clause.id)}
-              onDelete={() => handleDeleteClause(clause.id)}
+            <Button
+              title="Anexar Proposta do Aditivo"
+              style={{ backgroundColor: "#ed9121", color: "#fff" }}
+              shape="default"
+            >
+              Anexar Proposta do Aditivo
+            </Button>
+          </Upload>
+        </>
+      )}
+      {values.documentType === "Reajuste" && (
+        <Form.Fragment section="Reajuste">
+          <CustomInput.Root columnSize={6}>
+            <CustomInput.Input
+              label="Valor Atual"
+              type="text"
+              name="currentValue"
+              value={values.currentValue}
+              onChange={handleFormatChange}
             />
-          ))}
-        </div>
-      </Form.Fragment>
-      <Upload
-        beforeUpload={(file) => {
-          handleFileChange({ target: { files: [file] } });
-          return false;
-        }}
-        accept=".pdf"
-        maxCount={1}
-        showUploadList={false}
-      >
-        <Button
-          title="Anexar Proposta do Aditivo"
-          style={{ backgroundColor: "#ed9121", color: "#fff" }}
-          shape="default"
-        >
-          Anexar Proposta do Aditivo
-        </Button>
-      </Upload>
+          </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+            <CustomInput.Select
+              label="Índice"
+              type="text"
+              name="type"
+              value={values.type}
+              onChange={handleAdditiveValues}
+              options={Options.IndexContract()}
+            />
+          </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+            <CustomInput.Input
+              label="Porcentagem do Índice"
+              type="number"
+              name="index"
+              value={values.index}
+              onChange={handleAdditiveValues}
+            />
+          </CustomInput.Root>
+        </Form.Fragment>
+      )}
     </Form.Root>
   );
 }
