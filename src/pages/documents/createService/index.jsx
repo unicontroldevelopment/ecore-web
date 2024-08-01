@@ -41,7 +41,6 @@ export default function CreateService() {
   const areRequiredFieldsFilled = () => {
     const requiredFields = [
         "description",
-        "code"
     ];
     let newErrors = {};
     let isAllFieldsFilled = true;
@@ -74,7 +73,7 @@ export default function CreateService() {
       Toast.Error("Serviço já cadastrado!");
       return;
     } else {
-      Toast.Success("Colaborador cadastrado com sucesso!");
+      Toast.Success("Serviço cadastrado com sucesso!");
       navigate("/dashboard");
     }
   };
