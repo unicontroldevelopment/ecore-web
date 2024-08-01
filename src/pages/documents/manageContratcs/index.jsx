@@ -658,13 +658,6 @@ export default function ManageContracts() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const numericNumber = Number(updateData.number);
-      const numericContractNumber = Number(updateData.contractNumber);
-
-      if (!isNaN(numericNumber) && !isNaN(numericContractNumber)) {
-        updateData.number = numericNumber;
-        updateData.contractNumber = numericContractNumber;
-
         const { propouse, ...contractData } = updateData;
 
         const response = await service.updateContract(
@@ -685,10 +678,6 @@ export default function ManageContracts() {
         }
 
         return response;
-      } else {
-        Toast.Error("Valores do numéro da rua ou index não são válidos!");
-        return;
-      }
     } catch (error) {
       Toast.Error(error);
       return error;
@@ -1237,7 +1226,7 @@ export default function ManageContracts() {
               <CustomInput.Root columnSize={3}>
                 <CustomInput.Input
                   label="Número"
-                  type="number"
+                  type="text"
                   name="number"
                   value={selectContract.number}
                   onChange={handleChange}
@@ -1321,7 +1310,7 @@ export default function ManageContracts() {
               <CustomInput.Root columnSize={6}>
                 <CustomInput.Select
                   label="Índice"
-                  type="number"
+                  type="text"
                   name="index"
                   value={selectContract.index}
                   onChange={handleChange}
