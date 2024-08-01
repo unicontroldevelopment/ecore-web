@@ -1,5 +1,9 @@
-export const ClauseOne = (services) => {  
-  return `CLÁUSULA PRIMEIRA – DO OBJETO DO CONTRATO: O presente contrato tem por objeto por parte da CONTRATADA, a execução dos serviços de Controle de Insetos, Roedores e Limpeza de Reservatórios, com as frequências estipuladas no  anexo 1 (proposta comercial).
+export const ClauseOne = (services, servicesList) => {  
+  const servicesDescriptions = Array.isArray(servicesList) 
+  ? servicesList.map(service => service).join(", ")
+  : '';
+
+  return `CLÁUSULA PRIMEIRA – DO OBJETO DO CONTRATO: O presente contrato tem por objeto por parte da CONTRATADA, a execução dos serviços de ${servicesDescriptions}, com as frequências estipuladas no  anexo 1 (proposta comercial).
   \n PARÁGRAFO ÚNICO: Aos itens CONTROLE DE RATOS SINANTRÓPICOS, constante na cláusula primeira, exclui-se o Controle de Cupins, Controle de Carrapatos, Controle de pulgas, Remoção de Carcaças, Expurgos, Manejo de Pombos/Morcegos e  Remoção de Enxames Ocasionais, nos endereços e locais descritos na proposta.
   ${services ? "\n PARÁGRAFO ÚNICO (PISCINA): PARÁGRAFO ÚNICO: Aos itens LIMPEZA DE PISCINAS, excluem-se: troca da areia do filtro, troca de componentes elétricos e da bomba da piscina, manutenções em geral como rachados/manchas e afins, itens não previstos nesse contrato." : ""} `;
 };
