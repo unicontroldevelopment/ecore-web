@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import { FormDivider } from "./FormDivider";
 import { Row } from "antd";
+import { FormDivider } from "./FormDivider";
 
 export const Fragment = ({ children, section }) => {
   return (

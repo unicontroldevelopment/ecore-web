@@ -28,14 +28,19 @@ export function DateInput({ label, name, value, onChange }) {
       const year = inputValue.slice(4, 8);
       const formattedDate = `${day}/${month}/${year}`;
 
-
       onChange(dayjs(formattedDate, "DD/MM/YYYY"), formattedDate);
     }
   };
 
   return (
     <FormControl variant="outlined" fullWidth>
-      <InputLabel htmlFor={dateInputId}>{label}</InputLabel>
+      <InputLabel
+        htmlFor={dateInputId}
+        shrink
+        style={{ marginTop: "8px", marginBottom: "4px" }}
+      >
+        {label}
+      </InputLabel>
       <StyledDatePicker
         id={dateInputId}
         name={name}

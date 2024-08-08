@@ -1,5 +1,6 @@
 import { Button, Modal } from "antd";
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
@@ -46,6 +47,7 @@ export default function ManageEmployeeInfo() {
     unit: "",
   });
 
+  const navigate = useNavigate()
   const service = new EmployeeService();
 
   React.useEffect(() => {
@@ -63,6 +65,10 @@ export default function ManageEmployeeInfo() {
     };
     fetchUsers();
   }, [filter]);
+
+  const handleRegister = () => {
+    navigate("/employee/createInfo");
+  };
 
   const handleChange = (event) => {
     setSelectUser((prevState) => ({
@@ -167,7 +173,7 @@ export default function ManageEmployeeInfo() {
       render: (text, record) => <span>{record.company ?? "-"}</span>,
     },
     {
-      title: "Unidade",
+      title: "Centro de Custo",
       dataIndex: "unit",
       key: "unit",
       render: (text, record) => <span>{record.unit ?? "-"}</span>,
@@ -176,15 +182,20 @@ export default function ManageEmployeeInfo() {
 
   return (
     <>
-      {loading && <Loading/>}
+      {loading && <Loading />}
       <Table.Root title="Lista de funcionários" columnSize={6}>
         <Filter.Fragment section="Filtros">
-          <Filter.FilterInput
-            label="Nome"
-            name="name"
-            value={filter.name}
-            onChange={handleChangeFilter}
-          />
+          <CustomInput.Root columnSize={18}>
+            <Filter.FilterInput
+              label="Nome"
+              name="name"
+              value={filter.name}
+              onChange={handleChangeFilter}
+            />
+          </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+            <Filter.Button label="Novo Usuário" onClick={handleRegister} />
+          </CustomInput.Root>
           <CustomInput.Root columnSize={6}>
             <Filter.Select
               label="Perfil"
@@ -217,11 +228,11 @@ export default function ManageEmployeeInfo() {
 
           <CustomInput.Root columnSize={6}>
             <Filter.Select
-              label="Unidade"
+              label="Centro de Custo"
               name="unit"
               value={filter.unit}
               onChange={handleChangeFilter}
-              options={Options.Units()}
+              options={Options.CostCenter()}
             />
           </CustomInput.Root>
         </Filter.Fragment>

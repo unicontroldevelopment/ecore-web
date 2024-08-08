@@ -1,6 +1,7 @@
 import { Button, Modal } from "antd";
 import dayjs from "dayjs";
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
@@ -52,6 +53,7 @@ export default function ListEmployee() {
     office: "",
   });
 
+  const navigate = useNavigate();
   const service = new EmployeeService();
 
   React.useEffect(() => {
@@ -69,6 +71,9 @@ export default function ListEmployee() {
     fetchUsers();
   }, [filter]);
 
+  const handleRegister = () => {
+    navigate("/employee/create")
+  }
 
   const formatDate = (dateString) => {
     return dayjs(dateString).format("DD/MM/YYYY");
@@ -182,7 +187,6 @@ export default function ListEmployee() {
             onChange={handleChangeFilter}
           />
         </CustomInput.Root>
-
         <CustomInput.Root columnSize={6}>
           <Filter.Select
             label="Cargo"
@@ -190,6 +194,10 @@ export default function ListEmployee() {
             value={filter.office}
             onChange={handleChangeFilter}
             options={Options.Office()}
+          />
+        </CustomInput.Root>
+        <CustomInput.Root columnSize={12}>
+          <Filter.Button label="Novo Colaborador" onClick={handleRegister}
           />
         </CustomInput.Root>
       </Filter.Fragment>
