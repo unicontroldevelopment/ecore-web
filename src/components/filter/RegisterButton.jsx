@@ -3,7 +3,7 @@ import { Button, Col } from "antd";
 
 export const RegisterButton = ({ label, onClick }) => {
   return (
-    <Col span={2} style={{ marginLeft: "62%"}}>
+    <Col>
       <Button
         size="large"
         fullWidth

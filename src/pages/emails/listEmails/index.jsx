@@ -17,6 +17,7 @@ export default function ListEmails() {
     email: "",
     password: "",
     type: "",
+    Redirects: []
   });
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
@@ -33,6 +34,29 @@ export default function ListEmails() {
     };
     fetchUsers();
   }, [filter]);
+
+  const handleAddClick = () => {
+    setSelectUser((prevValue) => ({
+      ...prevValue,
+      Redirects: [...prevValue.Redirects, { id: Date.now(), email: "" }],
+    }));
+  };
+
+  const handleRedirectChange = (id, field, value) => {
+    setSelectUser((prevValue) => ({
+      ...prevValue,
+      Redirects: prevValue.Redirects.map((redirect) =>
+        redirect.id === id ? { ...redirect, [field]: value } : redirect
+      ),
+    }));
+  };
+
+  const handleDeleteRedirect = (id) => {
+    setSelectUser((prevValue) => ({
+      ...prevValue,
+      Redirects: prevValue.Redirects.filter((redirect) => redirect.id !== id),
+    }));
+  };
 
   const handleChange = (event) => {
     setSelectUser((prevState) => ({
@@ -114,7 +138,7 @@ export default function ListEmails() {
   return (
     <Table.Root title="Lista de E-mails do Grupo" columnSize={6}>
       <Filter.Fragment section="Filtro">
-      <Filter.Select
+        <Filter.Select
           label="Perfil"
           name="group"
           value={filter.group}
@@ -143,7 +167,20 @@ export default function ListEmails() {
             </Button>,
           ]}
         >
-          <CustomModal.Info label="Direcionamentos" value={"Teste"} />
+          {selectUser.Redirects && selectUser.Redirects.length > 0 ? (
+            selectUser.Redirects.map((redirect, index) => (
+              <CustomModal.Info
+                key={index}
+                label={`Direcionamento Nº${index + 1}`}
+                value={redirect.email}
+              />
+            ))
+          ) : (
+            <CustomModal.Info
+              label="Direcionamentos"
+              value="Nenhum redirecionamento encontrado"
+            />
+          )}
         </Modal>
       )}
       {isModalVisibleUpdate && (
@@ -195,6 +232,29 @@ export default function ListEmails() {
                 options={Options.EmailType()}
               />
             </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="Direcionamentos">
+            <div style={{ width: "100%" }}>
+              <Button
+                variant="contained"
+                style={{ marginBottom: "20px" }}
+                color="primary"
+                onClick={handleAddClick}
+              >
+                Adicionar Redirecionamento
+              </Button>
+              {selectUser.Redirects.map((redirect, index) => (
+                <CustomInput.LongInput
+                  key={redirect.id}
+                  label={`Direcionamento Nº${index + 1}`}
+                  value={redirect.email}
+                  onChange={(e) =>
+                    handleRedirectChange(redirect.id, "email", e.target.value)
+                  }
+                  onDelete={() => handleDeleteRedirect(redirect.id)}
+                />
+              ))}
+            </div>
           </Form.Fragment>
         </Modal>
       )}
