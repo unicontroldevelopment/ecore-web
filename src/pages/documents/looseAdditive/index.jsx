@@ -391,7 +391,7 @@ export default function LooseAdditive() {
 
   return (
     <Form.Root
-      title="Gerar Aditivo Avulso"
+      title="Gerar Aditivo/Reajuste"
       handleCancel={handleCancel}
       handleSubmit={handleSubmit}
     >

@@ -50,6 +50,7 @@ export default function ManageContracts() {
   const [showOptions, setShowOptions] = React.useState(false);
   const [additivePropouse, setAdditivePropouse] = React.useState(null);
   const [selectContract, setSelectContract] = React.useState({
+    id: "",
     status: "",
     d4sign: "",
     name: "",
@@ -68,6 +69,7 @@ export default function ManageContracts() {
     signOnContract: [],
     contracts_Service: [],
     clauses: [],
+    propouse: null,
   });
   const [filter, setFilter] = React.useState({
     name: "",
@@ -125,10 +127,13 @@ export default function ManageContracts() {
   const utilsService = new Utils();
 
   //Fetchs -------------------------------------------------------------------------------------
-  const fetchContracts = async () => {
-    setLoading(true);
+  const fetchContracts = async (
+    nameFilter = "",
+    isLoadingControlled = false
+  ) => {
+    if (isLoadingControlled) setLoading(true);
     try {
-      const request = await service.getContracts(filter.name);
+      const request = await service.getContracts(nameFilter);
       const dataContracts = request.data.listContracts;
 
       const updatedContracts = dataContracts.map((contract) => {
@@ -142,10 +147,10 @@ export default function ManageContracts() {
         };
       });
       setContracts(updatedContracts);
-      setLoading(false);
+      if (isLoadingControlled) setLoading(false);
     } catch (error) {
       console.error("Erro ao buscar contratos:", error);
-      setLoading(false);
+      if (isLoadingControlled) setLoading(false);
     }
   };
 
@@ -167,14 +172,25 @@ export default function ManageContracts() {
     }
   };
 
-  //Effect
+  //Effect -------------------------------------------------------------------------------------------
 
   React.useEffect(() => {
     const fetchData = async () => {
-      await Promise.all([fetchContracts(), fetchServices(), fetchSigns()]);
+      await Promise.all([
+        fetchContracts("", true),
+        fetchServices(),
+        fetchSigns(),
+      ]);
     };
     fetchData();
-  }, [filter]);
+  }, []);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      await fetchContracts(filter.name);
+    };
+    fetchData();
+  }, [filter.name]);
 
   React.useEffect(() => {
     const fetchAddress = async () => {
@@ -425,10 +441,10 @@ export default function ManageContracts() {
   const handleFormatReajustmentChange = (eventOrDate) => {
     if (eventOrDate.target) {
       const { name, value } = eventOrDate.target;
-        setReajustment((prevState) => ({
-          ...prevState,
-          [name]: Formats.Money(value),
-        }));
+      setReajustment((prevState) => ({
+        ...prevState,
+        [name]: Formats.Money(value),
+      }));
     }
   };
 
@@ -542,8 +558,10 @@ export default function ManageContracts() {
     let mergedBlob;
     let base64D4Sign;
 
-    if (selectContract.propouse.file?.data) {
-      const arrayBuffer = selectContract.propouse.file.data;
+    const contractFile = await service.getById(selectContract.id)
+
+    if (contractFile.data.user.propouse?.file.data) {
+      const arrayBuffer = contractFile.data.user.propouse.file.data;
       const propouseData = new Uint8Array(arrayBuffer);
 
       try {
@@ -666,6 +684,7 @@ export default function ManageContracts() {
   //Contract -----------------------------------------------------------------------------------------
   const confirmUpdate = async (updateData) => {
     try {
+      setLoading(true);
       const emptyField = areRequiredFieldsFilled();
 
       if (!emptyField) {
@@ -696,10 +715,11 @@ export default function ManageContracts() {
         Toast.Success("Contrato atualizado com sucesso!");
         setIsModalVisibleUpdate(false);
       }
-
+      setLoading(false);
       return response;
     } catch (error) {
       Toast.Error(error);
+      setLoading(false);
       return error;
     }
   };
@@ -788,10 +808,12 @@ export default function ManageContracts() {
       console.error("PDF byte array is null or undefined");
       return;
     }
+    
+    const contractFile = await service.getById(contract.id)
 
     let mergedBlob;
-    if (contract.propouse?.file.data) {
-      const arrayBuffer = contract.propouse.file.data;
+    if (contractFile.data.user.propouse?.file.data) {
+      const arrayBuffer = contractFile.data.user.propouse.file.data;
       const propouseData = new Uint8Array(arrayBuffer);
 
       try {
