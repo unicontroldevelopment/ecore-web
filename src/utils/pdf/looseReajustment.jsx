@@ -2,21 +2,21 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import {
-    baciaDoJacui,
-    canaa,
-    canoas,
-    erechim,
-    esteio,
-    floresDaCunha,
-    limao,
-    lucena,
-    master,
-    poaCentro,
-    poaZN,
-    recife,
-    saoLourenco,
-    vacaria,
-    valeDosSinos,
+  baciaDoJacui,
+  canaa,
+  canoas,
+  erechim,
+  esteio,
+  floresDaCunha,
+  limao,
+  lucena,
+  master,
+  poaCentro,
+  poaZN,
+  recife,
+  saoLourenco,
+  vacaria,
+  valeDosSinos,
 } from "../../assets/folhas/folhas";
 import { Formats } from "../formats";
 
@@ -30,7 +30,7 @@ export const LooseReajustmentPDF = (index, type, signOnContract, value, name, da
     const valueReajustment = newFloat * reajustmentDecimal;
     const newValue = newFloat + valueReajustment;
 
-    const value = newValue.toFixed(2);
+    const value = newValue.toFixed(2).replace(".", ",");
 
     return value;
   };

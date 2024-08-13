@@ -1,25 +1,24 @@
 /* eslint-disable react/prop-types */
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, TextField } from "@mui/material";
+import { TextField } from "@mui/material";
 
-export function LongInput({ label, onDelete, onChange, value }) {
+export function LongInput({ label, type = "text", name ,value, onChange, rows = 4 }) {
 
   return (
-    <div style={{ width: "100%", marginBottom: "20px"}}>
       <TextField
-        sx={{
-          width: "94%",
-          minHeight: 64,
-        }}
+      sx={{
+        width: "100%",
+        minHeight: 64,
+        marginBottom: "80px"
+      }}
         label={label}
+        type={type}
+        name={name}
         value={value}
-        multiline
+        size="large"
         onChange={onChange}
+        multiline
         fullWidth
+        rows={rows}
       />
-            <Button style={{ width: "1%"}} onClick={onDelete}>
-        <DeleteIcon />
-      </Button>
-    </div>
   );
 }

@@ -207,7 +207,7 @@ export default function CreateEmail() {
                 Adicionar Redirecionamento
               </Button>
               {values.redirects.map((redirect, index) => (
-                <CustomInput.LongInput
+                <CustomInput.LongExpanded
                   key={redirect.currentId}
                   label={`Direcionamento Nº${index + 1}`}
                   value={redirect.email}
