@@ -298,10 +298,9 @@ const Template = (props) => {
         </Header>
         <Content
           style={{
-            margin: 10,
-            padding: 15,
-            minHeight: 650,
-            marginBottom: 0,
+            margin: "1%",
+            padding: "1%",
+            minHeight: "80vh",
             overflowY: "auto",
           }}
         >

@@ -172,12 +172,6 @@ export default function ManageEmployeeInfo() {
       key: "company",
       render: (text, record) => <span>{record.company ?? "-"}</span>,
     },
-    {
-      title: "Centro de Custo",
-      dataIndex: "unit",
-      key: "unit",
-      render: (text, record) => <span>{record.unit ?? "-"}</span>,
-    },
   ];
 
   return (
@@ -368,7 +362,7 @@ export default function ManageEmployeeInfo() {
                   name="unit"
                   value={selectUser.unit}
                   onChange={handleChange}
-                  options={Options.Units()}
+                  options={Options.CostCenter()}
                 />
               </CustomInput.Root>
             </Form.Fragment>
