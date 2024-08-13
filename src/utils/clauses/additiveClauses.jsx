@@ -8,8 +8,8 @@ export const ClauseOneAdditive = () => {
 
   export const ClauseTwoAdditive = (oldValue = "0,00", newValue = "0,00") => {
     if (oldValue && newValue) {
-        const oldFloat = parseFloat(oldValue.replace(',', '.'));
-        const newFloat = parseFloat(newValue.replace(',', '.'));
+        const oldFloat = parseFloat(oldValue.replace(/\./g, '').replace(',', '.'));
+        const newFloat = parseFloat(newValue.replace(/\./g, '').replace(',', '.'));
 
         const difference = newFloat - oldFloat;
 
