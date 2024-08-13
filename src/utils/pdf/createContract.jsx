@@ -46,7 +46,7 @@ export const MyDocument = ({
         bold: true,
         alignment: "center",
       },
-      { text: "N°1", fontSize: 13, alignment: "center", margin: [0, 0, 0, 20] },
+      { text: `Nº ${contractNumber}`, fontSize: 13, alignment: "center", margin: [0, 0, 0, 20] },
       {
         text: `Entre ${name}, com sede na ${road}, ${number} - ${neighborhood}, ${city}/${state}, registrada no ${
           cpfcnpj.length >= 18 ? `CNPJ` || cpfcnpj.length === 14 : `CPF`
