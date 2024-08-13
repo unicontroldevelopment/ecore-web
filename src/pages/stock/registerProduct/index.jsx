@@ -13,7 +13,6 @@ export default function RegisterProduct() {
 
   const [product, setProduct] = React.useState({
     name: "",
-    type: "Entrada",
     unitOfMeasurement: "",
     unit: "",
     quantity: "",
@@ -54,14 +53,14 @@ export default function RegisterProduct() {
           />
 
           <CustomInput.Input
-            label="Unidade de Medida"
+            label="Unidade de Retirada"
             type="text"
             name="unitOfMeasurement"
             value={product.unitOfMeasurement}
             onChange={handleChange}
           />
           <CustomInput.Select
-            label="Unidade"
+            label="Unidade de Compra"
             type="text"
             name="unit"
             value={product.unit}

@@ -155,6 +155,7 @@ export default function LooseAdditive() {
 
   const mergePDFs = async (uploadedPDFDoc, createdPDFDoc) => {
     const mergedPDF = await PDFDocument.create();
+    mergedPDF.setTitle(`Aditivo - ${values.name}`)
 
     for (const pageNum of createdPDFDoc.getPageIndices()) {
       const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
@@ -344,6 +345,7 @@ export default function LooseAdditive() {
         try {
           const createdPDFDoc = await PDFDocument.load(pdfByte);
           const mergedPDF = await PDFDocument.create();
+          mergedPDF.setTitle(`Aditivo - ${values.name}`)
           for (const pageNum of createdPDFDoc.getPageIndices()) {
             const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
             mergedPDF.addPage(page);
@@ -373,6 +375,7 @@ export default function LooseAdditive() {
 
       const createdPDFDoc = await PDFDocument.load(pdfByte);
       const mergedPDF = await PDFDocument.create();
+      mergedPDF.setTitle(`Reajuste - ${values.name}`)
       for (const pageNum of createdPDFDoc.getPageIndices()) {
         const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
         mergedPDF.addPage(page);

@@ -244,7 +244,7 @@ export default function ListEmails() {
                 Adicionar Redirecionamento
               </Button>
               {selectUser.Redirects.map((redirect, index) => (
-                <CustomInput.LongInput
+                <CustomInput.LongExpanded
                   key={redirect.id}
                   label={`Direcionamento Nº${index + 1}`}
                   value={redirect.email}

@@ -553,6 +553,7 @@ export default function ManageContracts() {
   };
 
   const handleD4SignRegister = async () => {
+    setLoading(true);
     const pdfByte = await MyDocument(selectContract);
 
     let mergedBlob;
@@ -567,7 +568,7 @@ export default function ManageContracts() {
       try {
         const uploadedPDFDoc = await PDFDocument.load(propouseData);
         const createdPDFDoc = await PDFDocument.load(pdfByte);
-        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
+        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc, selectContract, "Contrato");
 
         const base64 = await blobToBase64(mergedBlob);
         base64D4Sign = base64;
@@ -612,6 +613,7 @@ export default function ManageContracts() {
       );
 
       setContracts(updatedData);
+      setLoading(false);
       Toast.Success("Contrato cadastrado com sucesso!");
       window.location.reload();
     }
@@ -782,8 +784,9 @@ export default function ManageContracts() {
     reader.readAsArrayBuffer(file);
   };
 
-  const mergePDFs = async (uploadedPDFDoc, createdPDFDoc) => {
+  const mergePDFs = async (uploadedPDFDoc, createdPDFDoc, contract, type) => {
     const mergedPDF = await PDFDocument.create();
+    mergedPDF.setTitle(`${type} - ${contract.name} ${contract.contractNumber}`)
 
     for (const pageNum of createdPDFDoc.getPageIndices()) {
       const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
@@ -819,7 +822,7 @@ export default function ManageContracts() {
       try {
         const uploadedPDFDoc = await PDFDocument.load(propouseData);
         const createdPDFDoc = await PDFDocument.load(pdfByte);
-        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
+        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc, contract, "Contrato");
       } catch (error) {
         console.error("Error loading PDFs: ", error);
         return;
@@ -892,7 +895,7 @@ export default function ManageContracts() {
       try {
         const uploadedPDFDoc = await PDFDocument.load(additivePropouse);
         const createdPDFDoc = await PDFDocument.load(pdfByte);
-        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc);
+        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc, selectContract, "Aditivo");
       } catch (error) {
         console.error("Error loading PDFs: ", error);
         return;
@@ -901,6 +904,7 @@ export default function ManageContracts() {
       try {
         const createdPDFDoc = await PDFDocument.load(pdfByte);
         const mergedPDF = await PDFDocument.create();
+        mergedPDF.setTitle(`Aditivo - ${selectContract.name}`)
         for (const pageNum of createdPDFDoc.getPageIndices()) {
           const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
           mergedPDF.addPage(page);
@@ -934,6 +938,7 @@ export default function ManageContracts() {
     try {
       const createdPDFDoc = await PDFDocument.load(pdfByte);
       const mergedPDF = await PDFDocument.create();
+      mergedPDF.setTitle(`Reajuste - ${selectContract.name}`)
       for (const pageNum of createdPDFDoc.getPageIndices()) {
         const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
         mergedPDF.addPage(page);
