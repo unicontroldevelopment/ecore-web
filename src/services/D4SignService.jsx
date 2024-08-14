@@ -84,4 +84,12 @@ export default class {
       return error;
     }
   }
+  async downloadDocument(documentId) {
+    try {
+      const response = await api.post("/downloadDeDocumento", documentId);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }

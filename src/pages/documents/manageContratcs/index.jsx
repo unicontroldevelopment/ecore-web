@@ -2,6 +2,7 @@
 import {
   CloseOutlined,
   ControlFilled,
+  DownloadOutlined,
   EllipsisOutlined,
   InfoCircleFilled,
   QuestionCircleOutlined,
@@ -479,6 +480,31 @@ export default function ManageContracts() {
     }
   };
 
+  const downloadWithUrl = async (url) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "";
+    link.click();
+  };
+
+  const handleD4SignViewDocument = async (contract) => {
+    setLoading(true);
+
+    try {
+      const response = await d4SignService.downloadDocument({
+        id_doc: contract.contract.uuidDoc,
+      });
+
+      downloadWithUrl(response.data.contract.url).then(() => {
+        Toast.Info("Fazendo download do contrato...");
+      });
+    } catch (error) {
+      console.error("Erro ao buscar documento no D4Sign:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleD4signInfo = async () => {
     setLoading(true);
     try {
@@ -559,7 +585,7 @@ export default function ManageContracts() {
     let mergedBlob;
     let base64D4Sign;
 
-    const contractFile = await service.getById(selectContract.id)
+    const contractFile = await service.getById(selectContract.id);
 
     if (contractFile.data.user.propouse?.file.data) {
       const arrayBuffer = contractFile.data.user.propouse.file.data;
@@ -568,7 +594,12 @@ export default function ManageContracts() {
       try {
         const uploadedPDFDoc = await PDFDocument.load(propouseData);
         const createdPDFDoc = await PDFDocument.load(pdfByte);
-        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc, selectContract, "Contrato");
+        mergedBlob = await mergePDFs(
+          uploadedPDFDoc,
+          createdPDFDoc,
+          selectContract,
+          "Contrato"
+        );
 
         const base64 = await blobToBase64(mergedBlob);
         base64D4Sign = base64;
@@ -786,7 +817,7 @@ export default function ManageContracts() {
 
   const mergePDFs = async (uploadedPDFDoc, createdPDFDoc, contract, type) => {
     const mergedPDF = await PDFDocument.create();
-    mergedPDF.setTitle(`${type} - ${contract.name} ${contract.contractNumber}`)
+    mergedPDF.setTitle(`${type} - ${contract.name} ${contract.contractNumber}`);
 
     for (const pageNum of createdPDFDoc.getPageIndices()) {
       const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
@@ -811,8 +842,8 @@ export default function ManageContracts() {
       console.error("PDF byte array is null or undefined");
       return;
     }
-    
-    const contractFile = await service.getById(contract.id)
+
+    const contractFile = await service.getById(contract.id);
 
     let mergedBlob;
     if (contractFile.data.user.propouse?.file.data) {
@@ -822,7 +853,12 @@ export default function ManageContracts() {
       try {
         const uploadedPDFDoc = await PDFDocument.load(propouseData);
         const createdPDFDoc = await PDFDocument.load(pdfByte);
-        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc, contract, "Contrato");
+        mergedBlob = await mergePDFs(
+          uploadedPDFDoc,
+          createdPDFDoc,
+          contract,
+          "Contrato"
+        );
       } catch (error) {
         console.error("Error loading PDFs: ", error);
         return;
@@ -895,7 +931,12 @@ export default function ManageContracts() {
       try {
         const uploadedPDFDoc = await PDFDocument.load(additivePropouse);
         const createdPDFDoc = await PDFDocument.load(pdfByte);
-        mergedBlob = await mergePDFs(uploadedPDFDoc, createdPDFDoc, selectContract, "Aditivo");
+        mergedBlob = await mergePDFs(
+          uploadedPDFDoc,
+          createdPDFDoc,
+          selectContract,
+          "Aditivo"
+        );
       } catch (error) {
         console.error("Error loading PDFs: ", error);
         return;
@@ -904,7 +945,7 @@ export default function ManageContracts() {
       try {
         const createdPDFDoc = await PDFDocument.load(pdfByte);
         const mergedPDF = await PDFDocument.create();
-        mergedPDF.setTitle(`Aditivo - ${selectContract.name}`)
+        mergedPDF.setTitle(`Aditivo - ${selectContract.name}`);
         for (const pageNum of createdPDFDoc.getPageIndices()) {
           const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
           mergedPDF.addPage(page);
@@ -938,7 +979,7 @@ export default function ManageContracts() {
     try {
       const createdPDFDoc = await PDFDocument.load(pdfByte);
       const mergedPDF = await PDFDocument.create();
-      mergedPDF.setTitle(`Reajuste - ${selectContract.name}`)
+      mergedPDF.setTitle(`Reajuste - ${selectContract.name}`);
       for (const pageNum of createdPDFDoc.getPageIndices()) {
         const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
         mergedPDF.addPage(page);
@@ -1078,6 +1119,15 @@ export default function ManageContracts() {
               shape="circle"
               icon={<InfoCircleFilled />}
               onClick={() => handleD4signInfo(record)}
+            />
+          )}
+          {record.exists && (
+            <Button
+              title="Donwload do Documento"
+              style={{ backgroundColor: "#26D0F0", color: "#fff" }}
+              shape="circle"
+              icon={<DownloadOutlined />}
+              onClick={() => handleD4SignViewDocument(record)}
             />
           )}
           {record.exists && (
@@ -1445,7 +1495,7 @@ export default function ManageContracts() {
               title="Controle de assinaturas"
               open={d4signController}
               centered
-              width={1500}
+              width={"80%"}
               onCancel={() => setD4signController(false)}
               footer={[
                 <Button key="back" onClick={() => setD4signController(false)}>
@@ -1462,7 +1512,7 @@ export default function ManageContracts() {
             title="Informações do Documento"
             open={d4SignOpenInfo}
             centered
-            width={800}
+            width={"45%"}
             onCancel={() => setD4SignOpenInfo(false)}
             footer={[
               <Button key="back" onClick={() => setD4SignOpenInfo(false)}>
