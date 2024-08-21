@@ -13,6 +13,7 @@ import { OSVersions } from "./OSVersions";
 import { Office } from "./Office";
 import { OfficeVersions } from "./OfficeVersions";
 import { Roles } from "./Roles";
+import { SignDocument } from "./SignDocument";
 import { Type } from "./Type";
 import { Units } from "./Units";
 import { Users } from "./Users";
@@ -36,4 +37,5 @@ export const Options = {
   Education,
   CostCenter,
   IndexContract,
+  SignDocument
 };

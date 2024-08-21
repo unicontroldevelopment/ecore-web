@@ -2,7 +2,6 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { logo } from "../../../assets/logos/logo";
-import { Formats } from "../../formats";
 
 export const cessationOfUseNotebook = (
   employee,
@@ -10,8 +9,26 @@ export const cessationOfUseNotebook = (
   notebookProperty,
   date
 ) => {
-  console.log("Docuemnto", employee);
-  console.log("Data", date);
+
+  const ExtenseMonth = (date) => {
+    const months = [
+      "janeiro",
+      "fevereiro",
+      "março",
+      "abril",
+      "maio",
+      "junho",
+      "julho",
+      "agosto",
+      "setembro",
+      "outubro",
+      "novembro",
+      "dezembro",
+    ];
+    const month = months[date.getMonth()];
+    return month.charAt(0).toUpperCase() + month.slice(1);
+  };
+  
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
   const content = [
     {
@@ -80,9 +97,7 @@ export const cessationOfUseNotebook = (
       lineHeight: 1.2,
     },
     {
-      text: `Canoas/RS, ${new Date().getDate()} de ${Formats.ExtenseMonth(
-        date
-      )} de ${new Date().getFullYear()}.\n\n\n\n`,
+      text: `Canoas/RS, ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}.\n\n\n\n`,
       alignment: "center",
       fontSize: 13,
       lineHeight: 1.2,

@@ -116,6 +116,11 @@ export default function CreateContract() {
   }, [values.servicesContract]);
 
   React.useEffect(() => {
+    console.log("Value", values.value);
+    
+  }, [values.value])
+
+  React.useEffect(() => {
     const fetchAddress = async () => {
       if (values.cep.length === 9) {
         try {
@@ -314,21 +319,21 @@ export default function CreateContract() {
     if (name === "cpfcnpj") {
       setValues((prevState) => ({
         ...prevState,
-        [name]: unmaskedValue,
+        [name]: Formats.CpfCnpj(value),
       }));
 
       setFormatCpfOrCnpj(Formats.CpfCnpj(value));
     } else if (name === "value") {
       setValues((prevState) => ({
         ...prevState,
-        [name]: unmaskedValue,
+        [name]: Formats.Money(value),
       }));
 
       setValueMoney(Formats.Money(value));
     } else if (name === "cep") {
       setValues((prevState) => ({
         ...prevState,
-        [name]: unmaskedValue,
+        [name]: Formats.Cep(value),
       }));
 
       setFormatCep(Formats.Cep(value));
@@ -355,6 +360,9 @@ export default function CreateContract() {
     const fileEvent = e.target.files[0];
     if (fileEvent) {
       setFile(fileEvent);
+      Toast.Success(`Arquivo ${fileEvent.name} carregado com sucesso!`)
+    } else {
+      Toast.Error("Erro ao carregar o arquivo")
     }
   };
 

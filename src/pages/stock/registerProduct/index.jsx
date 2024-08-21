@@ -8,7 +8,7 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import { Options } from "../../../utils/options";
 
 export default function RegisterProduct() {
-  VerifyUserRole(["Master", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador", "Operacional"]);
   const navigate = useNavigate();
 
   const [product, setProduct] = React.useState({
@@ -21,18 +21,41 @@ export default function RegisterProduct() {
     baseValue: "",
     barCode: "",
     agcView: false,
+    test: "",
+    unitMedida: "",
   });
 
+  React.useEffect(() => {
+    console.log(product);
+  }, [product]);
+
   const handleChange = (event) => {
+    
     setProduct((prevState) => ({
       ...prevState,
       [event.target.name]: event.target.value,
     }));
   };
 
+  const handleUnitChange = (inputValue, unit) => {
+    
+    if(inputValue.target?.value){
+      setProduct((prevState) => ({
+        ...prevState,
+        [inputValue.target.name]: inputValue.target.value,
+        unitMedida: unit, // Atualiza a unidade, se necessário
+      }));
+    } else {
+      setProduct((prevState) => ({
+        ...prevState,
+        unitMedida: unit, // Atualiza a unidade, se necessário
+      }));
+    }
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-  }
+  };
 
   const handleCancel = () => {
     navigate("/dashboard");
@@ -45,63 +68,69 @@ export default function RegisterProduct() {
       handleSubmit={handleSubmit}
     >
       <Form.Fragment section="Dados do Produto">
-          <CustomInput.Input
-            label="Nome do Produto"
-            name="name"
-            value={product.name}
-            onChange={handleChange}
-          />
+        <CustomInput.InputWithSelect
+          label="Nome do Produto"
+          name="test"
+          value={product.test}
+          onChange={(inputValue, unit) => handleUnitChange(inputValue, unit)}
+        />
+        <CustomInput.Input
+          label="Nome do Produto"
+          name="name"
+          value={product.name}
+          onChange={handleChange}
+        />
 
-          <CustomInput.Input
-            label="Unidade de Retirada"
-            type="text"
-            name="unitOfMeasurement"
-            value={product.unitOfMeasurement}
-            onChange={handleChange}
-          />
-          <CustomInput.Select
-            label="Unidade de Compra"
-            type="text"
-            name="unit"
-            value={product.unit}
-            onChange={handleChange}
-            options={Options.Units()}
-          />
-          <CustomInput.Input
-            label="Quantidade"
-            type="text"
-            name="quantity"
-            value={product.quantity}
-            onChange={handleChange}
-          />
-          <CustomInput.Input
-            label="Quantidade Mínima"
-            type="text"
-            name="quantityMinimum"
-            value={product.quantityMinimum}
-            onChange={handleChange}
-          />
-          <CustomInput.Input
-            label="Número da Nota Fiscal"
-            type="text"
-            name="numberNF"
-            value={product.numberNF}
-            onChange={handleChange}
-          />
-          <CustomInput.Input
-            label="Valor Base"
-            type="text"
-            name="baseValue"
-            value={product.baseValue}
-            onChange={handleChange}
-          />
-          <CustomInput.Input
-            label="Código de Barras"
-            type="text"
-            name="barCode"
-            value={product.barCode}
-            onChange={handleChange}
-          />
+        <CustomInput.Input
+          label="Unidade de Retirada"
+          type="text"
+          name="unitOfMeasurement"
+          value={product.unitOfMeasurement}
+          onChange={handleChange}
+        />
+        <CustomInput.Select
+          label="Unidade de Compra"
+          type="text"
+          name="unit"
+          value={product.unit}
+          onChange={handleChange}
+          options={Options.Units()}
+        />
+        <CustomInput.Input
+          label="Quantidade"
+          type="text"
+          name="quantity"
+          value={product.quantity}
+          onChange={handleChange}
+        />
+        <CustomInput.Input
+          label="Quantidade Mínima"
+          type="text"
+          name="quantityMinimum"
+          value={product.quantityMinimum}
+          onChange={handleChange}
+        />
+        <CustomInput.Input
+          label="Número da Nota Fiscal"
+          type="text"
+          name="numberNF"
+          value={product.numberNF}
+          onChange={handleChange}
+        />
+        <CustomInput.Input
+          label="Valor Base"
+          type="text"
+          name="baseValue"
+          value={product.baseValue}
+          onChange={handleChange}
+        />
+        <CustomInput.Input
+          label="Código de Barras"
+          type="text"
+          name="barCode"
+          value={product.barCode}
+          onChange={handleChange}
+        />
         <CustomSwitch.Root columnSize={24}>
           <CustomSwitch.Switch
             label="Este produto deve aparecer no AGC?"

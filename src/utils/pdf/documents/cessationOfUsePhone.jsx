@@ -2,7 +2,6 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { logo } from "../../../assets/logos/logo";
-import { Formats } from "../../formats";
 
 export const cessationOfUsePhone = (employee, phone, date) => {
   const verificaCNPJ = () => {
@@ -15,6 +14,25 @@ export const cessationOfUsePhone = (employee, phone, date) => {
     } else {
       return "11.486.771/0001-57";
     }
+  };
+
+  const ExtenseMonth = (date) => {
+    const months = [
+      "janeiro",
+      "fevereiro",
+      "março",
+      "abril",
+      "maio",
+      "junho",
+      "julho",
+      "agosto",
+      "setembro",
+      "outubro",
+      "novembro",
+      "dezembro",
+    ];
+    const month = months[date.getMonth()];
+    return month.charAt(0).toUpperCase() + month.slice(1);
   };
 
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -99,9 +117,7 @@ export const cessationOfUsePhone = (employee, phone, date) => {
       lineHeight: 1.2,
     },
     {
-      text: `Canoas/RS, ${new Date().getDate()} de ${Formats.ExtenseMonth(
-        date
-      )} de ${new Date().getFullYear()}.\n\n\n\n`,
+      text: `Canoas/RS, ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}.\n\n\n\n`,
       alignment: "center",
       fontSize: 13,
       lineHeight: 1.2,

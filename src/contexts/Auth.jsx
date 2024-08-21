@@ -25,7 +25,9 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("token");
       if (recoveredUser && token) {
         setUser(recoveredUser);
-        await context.setUserType(recoveredUser.role.map(role => role.role.name));
+        await context.setUserType(
+          recoveredUser.role.map((role) => role.role.name)
+        );
         api.defaults.headers.Authorization = `Bearer ${token}`;
       }
       setLoading(false);
@@ -47,19 +49,26 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await employeeService.login(email, password);
 
-      const loggedUser = response.data.user;
-      const token = response.data.token;
-
-      context.setUserType(loggedUser.role);
-      localStorage.setItem("user", JSON.stringify(loggedUser));
-      localStorage.setItem("token", token);
-
-      api.defaults.headers.Authorization = `Bearer ${token}`;
-      setUser(loggedUser);
-      navigate("/dashboard");
-      Toast.Success("Login realizado com sucesso!");
+      if (response.response?.status === 422) {
+        Toast.Error(response.response.data.message);
+        console.log("Aqui");
+      } else if (response.response?.status === 500) {
+        Toast.Error("E-mail incorreto ou não cadastrado!");
+      } else {
+        const loggedUser = response.data.user;
+        const token = response.data.token;
+  
+        context.setUserType(loggedUser.role);
+        localStorage.setItem("user", JSON.stringify(loggedUser));
+        localStorage.setItem("token", token);
+  
+        api.defaults.headers.Authorization = `Bearer ${token}`;
+        setUser(loggedUser);
+        navigate("/dashboard");
+        Toast.Success("Login realizado com sucesso!");
+      }
     } catch (error) {
-      Toast.Error(error.message);
+      console.log(error);
     }
   };
 

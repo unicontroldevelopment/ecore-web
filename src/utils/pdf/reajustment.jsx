@@ -22,15 +22,20 @@ import { Formats } from "../formats";
 
 export const Reajustment = (index, type, signOnContract, value, name, date) => {
   const newValue = (valorAtual, indiceReajuste) => {
-    const newFloat = parseFloat(valorAtual.replace(",", "."));
+    const valorFormatado = valorAtual.replace(/\./g, "").replace(",", ".");
+    const newFloat = parseFloat(valorFormatado);
+  
     const reajustmentDecimal = indiceReajuste / 100;
-
+  
     const valueReajustment = newFloat * reajustmentDecimal;
-    const newValue = newFloat + valueReajustment;
 
-    const value = newValue.toFixed(2);
+    const novoValor = newFloat + valueReajustment;
 
-    return value;
+    let valorFinal = novoValor.toFixed(2).replace(".", ",");
+    valorFinal = valorFinal.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  
+    return valorFinal;
+    
   };
 
   const tecSign = signOnContract[0].Contract_Signature;
@@ -159,7 +164,7 @@ export const Reajustment = (index, type, signOnContract, value, name, date) => {
           body: [
             [
               { text: 'Preço Atual', bold: true, fillColor: '#4F81BD', color: 'white' }, 
-            { text: `${value}`, alignment: 'right', fillColor: 'white', color: 'black' }
+            { text: `R$ ${value}`, alignment: 'right', fillColor: 'white', color: 'black' }
             ],
             [
               { text: 'Novo Valor', bold: true, fillColor: '#4F81BD', color: 'white' }, 

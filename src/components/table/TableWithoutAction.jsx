@@ -13,7 +13,7 @@ import { Table } from "antd";
         render: column.render,
       })),
     ];
-  
+
     return (
       <Table
         columns={columnsAndActions}

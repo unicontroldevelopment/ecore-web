@@ -13,7 +13,7 @@ import EmployeeService from "../../../services/EmployeeService";
 import { Options } from "../../../utils/options";
 
 export default function ManageEmployeeInfo() {
-  VerifyUserRole(["Master", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador"]);
   const [users, setUsers] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [selectUser, setSelectUser] = React.useState({
