@@ -657,6 +657,16 @@ export default function AdditiveAndReajustment() {
           </Button>
         )}
         <Tabs activeKey={currentTab} onChange={setCurrentTab}>
+        <Item tab="Aditivos" key="aditivos">
+            <Table.Table
+              data={additiveData}
+              columns={columnsAdditive}
+              onView={viewAdditive}
+              onUpdate={handleUpdateAdditive}
+              confirm={confirmDeleteAdditive}
+              cancel={cancelDeleteAdditive}
+            />
+          </Item>
           <Item tab="Reajustes" key="reajustes">
             <Table.Table
               data={reajustmentData}
@@ -665,16 +675,6 @@ export default function AdditiveAndReajustment() {
               onUpdate={handleUpdateReajustment}
               confirm={confirmDeleteReajustment}
               cancel={cancelDeleteReajustment}
-            />
-          </Item>
-          <Item tab="Aditivos" key="aditivos">
-            <Table.Table
-              data={additiveData}
-              columns={columnsAdditive}
-              onView={viewAdditive}
-              onUpdate={handleUpdateAdditive}
-              confirm={confirmDeleteAdditive}
-              cancel={cancelDeleteAdditive}
             />
           </Item>
         </Tabs>
