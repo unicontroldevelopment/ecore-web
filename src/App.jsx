@@ -14,6 +14,7 @@ import moment from "moment";
 import "moment/locale/pt-br";
 import AccessDenied from "./pages/accessDenied";
 import Dashboard from "./pages/dashboard/Dashboard";
+import AdditiveAndReajustment from "./pages/documents/additiveAndReajustment";
 import CreateContract from "./pages/documents/createContract";
 import CreateDocument from "./pages/documents/createDocument";
 import CreateService from "./pages/documents/createService";
@@ -193,6 +194,16 @@ const App = () => {
                   <PrivatePage>
                     <Template>
                       <ManageContracts />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/documents/:id/additive-reajustments"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <AdditiveAndReajustment />
                     </Template>
                   </PrivatePage>
                 }

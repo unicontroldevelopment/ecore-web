@@ -1,6 +1,9 @@
 import * as React from "react";
 
 import { Button } from "antd";
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
+import localeData from 'dayjs/plugin/localeData';
 import { PDFDocument } from "pdf-lib";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input";
@@ -15,9 +18,14 @@ import { cessationOfUsePhone } from "../../../utils/pdf/documents/cessationOfUse
 import { currentAccount } from "../../../utils/pdf/documents/currentAccount";
 import { disciplinaryWarining } from "../../../utils/pdf/documents/disciplinaryWarning";
 import { discountAuthorization } from "../../../utils/pdf/documents/discountAuthorization";
+import { experienceContract } from "../../../utils/pdf/documents/experienceContract";
 import { knowledgeOfMonitoring } from "../../../utils/pdf/documents/knowledgeOfMonitoring";
 import { renouncesVT } from "../../../utils/pdf/documents/renouncesVT";
 import { termOfCardTEU } from "../../../utils/pdf/documents/termOfCardTEU";
+import { termOfProrrogation } from "../../../utils/pdf/documents/termOfProrogation";
+
+dayjs.extend(localeData);
+dayjs.locale('pt-br');
 
 export default function CreateDocument() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
@@ -35,6 +43,10 @@ export default function CreateDocument() {
     imei: "",
     accessories: "",
     state: "",
+  });
+  const [date, setDate] = React.useState();
+  const [currentAccountData, setCurrentAccountData] = React.useState({
+    sign: "",
   });
   const [notebook, setNotebook] = React.useState({
     notebookBrand: "",
@@ -141,6 +153,19 @@ export default function CreateDocument() {
     }
   };
 
+  const handleSign = (event) => {
+    const { name, value } = event.target
+
+    setCurrentAccountData((prevState) => {
+      const updatedValues = {
+        ...prevState,
+        [name]: value,
+      };
+
+      return updatedValues;
+    })
+  }
+
   const handleChangeTEU = (event) => {
     const { name, value } = event.target;
 
@@ -165,41 +190,42 @@ export default function CreateDocument() {
     }
   };
 
+  const handleDate = (e) => {
+      const selectedDate = dayjs(e);    
+      setDate(selectedDate);
+  };
+
   const handleGenerate = async () => {
     let document;
-    const dataExtenso = new Date().getMonth() + 1;
+    const dateObj = dayjs(date).toDate()
+    const extenseDate = new Date().getMonth() + 1;
 
     if (values.document === "Cessão de uso de Notebook") {
       document = await cessationOfUseNotebook(
         values.employeeDetails,
         notebook.notebookBrand,
         notebook.notebookProperty,
-        dataExtenso
+        dateObj
       );
     } else if (values.document === "Termo de Entrega de Celular") {
       document = await cessationOfUsePhone(
         values.employeeDetails,
-        phone.model,
-        phone.value,
-        phone.brand,
-        phone.imei,
-        phone.accessories,
-        phone.state,
-        dataExtenso
+        phone,
+        dateObj
       );
     } else if (values.document === "Advertência Disciplinar") {
       document = await disciplinaryWarining(
         values.employeeDetails,
         warning,
-        dataExtenso
+        dateObj
       );
     } else if (values.document === "Autorização Desconto") {
       document = await discountAuthorization(values.employeeDetails);
     } else if (values.document === "Abertura de Conta Corrente") {
-      document = await currentAccount(values.employeeDetails, dataExtenso);
+      document = await currentAccount(values.employeeDetails,currentAccountData.sign, dateObj);
     } else if (values.document === "Declaração de Renúncia VT") {
       document = await renouncesVT(values.employeeDetails);
-    } else if (values.document === "Termo adesão PPO") {
+    } else if (values.document === "Termo Adesão PPO") {
       if (
         values.employeeDetails.company ===
         "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA"
@@ -211,7 +237,7 @@ export default function CreateDocument() {
       } else if (
         values.employeeDetails.company === "UNICONTROL CONTROLE DE PRAGAS LTDA"
       ) {
-        document = await adhesionTermPPO(values.employeeDetails, dataExtenso);
+        document = await adhesionTermPPO(values.employeeDetails);
       } else if (
         values.employeeDetails.company ===
         "FITOLOG LICENCIAMENTO DE FRANQUIAS LTDA"
@@ -221,17 +247,24 @@ export default function CreateDocument() {
         );
         return false;
       } else {
-        document = await adhesionTermPPO(values.employeeDetails, dataExtenso);
+        document = await adhesionTermPPO(values.employeeDetails);
       }
     } else if (values.document === "Termo de Ciência de Monitoramento") {
       document = await knowledgeOfMonitoring(values.employeeDetails);
     } else if (values.document === "Termo de Responsabilidade TEU") {
-      document = await termOfCardTEU(values.employeeDetails, teu, dataExtenso);
+      document = await termOfCardTEU(values.employeeDetails, teu, dateObj);
+    } else if (values.document === "Contrato Expêriencia não vendedor") {
+      document = await experienceContract(values.employeeDetails)
+    } else if (values.document === "Termo de Prorrogação") {
+      document = await termOfProrrogation(values.employeeDetails)
+    } else {
+      Toast.Error("Documento não encontrado")
+      return;
     }
 
     const createdPDFDoc = await PDFDocument.load(document);
     const mergedPDF = await PDFDocument.create();
-    mergedPDF.setTitle(`${values.document} - ${values.employeeDetails.name}`)
+    mergedPDF.setTitle(`${values.document} - ${values.employeeDetails.name}`);
     for (const pageNum of createdPDFDoc.getPageIndices()) {
       const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
       mergedPDF.addPage(page);
@@ -291,6 +324,13 @@ export default function CreateDocument() {
               onChange={handleChangeNotebook}
             />
           </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+          <CustomInput.DateInput
+            label="Data"
+            value={date}
+            onChange={handleDate}
+          />
+        </CustomInput.Root>
         </Form.Fragment>
       )}
       {values.document === "Termo de Entrega de Celular" && (
@@ -350,6 +390,13 @@ export default function CreateDocument() {
               options={state}
             />
           </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+          <CustomInput.DateInput
+            label="Data"
+            value={date}
+            onChange={handleDate}
+          />
+        </CustomInput.Root>
         </Form.Fragment>
       )}
       {values.document === "Advertência Disciplinar" && (
@@ -399,6 +446,13 @@ export default function CreateDocument() {
               onChange={handleChangeWarning}
             />
           </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+          <CustomInput.DateInput
+            label="Data"
+            value={date}
+            onChange={handleDate}
+          />
+        </CustomInput.Root>
         </Form.Fragment>
       )}
       {values.document === "Termo de Responsabilidade TEU" && (
@@ -421,6 +475,34 @@ export default function CreateDocument() {
               onChange={handleChangeTEU}
             />
           </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+          <CustomInput.DateInput
+            label="Data"
+            value={date}
+            onChange={handleDate}
+          />
+        </CustomInput.Root>
+        </Form.Fragment>
+      )}
+      {values.document === "Abertura de Conta Corrente" && (
+        <Form.Fragment section="Informações da Assinatura">
+          <CustomInput.Root columnSize={6}>
+            <CustomInput.Select
+              label="Assinatura"
+              type="text"
+              name="sign"
+              value={currentAccountData.sign}
+              onChange={handleSign}
+              options={Options.SignDocument()}
+            />
+          </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+          <CustomInput.DateInput
+            label="Data"
+            value={date}
+            onChange={handleDate}
+          />
+        </CustomInput.Root>
         </Form.Fragment>
       )}
       <Form.Fragment section="Gerar documento">

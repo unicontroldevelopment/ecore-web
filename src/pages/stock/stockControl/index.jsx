@@ -13,7 +13,7 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import { Options } from "../../../utils/options";
 
 export default function StockControl() {
-  VerifyUserRole(["Master", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador", "Operacional"]);
   const [filter, setFilter] = React.useState({
     type: "",
     name: "",

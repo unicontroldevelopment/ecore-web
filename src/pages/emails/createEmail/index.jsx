@@ -10,7 +10,7 @@ import EmailService from "../../../services/EmailService";
 import { Options } from "../../../utils/options";
 
 export default function CreateEmail() {
-  VerifyUserRole(["Master", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador"]);
   const navigate = useNavigate();
   const service = new EmailService();
 

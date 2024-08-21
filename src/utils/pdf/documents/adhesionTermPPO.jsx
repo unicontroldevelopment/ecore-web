@@ -6,6 +6,9 @@ import { Formats } from "../../formats";
 
 export const adhesionTermPPO = (employee) => {
 
+  console.log("Entrou");
+  
+
   const verificaEndereco = () => {
     if (employee.company === "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA") {
       return "Rua Márcio Toboliski Fernandes, 41, Sala 4";

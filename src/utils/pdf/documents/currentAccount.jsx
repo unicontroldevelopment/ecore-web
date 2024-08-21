@@ -2,9 +2,8 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { logo, logoFitoLog, logoNewsis } from "../../../assets/logos/logo";
-import { Formats } from "../../formats";
 
-export const currentAccount = (employee, date) => {
+export const currentAccount = (employee, sign, date) => {
   const verificaImagemDoDocumento = () => {
     if (employee.company === "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA") {
       return logoNewsis;
@@ -15,6 +14,25 @@ export const currentAccount = (employee, date) => {
     } else {
       return logo;
     }
+  };
+
+  const ExtenseMonth = (date) => {
+    const months = [
+      "janeiro",
+      "fevereiro",
+      "março",
+      "abril",
+      "maio",
+      "junho",
+      "julho",
+      "agosto",
+      "setembro",
+      "outubro",
+      "novembro",
+      "dezembro",
+    ];
+    const month = months[date.getMonth()];
+    return month.charAt(0).toUpperCase() + month.slice(1);
   };
 
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -31,9 +49,7 @@ export const currentAccount = (employee, date) => {
       lineHeight: 1.2,
     },
     {
-      text: `Canoas/RS,\n ${new Date().getDate()} de ${Formats.ExtenseMonth(
-        date
-      )} de ${new Date().getFullYear()}\n\n\n\n`,
+      text: `Canoas/RS,\n ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}\n\n\n\n`,
       alignment: "right",
       fontSize: 13,
       lineHeight: 1.2,
@@ -70,7 +86,7 @@ export const currentAccount = (employee, date) => {
       alignment: "center",
     },
     {
-      text: `Gislaine da Silva Schmitt\n${employee.company}`,
+      text: `${sign}\n${employee.company}`,
       alignment: "center",
       fontSize: 13,
       lineHeight: 1.2,

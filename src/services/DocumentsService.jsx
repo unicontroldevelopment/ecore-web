@@ -68,6 +68,14 @@ export default class {
       return error;
     }
   }
+  async getByIdAllInfo(contractId) {
+    try {
+      const response = await api.get(`/contractInfo/${contractId}`);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
   async deleteContract(contractId) {
     try {
       console.log("ID:", contractId);

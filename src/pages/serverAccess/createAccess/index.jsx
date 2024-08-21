@@ -9,7 +9,7 @@ import EmployeeService from "../../../services/EmployeeService";
 import ServerAccessService from "../../../services/ServerAccessService";
 
 export default function CreateAccess() {
-  VerifyUserRole(["Master", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador"]);
   const navigate = useNavigate();
   const service = new ServerAccessService();
   const employeeService = new EmployeeService();

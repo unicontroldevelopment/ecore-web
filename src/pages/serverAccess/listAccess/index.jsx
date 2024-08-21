@@ -12,7 +12,7 @@ import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import ServerAccessService from "../../../services/ServerAccessService";
 
 export default function ListServerAccess() {
-  VerifyUserRole(["Master", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador"]);
   const [users, setUsers] = React.useState([]);
   const [selectUser, setSelectUser] = React.useState(null);
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);

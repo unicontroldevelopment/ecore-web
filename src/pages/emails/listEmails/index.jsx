@@ -11,7 +11,7 @@ import EmailService from "../../../services/EmailService";
 import { Options } from "../../../utils/options";
 
 export default function ListEmails() {
-  VerifyUserRole(["Master", "Administrador", "RH"]);
+  VerifyUserRole(["Master", "Administrador"]);
   const [users, setUsers] = React.useState([]);
   const [selectUser, setSelectUser] = React.useState({
     email: "",

@@ -17,6 +17,7 @@ import { AiOutlineCheck } from "react-icons/ai";
 import { FaFileUpload } from "react-icons/fa";
 import { MdPersonRemoveAlt1 } from "react-icons/md";
 import { TiArrowForward } from "react-icons/ti";
+import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
@@ -29,17 +30,10 @@ import ContractSignService from "../../../services/ContractSignService";
 import D4SignService from "../../../services/D4SignService";
 import DocumentsService from "../../../services/DocumentsService";
 import Utils from "../../../services/Utils";
-import {
-  ClauseOneAdditive,
-  ClauseThreeAdditive,
-  ClauseTwoAdditive,
-} from "../../../utils/clauses/additiveClauses";
 import { Formats } from "../../../utils/formats";
 import formatData from "../../../utils/formats/formatData";
 import { Options } from "../../../utils/options";
-import { Additive } from "../../../utils/pdf/additive";
 import { MyDocument } from "../../../utils/pdf/createContract";
-import { Reajustment } from "../../../utils/pdf/reajustment";
 
 export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "Comercial"]);
@@ -75,22 +69,6 @@ export default function ManageContracts() {
   const [filter, setFilter] = React.useState({
     name: "",
   });
-  const [additive, setAdditive] = React.useState({
-    contract_id: null,
-    newValue: null,
-    oldValue: null,
-    clauses: [
-      { id: 0, description: `${ClauseOneAdditive()}`, isExpanded: false },
-      { id: 1, description: `${ClauseTwoAdditive()}`, isExpanded: false },
-      { id: 2, description: `${ClauseThreeAdditive()}`, isExpanded: false },
-    ],
-  });
-  const [reajustment, setReajustment] = React.useState({
-    contract_id: null,
-    value: null,
-    index: null,
-    type: "",
-  });
   const [file, setFile] = React.useState();
   const [valueMoney, setValueMoney] = React.useState("");
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
@@ -119,7 +97,18 @@ export default function ManageContracts() {
     statusComment: "",
     whoCanceled: "null",
   });
-  const extenseDate = new Date().getMonth() + 1;
+  const navigate = useNavigate();
+
+  const formatMoney = (value) => {
+    if (value === undefined || value === null) return '';
+  
+    const formatter = new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  
+    return formatter.format(value);
+  };
 
   //Services API
   const contractService = new ContractSignService();
@@ -140,6 +129,7 @@ export default function ManageContracts() {
       const updatedContracts = dataContracts.map((contract) => {
         return {
           ...contract,
+          value: formatMoney(contract.value),
           clauses: contract.clauses.map((clause, index) => ({
             ...clause,
             currentId: index,
@@ -174,7 +164,6 @@ export default function ManageContracts() {
   };
 
   //Effect -------------------------------------------------------------------------------------------
-
   React.useEffect(() => {
     const fetchData = async () => {
       await Promise.all([
@@ -227,26 +216,6 @@ export default function ManageContracts() {
     }
   }, [selectContract.cep]);
 
-  React.useEffect(() => {
-    const Fetch = async () => {
-      setAdditive((prevValues) => ({
-        ...prevValues,
-        clauses: prevValues.clauses.map((clause) =>
-          clause.id === 1
-            ? {
-                ...clause,
-                description: ClauseTwoAdditive(
-                  additive.oldValue,
-                  additive.newValue
-                ),
-              }
-            : clause
-        ),
-      }));
-    };
-    Fetch();
-  }, [additive.newValue, additive.oldValue]);
-
   //Changes -----------------------------------------------------------------------------------------
   const handleChangeFilter = (event) => {
     setFilter((prevState) => ({
@@ -283,28 +252,8 @@ export default function ManageContracts() {
     }));
   };
 
-  const toggleExpandAdditive = (id) => {
-    setAdditive((prevContract) => ({
-      ...prevContract,
-      clauses: prevContract.clauses.map((clause) =>
-        clause.id === id
-          ? { ...clause, isExpanded: !clause.isExpanded }
-          : clause
-      ),
-    }));
-  };
-
   const handleClauseChange = (id, newText) => {
     setSelectContract((prevValues) => ({
-      ...prevValues,
-      clauses: prevValues.clauses.map((clause) =>
-        clause.id === id ? { ...clause, description: newText } : clause
-      ),
-    }));
-  };
-
-  const handleClauseAdditiveChange = (id, newText) => {
-    setAdditive((prevValues) => ({
       ...prevValues,
       clauses: prevValues.clauses.map((clause) =>
         clause.id === id ? { ...clause, description: newText } : clause
@@ -419,33 +368,6 @@ export default function ManageContracts() {
           [name]: Formats.Cep(value),
         }));
       }
-    }
-  };
-
-  const handleFormatAdditiveChange = (eventOrDate) => {
-    if (eventOrDate.target) {
-      const { name, value } = eventOrDate.target;
-      if (name === "oldValue") {
-        setAdditive((prevState) => ({
-          ...prevState,
-          [name]: Formats.Money(value),
-        }));
-      } else {
-        setAdditive((prevState) => ({
-          ...prevState,
-          [name]: Formats.Money(value),
-        }));
-      }
-    }
-  };
-
-  const handleFormatReajustmentChange = (eventOrDate) => {
-    if (eventOrDate.target) {
-      const { name, value } = eventOrDate.target;
-      setReajustment((prevState) => ({
-        ...prevState,
-        [name]: Formats.Money(value),
-      }));
     }
   };
 
@@ -675,7 +597,6 @@ export default function ManageContracts() {
         setEmail("");
         setD4SignRegisterSignature(false);
         Toast.Success("E-mail cadastrado com sucesso");
-        window.location.reload();
       });
     } else {
       Toast.Error("Preencha o campo E-mail");
@@ -806,15 +727,6 @@ export default function ManageContracts() {
     }
   };
 
-  const handleFileAdditiveChange = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setAdditivePropouse(e.target.result);
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
   const mergePDFs = async (uploadedPDFDoc, createdPDFDoc, contract, type) => {
     const mergedPDF = await PDFDocument.create();
     mergedPDF.setTitle(`${type} - ${contract.name} ${contract.contractNumber}`);
@@ -884,118 +796,17 @@ export default function ManageContracts() {
   };
 
   //Reajuste/Aditivo -----------------------------------------------------------------------------------------
-  const handleReajustmentValues = (event) => {
-    const { name, value } = event.target;
-    setReajustment((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-  const handleAdditiveValues = (event) => {
-    const { name, value } = event.target;
-    setAdditive((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
   const handleButtonClick = (contract) => {
     setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
-    setShowOptions(true);
+    //setShowOptions(true);
+    console.log("Contrato", contract);
+
+    navigate(`/documents/${contract.id}/additive-reajustments`);
   };
 
   const handleCreate = (record) => {
     setCurrentType(record.type);
     setIsModalVisibleCreate(true);
-  };
-
-  const handleCreateAdditive = async () => {
-    const pdfByte = await Additive(
-      selectContract.name,
-      selectContract.cpfcnpj,
-      selectContract.road,
-      selectContract.number,
-      selectContract.complement,
-      selectContract.neighborhood,
-      selectContract.city,
-      selectContract.state,
-      selectContract.signOnContract,
-      additive.clauses,
-      extenseDate,
-      selectContract.signOnContract
-    );
-
-    let mergedBlob;
-
-    if (additivePropouse) {
-      try {
-        const uploadedPDFDoc = await PDFDocument.load(additivePropouse);
-        const createdPDFDoc = await PDFDocument.load(pdfByte);
-        mergedBlob = await mergePDFs(
-          uploadedPDFDoc,
-          createdPDFDoc,
-          selectContract,
-          "Aditivo"
-        );
-      } catch (error) {
-        console.error("Error loading PDFs: ", error);
-        return;
-      }
-    } else {
-      try {
-        const createdPDFDoc = await PDFDocument.load(pdfByte);
-        const mergedPDF = await PDFDocument.create();
-        mergedPDF.setTitle(`Aditivo - ${selectContract.name}`);
-        for (const pageNum of createdPDFDoc.getPageIndices()) {
-          const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-          mergedPDF.addPage(page);
-        }
-        const mergedPdfBytes = await mergedPDF.save();
-        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
-      } catch (error) {
-        console.error("Error creating PDF: ", error);
-        return;
-      }
-    }
-
-    const pdfUrl = URL.createObjectURL(mergedBlob);
-    window.open(pdfUrl, "_blank");
-
-    setIsModalVisibleAdditive(false);
-    setIsModalVisibleCreate(false);
-  };
-
-  const handleCreateReajustment = async () => {
-    const pdfByte = await Reajustment(
-      reajustment.index,
-      reajustment.type,
-      selectContract.signOnContract,
-      reajustment.value,
-      selectContract.name,
-      extenseDate
-    );
-
-    let mergedBlob;
-    try {
-      const createdPDFDoc = await PDFDocument.load(pdfByte);
-      const mergedPDF = await PDFDocument.create();
-      mergedPDF.setTitle(`Reajuste - ${selectContract.name}`);
-      for (const pageNum of createdPDFDoc.getPageIndices()) {
-        const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-        mergedPDF.addPage(page);
-      }
-      const mergedPdfBytes = await mergedPDF.save();
-      mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
-    } catch (error) {
-      console.error("Error creating PDF: ", error);
-      return;
-    }
-
-    const pdfUrl = URL.createObjectURL(mergedBlob);
-    window.open(pdfUrl, "_blank");
-
-    setIsModalVisibleReajustment(false);
-    setIsModalVisibleCreate(false);
   };
 
   //Tabelas -----------------------------------------------------------------------------------------
@@ -1237,7 +1048,7 @@ export default function ManageContracts() {
   return (
     <>
       {loading && <Loading />}
-      <Table.Root title="Lista de Contratos" columnSize={6}>
+      <Table.Root title="Lista de Contratos">
         <CustomInput.Root columnSize={24}>
           <Filter.FilterInput
             label="Nome do Cliente"
@@ -1299,7 +1110,7 @@ export default function ManageContracts() {
                 <CustomInput.Input
                   label="CPF ou CNPJ"
                   type="text"
-                  name="cpfCnpj"
+                  name="cpfcnpj"
                   value={selectContract.cpfcnpj}
                   onChange={handleFormatChange}
                 />
@@ -1495,7 +1306,7 @@ export default function ManageContracts() {
               title="Controle de assinaturas"
               open={d4signController}
               centered
-              width={"80%"}
+              width={"90%"}
               onCancel={() => setD4signController(false)}
               footer={[
                 <Button key="back" onClick={() => setD4signController(false)}>
@@ -1550,7 +1361,6 @@ export default function ManageContracts() {
                               await d4SignService
                                 .resendSignature(data)
                                 .then(() => {
-                                  setD4SignOpenInfo(false);
                                   Toast.Success("E-mail reenviado com sucesso");
                                 });
                             }}
@@ -1572,7 +1382,6 @@ export default function ManageContracts() {
                               await d4SignService
                                 .cancelSignature(data)
                                 .then(() => {
-                                  setD4SignOpenInfo(false);
                                   setSignatures([]);
                                   Toast.Success("E-mail removido com sucesso");
                                   setLoading(false);
@@ -1668,131 +1477,6 @@ export default function ManageContracts() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-          </Modal>
-        )}
-
-        {isModalVisibleCreate && (
-          <Modal
-            title={`Criar ${currentType}`}
-            open={isModalVisibleCreate}
-            centered
-            width={800}
-            onCancel={() => setIsModalVisibleCreate(false)}
-            footer={[
-              <Button key="back" onClick={() => setIsModalVisibleCreate(false)}>
-                Voltar
-              </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                onClick={
-                  currentType === "Aditivo"
-                    ? handleCreateAdditive
-                    : handleCreateReajustment
-                }
-              >
-                Criar
-              </Button>,
-            ]}
-          >
-            {currentType === "Aditivo" ? (
-              <>
-                <Form.Fragment
-                  section={`Dados do Aditivo - Cliente ${selectContract.name}`}
-                >
-                  <CustomInput.Root columnSize={12}>
-                    <CustomInput.Input
-                      label="Antigo Valor"
-                      name="oldValue"
-                      value={additive.oldValue}
-                      onChange={handleFormatAdditiveChange}
-                    />
-                  </CustomInput.Root>
-                  <CustomInput.Root columnSize={12}>
-                    <CustomInput.Input
-                      label="Novo Valor"
-                      name="newValue"
-                      value={additive.newValue}
-                      onChange={handleFormatAdditiveChange}
-                    />
-                  </CustomInput.Root>
-                </Form.Fragment>
-                <Form.Fragment section="Clausula Aditivo">
-                  <div style={{ width: "100%" }}>
-                    <Button
-                      variant="contained"
-                      style={{ marginBottom: "20px" }}
-                      color="primary"
-                      onClick={handleAddClick}
-                    >
-                      Adicionar Cláusula
-                    </Button>
-                    {additive.clauses.map((clause, index) => (
-                      <CustomInput.LongText
-                        key={clause.id}
-                        label={`Cláusula Nº${index + 1}`}
-                        value={clause.description}
-                        isExpanded={clause.isExpanded}
-                        onChange={(e) =>
-                          handleClauseAdditiveChange(clause.id, e.target.value)
-                        }
-                        onExpandToggle={() => toggleExpandAdditive(clause.id)}
-                        onDelete={() => handleDeleteClause(clause.id)}
-                      />
-                    ))}
-                  </div>
-                  <Upload
-                    beforeUpload={(file) => {
-                      handleFileAdditiveChange({ target: { files: [file] } });
-                      return false;
-                    }}
-                    accept=".pdf"
-                    maxCount={1}
-                    showUploadList={false}
-                  >
-                    <Button
-                      title="Anexar Proposta do Aditivo"
-                      style={{ backgroundColor: "#ed9121", color: "#fff" }}
-                      shape="default"
-                    >
-                      Anexar Proposta do Aditivo
-                    </Button>
-                  </Upload>
-                </Form.Fragment>
-              </>
-            ) : (
-              <>
-                <Form.Fragment
-                  section={`Dados do Reajuste - Cliente ${selectContract.name}`}
-                >
-                  <CustomInput.Root columnSize={12}>
-                    <CustomInput.Input
-                      label="Valor Atual"
-                      name="value"
-                      value={reajustment.value}
-                      onChange={handleFormatReajustmentChange}
-                    />
-                  </CustomInput.Root>
-                  <CustomInput.Root columnSize={12}>
-                    <CustomInput.Input
-                      label="Porcentagem do Índice"
-                      name="index"
-                      value={reajustment.index}
-                      onChange={handleReajustmentValues}
-                    />
-                  </CustomInput.Root>
-                  <CustomInput.Root columnSize={12}>
-                    <CustomInput.Select
-                      label="Indíce"
-                      name="type"
-                      value={reajustment.type}
-                      onChange={handleReajustmentValues}
-                      options={Options.IndexContract()}
-                    />
-                  </CustomInput.Root>
-                </Form.Fragment>
-              </>
-            )}
           </Modal>
         )}
       </Table.Root>

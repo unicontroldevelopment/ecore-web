@@ -2,7 +2,6 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { logo, logoFitoLog, logoNewsis } from "../../../assets/logos/logo";
-import { Formats } from "../../formats";
 
 export const disciplinaryWarining = (employee, warningData, date) => {
   const verificaCNPJ = () => {
@@ -47,6 +46,25 @@ export const disciplinaryWarining = (employee, warningData, date) => {
     } else {
       return logo;
     }
+  };
+
+  const ExtenseMonth = (date) => {
+    const months = [
+      "janeiro",
+      "fevereiro",
+      "março",
+      "abril",
+      "maio",
+      "junho",
+      "julho",
+      "agosto",
+      "setembro",
+      "outubro",
+      "novembro",
+      "dezembro",
+    ];
+    const month = months[date.getMonth()];
+    return month.charAt(0).toUpperCase() + month.slice(1);
   };
 
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -111,9 +129,7 @@ export const disciplinaryWarining = (employee, warningData, date) => {
       lineHeight: 1.2,
     },
     {
-      text: `\n${verificaEndereco()}, Canoas/RS, ${new Date().getDate()} de ${Formats.ExtenseMonth(
-        date
-      )} de ${new Date().getFullYear()}\n\n\n\n\n`,
+      text: `\n${verificaEndereco()}, Canoas/RS, ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}\n\n\n\n\n`,
       alignment: "center",
       fontSize: 13,
       lineHeight: 1.2,

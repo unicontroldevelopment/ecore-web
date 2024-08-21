@@ -46,7 +46,7 @@ const Template = (props) => {
       key: "2",
       icon: <MdOutgoingMail />,
       label: "E-mails",
-      children: [
+      items: [
         {
           key: "2-1",
           label: <Link to="/emails/create">Cadastrar E-mail</Link>,
@@ -61,7 +61,7 @@ const Template = (props) => {
       key: "3",
       icon: <FaUserLock />,
       label: "Acessos Servidor",
-      children: [
+      items: [
         {
           key: "3-1",
           label: <Link to="/serveraccess/create">Cadastrar</Link>,
@@ -76,7 +76,7 @@ const Template = (props) => {
       key: "4",
       icon: <FaUsersCog />,
       label: "Funcionários",
-      children: [
+      items: [
         {
           key: "4-1",
           label: <Link to="/employee/create">Cadastrar Funcionários</Link>,
@@ -103,7 +103,7 @@ const Template = (props) => {
       key: "5",
       icon: <FaFileExport />,
       label: "Documentos",
-      children: [
+      items: [
         {
           key: "5-1",
           label: <Link to="/documents/createService">Cadastrar Serviço</Link>,
@@ -134,7 +134,7 @@ const Template = (props) => {
       key: "6",
       icon: <MdStarRate />,
       label: "Avaliação",
-      children: [
+      items: [
         {
           key: "6-1",
           label: <Link to="/dashboard">PPA</Link>,
@@ -149,7 +149,7 @@ const Template = (props) => {
       key: "7",
       icon: <FaBoxes />,
       label: "Estoque",
-      children: [
+      items: [
         {
           key: "7-1",
           label: <Link to="/stock/registerProduct">Cadastrar Produto</Link>,
@@ -176,7 +176,7 @@ const Template = (props) => {
       key: "8",
       icon: <FaBoxes />,
       label: "Laboratório",
-      children: [
+      items: [
         {
           key: "8-1",
           label: <Link to="/teste">Aba de Testes</Link>,
@@ -242,7 +242,7 @@ const Template = (props) => {
           }}
         >
           {menuItems.map((item) => {
-            if (item.children) {
+            if (item.items) {
               return (
                 <SubMenu
                   key={item.key}
@@ -250,7 +250,7 @@ const Template = (props) => {
                   title={item.label}
                   className="custom-submenu"
                 >
-                  {item.children.map((subItem) => (
+                  {item.items.map((subItem) => (
                     <Menu.Item key={subItem.key}>{subItem.label}</Menu.Item>
                   ))}
                 </SubMenu>

@@ -24,15 +24,20 @@ export const LooseReajustmentPDF = (index, type, signOnContract, value, name, da
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
   const newValue = (valorAtual, indiceReajuste) => {
-    const newFloat = parseFloat(valorAtual.replace(",", "."));
+    const valorFormatado = valorAtual.replace(/\./g, "").replace(",", ".");
+    const newFloat = parseFloat(valorFormatado);
+  
     const reajustmentDecimal = indiceReajuste / 100;
-
+  
     const valueReajustment = newFloat * reajustmentDecimal;
-    const newValue = newFloat + valueReajustment;
 
-    const value = newValue.toFixed(2).replace(".", ",");
+    const novoValor = newFloat + valueReajustment;
 
-    return value;
+    let valorFinal = novoValor.toFixed(2).replace(".", ",");
+    valorFinal = valorFinal.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  
+    return valorFinal;
+    
   };
 
   const tecSign = signOnContract[0];

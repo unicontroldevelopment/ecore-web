@@ -164,11 +164,12 @@ export const Additive = (
       },
       ...content,
       {
-        text: `\n\n - \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t${
+        text: `\n\n${
           tecSign.city
         }/${tecSign.state}, ${new Date().getDate()} de ${Formats.ExtenseMonth(
           date
         )} de ${new Date().getFullYear()}.\n\n `,
+        margin: [300, 0, 0, 10],
       },
       {
         text: processText(`\nCONTRATANTE \nNOME: ${name} \n${
