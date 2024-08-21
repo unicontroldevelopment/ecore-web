@@ -779,6 +779,7 @@ export default function ManageContracts() {
       try {
         const createdPDFDoc = await PDFDocument.load(pdfByte);
         const mergedPDF = await PDFDocument.create();
+        mergedPDF.setTitle(`Contrato - ${contract.name} ${contract.contractNumber}`);
         for (const pageNum of createdPDFDoc.getPageIndices()) {
           const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
           mergedPDF.addPage(page);
@@ -798,9 +799,6 @@ export default function ManageContracts() {
   //Reajuste/Aditivo -----------------------------------------------------------------------------------------
   const handleButtonClick = (contract) => {
     setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
-    //setShowOptions(true);
-    console.log("Contrato", contract);
-
     navigate(`/documents/${contract.id}/additive-reajustments`);
   };
 
