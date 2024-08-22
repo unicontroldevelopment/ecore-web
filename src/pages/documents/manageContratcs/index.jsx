@@ -42,7 +42,6 @@ export default function ManageContracts() {
   const [services, setServices] = React.useState([]);
   const [signs, setSigns] = React.useState([]);
   const [email, setEmail] = React.useState("");
-  const [showOptions, setShowOptions] = React.useState(false);
   const [additivePropouse, setAdditivePropouse] = React.useState(null);
   const [selectContract, setSelectContract] = React.useState({
     id: "",
@@ -808,32 +807,6 @@ export default function ManageContracts() {
   };
 
   //Tabelas -----------------------------------------------------------------------------------------
-  const columns = [
-    {
-      title: "Tipo",
-      dataIndex: "type",
-      key: "type",
-    },
-    {
-      title: "Descrição",
-      dataIndex: "description",
-      key: "description",
-    },
-    {
-      title: "Ações",
-      key: "actions",
-      render: (text, record) => (
-        <ActionsContainer>
-          {record.exists && <Button>Editar</Button>}
-          {record.exists && <Button>Visualizar</Button>}
-          {!record.exists && (
-            <Button onClick={() => handleCreate(record)}>Criar</Button>
-          )}
-        </ActionsContainer>
-      ),
-    },
-  ];
-
   const d4SignColumns = [
     {
       title: "Contrato",
@@ -901,6 +874,7 @@ export default function ManageContracts() {
     {
       title: "Ações",
       key: "actions",
+      width: 100,
       render: (text, record) => (
         <ActionsContainer>
           {record.exists && (
@@ -1278,23 +1252,6 @@ export default function ManageContracts() {
                 </Button>
               </Upload>
             </Form.Fragment>
-          </Modal>
-        )}
-        {showOptions && (
-          <Modal
-            title="Outras opções do contrato"
-            open={showOptions}
-            centered
-            width={1500}
-            onCancel={() => setShowOptions(false)}
-            footer={[
-              <Button key="back" onClick={() => setShowOptions(false)}>
-                Voltar
-              </Button>,
-            ]}
-          >
-            <h1>Em Construção</h1>
-            <Table.TableClean columns={columns} data={optionsData} />
           </Modal>
         )}
         {d4signController && (
