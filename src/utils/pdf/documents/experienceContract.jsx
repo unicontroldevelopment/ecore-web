@@ -48,6 +48,22 @@ export const experienceContract = (employee) => {
     }
   };
 
+  const verificaCargo = () => {
+    if(employee.office === "Controlador de Pragas") {
+      return `Segunda-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nTerça-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nQuarta-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nQuinta-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nSexta-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nSábado: das 8:00 às 12:00\n\n`
+    } else {
+      return `Segunda-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nTerça-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nQuarta-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nQuinta-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nSexta-feira: das 8:00 às 12:00 e das 13:12 às 18:00\n\n`
+    }
+  }
+
+  const verificaFolgas = () => {
+    if(employee.office === "Controlador de Pragas") {
+      return `Com 1 dia de folga semanal.\n\n`
+    } else {
+      return `Com 2 dias de folga semanal.\n\n`
+    }
+  }
+
   const formatData = (date) => {
     const dateObj = new Date(date);
     const day = dateObj.getDate();
@@ -95,13 +111,13 @@ export const experienceContract = (employee) => {
       lineHeight: 1.2,
     },
     {
-      text: `Segunda-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nTerça-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nQuarta-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nQuinta-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nSexta-feira: das 8:00 às 12:00 e das 13:12 às 18:00\n\n`,
+      text: verificaCargo(),
       alignment: "center",
       fontSize: 13,
       lineHeight: 1.2,
     },
     {
-      text: `Com 2 dias de folga semanal.\n\n`,
+      text: verificaFolgas(),
       alignment: "justify",
       fontSize: 13,
       lineHeight: 1.2,
