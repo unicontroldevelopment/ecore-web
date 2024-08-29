@@ -48,8 +48,18 @@ export default class {
     }
   }
 
-  async getContracts(type) {
+  async createCustomer(contractData) {
+    try {
+      const response = await api.post("/customer", contractData);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async getContracts(name, type) {
     const query = {
+        name,
         type
     };
 

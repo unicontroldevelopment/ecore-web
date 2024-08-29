@@ -32,7 +32,7 @@ export default function CreateContract() {
   const [services, setServices] = React.useState([]);
   const [signs, setSigns] = React.useState([]);
   const [values, setValues] = React.useState({
-    status: "Aguardando..",
+    status: "Contrato",
     name: "",
     cpfcnpj: "",
     cep: "",
