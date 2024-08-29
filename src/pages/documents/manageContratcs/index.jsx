@@ -45,7 +45,7 @@ export default function ManageContracts() {
   const [additivePropouse, setAdditivePropouse] = React.useState(null);
   const [selectContract, setSelectContract] = React.useState({
     id: "",
-    status: "",
+    status: "Contrato",
     d4sign: "",
     name: "",
     cpfcnpj: "",
@@ -67,18 +67,13 @@ export default function ManageContracts() {
   });
   const [filter, setFilter] = React.useState({
     name: "",
+    type: "Contrato"
   });
   const [file, setFile] = React.useState();
   const [valueMoney, setValueMoney] = React.useState("");
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
-  const [isModalVisibleReajustment, setIsModalVisibleReajustment] =
-    React.useState(false);
-  const [isModalVisibleadditive, setIsModalVisibleAdditive] =
-    React.useState(false);
   const [d4signController, setD4signController] = React.useState(false);
   const [isModalVisibleCreate, setIsModalVisibleCreate] = React.useState(false);
-  const [currentType, setCurrentType] = React.useState("");
-  const [formatCep, setFormatCep] = React.useState("");
   const [d4SignOpenInfo, setD4SignOpenInfo] = React.useState(false);
   const [d4SignRegisterSignature, setD4SignRegisterSignature] =
     React.useState(false);
@@ -122,7 +117,7 @@ export default function ManageContracts() {
   ) => {
     if (isLoadingControlled) setLoading(true);
     try {
-      const request = await service.getContracts(nameFilter);
+      const request = await service.getContracts(nameFilter, filter.type);
       const dataContracts = request.data.listContracts;
 
       const updatedContracts = dataContracts.map((contract) => {
@@ -801,11 +796,6 @@ export default function ManageContracts() {
     navigate(`/documents/${contract.id}/additive-reajustments`);
   };
 
-  const handleCreate = (record) => {
-    setCurrentType(record.type);
-    setIsModalVisibleCreate(true);
-  };
-
   //Tabelas -----------------------------------------------------------------------------------------
   const d4SignColumns = [
     {
@@ -986,25 +976,6 @@ export default function ManageContracts() {
           />
         </ActionsContainer>
       ),
-    },
-  ];
-
-  const optionsData = [
-    {
-      key: "name",
-      type: "Aditivo",
-      description: selectContract.additive
-        ? selectContract.name
-        : "Nenhum aditivo",
-      exists: !!selectContract.additive,
-    },
-    {
-      key: "city",
-      type: "Reajuste",
-      description: selectContract.reajustment
-        ? `Valor: ${selectContract.name}`
-        : "Nenhum reajuste",
-      exists: !!selectContract.reajustment,
     },
   ];
 
