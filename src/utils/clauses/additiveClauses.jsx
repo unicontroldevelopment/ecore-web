@@ -1,9 +1,6 @@
 
 export const ClauseOneAdditive = () => {  
-    return `CLÁUSULA PRIMEIRA: O presente CONTRATO tem como objeto a INCLUSAO de
-    -
-    -
-    -  \n`
+    return `CLÁUSULA PRIMEIRA: O presente CONTRATO tem como objeto a INCLUSAO de:\n\n`
   };
 
   export const ClauseTwoAdditive = (oldValue = "0,00", newValue = "0,00") => {

@@ -116,11 +116,6 @@ export default function CreateContract() {
   }, [values.servicesContract]);
 
   React.useEffect(() => {
-    console.log("Value", values.value);
-    
-  }, [values.value])
-
-  React.useEffect(() => {
     const fetchAddress = async () => {
       if (values.cep.length === 9) {
         try {

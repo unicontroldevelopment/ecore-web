@@ -67,7 +67,7 @@ export default function ManageContracts() {
   });
   const [filter, setFilter] = React.useState({
     name: "",
-    type: "Contrato"
+    type: "Contrato",
   });
   const [file, setFile] = React.useState();
   const [valueMoney, setValueMoney] = React.useState("");
@@ -94,13 +94,13 @@ export default function ManageContracts() {
   const navigate = useNavigate();
 
   const formatMoney = (value) => {
-    if (value === undefined || value === null) return '';
-  
-    const formatter = new Intl.NumberFormat('pt-BR', {
+    if (value === undefined || value === null) return "";
+
+    const formatter = new Intl.NumberFormat("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
-  
+
     return formatter.format(value);
   };
 
@@ -773,7 +773,9 @@ export default function ManageContracts() {
       try {
         const createdPDFDoc = await PDFDocument.load(pdfByte);
         const mergedPDF = await PDFDocument.create();
-        mergedPDF.setTitle(`Contrato - ${contract.name} ${contract.contractNumber}`);
+        mergedPDF.setTitle(
+          `Contrato - ${contract.name} ${contract.contractNumber}`
+        );
         for (const pageNum of createdPDFDoc.getPageIndices()) {
           const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
           mergedPDF.addPage(page);
