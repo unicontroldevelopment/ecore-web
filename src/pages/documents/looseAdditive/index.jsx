@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { EllipsisOutlined } from "@ant-design/icons";
 import { Button, Modal } from "antd";
+import Loading from "../../../components/animations/Loading";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input";
@@ -10,6 +11,7 @@ import { Table } from "../../../components/table";
 import { ActionsContainer } from "../../../components/table/styles";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
+import ContractSignService from "../../../services/ContractSignService";
 import DocumentsService from "../../../services/DocumentsService";
 import Utils from "../../../services/Utils";
 import { Formats } from "../../../utils/formats";
@@ -18,10 +20,12 @@ export default function LooseAdditive() {
   VerifyUserRole(["Master", "Administrador", "Comercial"]);
   const navigate = useNavigate();
   const utilsService = new Utils();
+  const contractService = new ContractSignService();
   const service = new DocumentsService();
 
   const [contracts, setContracts] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
+  const [signs, setSigns] = React.useState([]);
   const [modalCreate, setModalCreate] = React.useState(false);
   const [formatCpfOrCnpj, setFormatCpfOrCnpj] = React.useState("");
   const [formatCep, setFormatCep] = React.useState("");
@@ -51,6 +55,13 @@ export default function LooseAdditive() {
     neighborhood: "",
     city: "",
     state: "",
+    signOnContract: [
+      {
+        contract_id: "",
+        sign_id: "",
+        Contract_Signature: { socialReason: "" },
+      },
+    ],
   });
   const [filter, setFilter] = React.useState({
     name: "",
@@ -86,10 +97,19 @@ export default function LooseAdditive() {
     }
   };
 
+  const fetchSigns = async () => {
+    try {
+      const signService = await contractService.getcontractSigns();
+      setSigns(signService.data.listUsers);
+    } catch (error) {
+      console.error("Erro ao buscar assinaturas:", error);
+    }
+  };
+
   //Effect -------------------------------------------------------------------------------------------
   React.useEffect(() => {
     const fetchData = async () => {
-      await Promise.all([fetchContracts("", true)]);
+      await Promise.all([fetchContracts("", true), fetchSigns()]);
     };
     fetchData();
   }, []);
@@ -124,6 +144,28 @@ export default function LooseAdditive() {
   }, [values.cep]);
 
   React.useEffect(() => {
+    const fetchAddress = async () => {
+      if (selectContract.cep.length === 9) {
+        try {
+          const response = await utilsService.findCep(selectContract.cep);
+          if (response) {
+            setSelectContract((prevValues) => ({
+              ...prevValues,
+              road: response.data.logradouro,
+              neighborhood: response.data.bairro,
+              city: response.data.localidade,
+              state: response.data.uf,
+            }));
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+    fetchAddress();
+  }, [selectContract.cep]);
+
+  React.useEffect(() => {
     if (values.cep.length !== 9) {
       setValues((prevValues) => ({
         ...prevValues,
@@ -134,6 +176,68 @@ export default function LooseAdditive() {
       }));
     }
   }, [values.cep]);
+
+  const handleSignChange = (event) => {
+    const { value } = event.target;
+
+    setSelectContract((prevState) => {
+      const currentTecSocialReason =
+        prevState.signOnContract[0].Contract_Signature.socialReason;
+
+      if (value !== currentTecSocialReason) {
+        const selectedTec = signs.find((sign) => sign.socialReason === value);
+        return {
+          ...prevState,
+          signOnContract: [
+            {
+              contract_id: prevState.id,
+              sign_id: selectedTec.id,
+              Contract_Signature: { ...selectedTec },
+            },
+          ],
+        };
+      }
+      return prevState;
+    });
+  };
+
+  const handleSignChangeCreate = (event) => {
+    const { value } = event.target;
+
+    setValues((prevState) => {
+      const currentTecSocialReason =
+        prevState.signOnContract[0]?.Contract_Signature.socialReason;
+
+      if (!currentTecSocialReason) {
+        const selectedTec = signs.find((sign) => sign.socialReason === value);
+        return {
+          ...prevState,
+          signOnContract: [
+            {
+              contract_id: prevState.id,
+              sign_id: selectedTec.id,
+              Contract_Signature: { ...selectedTec },
+            },
+          ],
+        };
+      }
+
+      if (value !== currentTecSocialReason) {
+        const selectedTec = signs.find((sign) => sign.socialReason === value);
+        return {
+          ...prevState,
+          signOnContract: [
+            {
+              contract_id: prevState.id,
+              sign_id: selectedTec.id,
+              Contract_Signature: { ...selectedTec },
+            },
+          ],
+        };
+      }
+      return prevState;
+    });
+  };
 
   const handleFormatsChange = (event) => {
     const { name, value } = event.target;
@@ -319,13 +423,27 @@ export default function LooseAdditive() {
       return;
     }
 
-    const response = await service.createCustomer(values);
+    const signId = values.signOnContract?.[0]?.sign_id;
+
+    if (!signId) {
+      Toast.Info("Selecione uma franquia!");
+      return;
+    }
+
+    const data = {
+      ...values,
+      signOnContract: signId,
+    };
+
+    const response = await service.createCustomer(data);
 
     if (response.request.status === 500) {
-      Toast.Error("Contrato já cadastrado!");
+      Toast.Error("Cliente já cadastrado!");
       return;
     } else {
-      Toast.Success("Contrato cadastrado com sucesso!");
+      await fetchContracts("", true);
+      setModalCreate(false);
+      Toast.Success("Cliente cadastrado com sucesso!");
     }
   };
 
@@ -378,8 +496,8 @@ export default function LooseAdditive() {
       const response = await service.updateContract(updateData.id, updateData);
 
       if (response.status === 200) {
-        await fetchContracts();
-        Toast.Success("Contrato atualizado com sucesso!");
+        await fetchContracts("", true);
+        Toast.Success("Cliente atualizado com sucesso!");
         setIsModalVisibleUpdate(false);
       }
       setLoading(false);
@@ -396,6 +514,11 @@ export default function LooseAdditive() {
       title: "Cliente",
       dataIndex: "name",
       key: "name",
+    },
+    {
+      title: "CPF/CNPJ",
+      dataIndex: "cpfcnpj",
+      key: "cpfcnpj",
     },
     {
       title: "Aditivos e Reajustes",
@@ -417,11 +540,12 @@ export default function LooseAdditive() {
 
   return (
     <>
+      {loading && <Loading />}
       <Table.Root title="Lista de Clientes Sem Contrato">
         <Button
           type="primary"
           onClick={() => setModalCreate(true)}
-          style={{ marginLeft: "90%" }}
+          style={{ marginLeft: "88%" }}
         >
           Adicionar Cliente
         </Button>
@@ -445,7 +569,7 @@ export default function LooseAdditive() {
       </Table.Root>
       {modalCreate && (
         <Modal
-          title={`Criar Cliente`}
+          title={`Adicionar novo Cliente`}
           open={modalCreate}
           centered
           width={800}
@@ -455,7 +579,7 @@ export default function LooseAdditive() {
               Voltar
             </Button>,
             <Button key="submit" type="primary" onClick={handleCreate}>
-              Criar
+              Adicionar
             </Button>,
           ]}
         >
@@ -549,6 +673,15 @@ export default function LooseAdditive() {
                 errorText={messageError.state}
               />
             </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="Franquia">
+            <CustomInput.Select
+              label="Assinaturas"
+              name="signOnContract"
+              value={values.signOnContract[0]?.Contract_Signature.socialReason}
+              options={signs.map((sign) => sign.socialReason)}
+              onChange={handleSignChangeCreate}
+            />
           </Form.Fragment>
         </Modal>
       )}
@@ -662,6 +795,17 @@ export default function LooseAdditive() {
                 onChange={handleChangeUpdate}
               />
             </CustomInput.Root>
+          </Form.Fragment>
+          <Form.Fragment section="Franquia">
+            <CustomInput.Select
+              label="Assinaturas"
+              name="signOnContract"
+              value={
+                selectContract.signOnContract[0].Contract_Signature.socialReason
+              }
+              options={signs.map((sign) => sign.socialReason)}
+              onChange={handleSignChange}
+            />
           </Form.Fragment>
         </Modal>
       )}

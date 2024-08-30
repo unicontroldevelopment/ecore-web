@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { PDFDocument } from "pdf-lib";
 import * as React from "react";
 import { useParams } from "react-router-dom";
+import Loading from "../../../components/animations/Loading";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input";
 import { Table } from "../../../components/table";
@@ -28,6 +29,7 @@ import { Reajustment } from "../../../utils/pdf/reajustment";
 export default function AdditiveAndReajustment() {
   VerifyUserRole(["Master", "Administrador", "Comercial"]);
   const { id } = useParams();
+  const [loading, setLoading] = React.useState(false);
   const [contract, setContract] = React.useState({});
   const [additiveData, setAdditiveData] = React.useState([]);
   const [reajustmentData, setReajustmentData] = React.useState([]);
@@ -63,6 +65,7 @@ export default function AdditiveAndReajustment() {
   const utilsService = new Utils();
 
   const fetchContract = async () => {
+    setLoading(true);
     const response = await contractService.getByIdAllInfo(id);
 
     const sortedData = response.data.user.additive.sort(
@@ -97,6 +100,7 @@ export default function AdditiveAndReajustment() {
     setContract(response.data.user);
     setAdditiveData(updatedAdditives);
     setReajustmentData(updatedReajustments);
+    setLoading(false);
   };
 
   React.useEffect(() => {
@@ -419,6 +423,7 @@ export default function AdditiveAndReajustment() {
 
       if (response.status === 201) {
         Toast.Success("Reajuste Criado com sucesso");
+        await fetchContract();
         setModalReajustment(false);
       } else {
         Toast.Error("Erro ao criar reajuste");
@@ -637,6 +642,7 @@ export default function AdditiveAndReajustment() {
 
   return (
     <>
+    {loading && <Loading />}
       <Table.Root title={`Aditivos e Reajustes de ${contract.name}`}>
         {currentTab === "aditivos" && (
           <Button
