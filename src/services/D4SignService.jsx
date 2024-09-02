@@ -5,14 +5,12 @@ export default class {
     try {
       const formData = new FormData();
       
-      // Envie a string base64 diretamente
       formData.append('file', documentData.file);
 
       if (documentData.file_anexo) {
         formData.append('file_anexo', documentData.file_anexo);
       }
   
-      // Adiciona outros dados
       formData.append('name', documentData.name);
       formData.append('contractId', documentData.contractId);
   
@@ -25,7 +23,32 @@ export default class {
       return response;
     } catch (error) {
       console.error("Error creating document:", error);
-      throw error; // Lança o erro para tratamento adicional, se necessário
+      throw error;
+    }
+  }
+  async createAditive(documentData) {
+    try {
+      const formData = new FormData();
+      
+      formData.append('file', documentData.file);
+
+      if (documentData.file_anexo) {
+        formData.append('file_anexo', documentData.file_anexo);
+      }
+  
+      formData.append('name', documentData.name);
+      formData.append('contractId', documentData.contractId);
+  
+      const response = await api.post("/cadastrarAditivo", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      return response;
+    } catch (error) {
+      console.error("Error creating document:", error);
+      throw error;
     }
   }
   async getDocument(documentId) {
@@ -71,6 +94,14 @@ export default class {
   async cancelDocument(documentData) {
     try {
       const response = await api.post("/cancelarDocumento", documentData);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async cancelDocument(documentData) {
+    try {
+      const response = await api.post("/cancelarAditivo", documentData);
       return response;
     } catch (error) {
       return error;
