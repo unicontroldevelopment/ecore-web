@@ -994,6 +994,7 @@ export default function ManageContracts() {
     <>
       {loading && <Loading />}
       <Table.Root title="Lista de Contratos">
+        <Filter.Fragment section="Filtro">
         <CustomInput.Root columnSize={24}>
           <Filter.FilterInput
             label="Nome do Cliente"
@@ -1002,7 +1003,7 @@ export default function ManageContracts() {
             value={filter.name}
           />
         </CustomInput.Root>
-        <Filter.Fragment section="Filtro"></Filter.Fragment>
+        </Filter.Fragment>
         <Table.Table
           data={contracts}
           columns={options}

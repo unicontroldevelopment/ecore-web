@@ -549,15 +549,16 @@ export default function LooseAdditive() {
         >
           Adicionar Cliente
         </Button>
-        <CustomInput.Root columnSize={24}>
-          <Filter.FilterInput
-            label="Nome do Cliente"
-            name="name"
-            onChange={handleChangeFilter}
-            value={filter.name}
-          />
-        </CustomInput.Root>
-        <Filter.Fragment section="Filtro"></Filter.Fragment>
+        <Filter.Fragment section="Filtro">
+          <CustomInput.Root columnSize={24}>
+            <Filter.FilterInput
+              label="Nome do Cliente"
+              name="name"
+              onChange={handleChangeFilter}
+              value={filter.name}
+            />
+          </CustomInput.Root>
+        </Filter.Fragment>
         <Table.Table
           data={contracts}
           columns={options}
