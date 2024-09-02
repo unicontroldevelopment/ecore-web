@@ -1,10 +1,18 @@
 /* eslint-disable no-unused-vars */
-import { ControlFilled } from "@ant-design/icons";
-import { Button, Modal, Tabs, Upload } from "antd";
+import {
+  CloseOutlined,
+  ControlFilled,
+  DownloadOutlined,
+  InfoCircleFilled,
+  QuestionCircleOutlined,
+  SendOutlined,
+} from "@ant-design/icons";
+import { Button, Modal, Popconfirm, Tabs, Tooltip, Upload } from "antd";
 import Item from "antd/es/list/Item";
 import dayjs from "dayjs";
 import { PDFDocument } from "pdf-lib";
 import * as React from "react";
+import { FaFileUpload } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
 import { Form } from "../../../components/form";
@@ -14,6 +22,7 @@ import { ActionsContainer } from "../../../components/table/styles";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import AdditiveOrReajustmentService from "../../../services/AdditiveOrReajustmentService";
+import D4SignService from "../../../services/D4SignService";
 import DocumentsService from "../../../services/DocumentsService";
 import Utils from "../../../services/Utils";
 import {
@@ -22,6 +31,7 @@ import {
   ClauseTwoAdditive,
 } from "../../../utils/clauses/additiveClauses";
 import { Formats } from "../../../utils/formats";
+import formatData from "../../../utils/formats/formatData";
 import { Options } from "../../../utils/options";
 import { Additive } from "../../../utils/pdf/additive";
 import { Reajustment } from "../../../utils/pdf/reajustment";
@@ -31,6 +41,7 @@ export default function AdditiveAndReajustment() {
   const { id } = useParams();
   const [loading, setLoading] = React.useState(false);
   const [contract, setContract] = React.useState({});
+  const [email, setEmail] = React.useState("");
   const [additiveData, setAdditiveData] = React.useState([]);
   const [reajustmentData, setReajustmentData] = React.useState([]);
   const [currentTab, setCurrentTab] = React.useState("aditivos");
@@ -44,6 +55,7 @@ export default function AdditiveAndReajustment() {
   const [modalReajustment, setModalReajustment] = React.useState(false);
   const [additive, setAdditive] = React.useState({
     contract_id: id,
+    d4sign: null,
     newValue: null,
     oldValue: null,
     clauses: [
@@ -58,9 +70,28 @@ export default function AdditiveAndReajustment() {
     index: null,
     type: "",
   });
+  const [d4signController, setD4signController] = React.useState(false);
+  const [d4SignOpenInfo, setD4SignOpenInfo] = React.useState(false);
+  const [d4SignRegisterSignature, setD4SignRegisterSignature] =
+    React.useState(false);
+  const [signatures, setSignatures] = React.useState([]);
+  const [d4SignData, setD4SignData] = React.useState({
+    uuidDoc: "",
+    nameDoc: "",
+    type: "",
+    size: "",
+    pages: "",
+    uuidSafe: "",
+    safeName: "",
+    statusId: "",
+    statusName: "",
+    statusComment: "",
+    whoCanceled: "null",
+  });
 
   const extenseDate = new Date().getMonth() + 1;
   const contractService = new DocumentsService();
+  const d4SignService = new D4SignService();
   const service = new AdditiveOrReajustmentService();
   const utilsService = new Utils();
 
@@ -141,9 +172,252 @@ export default function AdditiveAndReajustment() {
     return formatter.format(value);
   };
 
-  const handleD4Sign = () => {
-    console.log("D4sign");
+  const handleD4Sign = async (contract) => {
+    setLoading(true);
+
+    try {
+      setSelectAdditive((prevContract) => ({ ...prevContract, ...contract }));
+
+      const response = await d4SignService.getDocument(contract.d4sign);
+      setD4SignData(response.data.contract[0]);
+
+      setD4signController(true);
+    } catch (error) {
+      console.error("Erro ao buscar documento no D4Sign:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const verificaCorDoStatus = (status) => {
+    if (status === "1") {
+      return "#8cff00";
+    } else if (status === "2") {
+      return "#f6dd00";
+    } else if (status === "3") {
+      return "#3992ff";
+    } else if (status === "4") {
+      return "#1eb300";
+    }
+  };
+
+  const downloadWithUrl = async (url) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "";
+    link.click();
+  };
+
+  const handleD4SignViewDocument = async (contract) => {
+    setLoading(true);
+
+    try {
+      const response = await d4SignService.downloadDocument({
+        id_doc: contract.contract.uuidDoc,
+      });
+
+      downloadWithUrl(response.data.contract.url).then(() => {
+        Toast.Info("Fazendo download do aditivo...");
+      });
+    } catch (error) {
+      console.error("Erro ao buscar documento no D4Sign:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleD4signInfo = async () => {
+    setLoading(true);
+    try {
+      const response = await d4SignService.getSignatures(d4SignData.uuidDoc);
+      setSignatures(response.data.contract);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+      setD4SignOpenInfo(true);
+    }
+  };
+
+  const deleteDocumentOnD4Sign = async () => {
+    return d4SignData.statusName !== "Finalizado"
+      ? (setLoading(true),
+        await d4SignService
+          .cancelDocument({
+            id_doc: d4SignData.uuidDoc,
+          })
+          .then(() => {
+            setLoading(false);
+            setD4signController(false);
+            Toast.Success("Aditivo cancelado com sucesso!");
+            window.location.reload();
+          }))
+      : Toast.Error("Não é possível cancelar um documento finalizado");
+  };
+
+  const handleSendD4SignToSign = async () => {
+    setLoading(true);
+    const data = {
+      id_document: d4SignData.uuidDoc,
+      message: "Por Favor, Assinar!",
+      skip_email: "0",
+      workflow: "0",
+    };
+    d4SignData.statusName !== "Finalizado"
+      ? await d4SignService.sendToSignDocument(data).then((res) => {
+          const verificaSeJaEnviouEmail = () => {
+            if (
+              res.data.body.mensagem_pt ===
+              "O documento já foi enviado para assinatura."
+            ) {
+              Toast.Error("O documento já foi enviado para assinatura");
+            } else if (
+              res.data.body.mensagem_pt === "Documento sem signatários."
+            ) {
+              Toast.Error("Documento sem signatários cadastrados");
+            } else {
+              Toast.Success("E-mail enviado com sucesso");
+              window.location.reload();
+            }
+          };
+          verificaSeJaEnviouEmail();
+        })
+      : Toast.Error(
+          "Não é possível enviar um e-mail para um documento finalizado"
+        );
+    setLoading(false);
+  };
+
+  const blobToBase64 = (blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const handleD4SignRegister = async () => {
+    setLoading(true);
+
+    const pdfByte = await Additive(
+      contract.name,
+      contract.cpfcnpj,
+      contract.road,
+      contract.number,
+      contract.complement,
+      contract.neighborhood,
+      contract.city,
+      contract.state,
+      contract.signOnContract,
+      selectAdditive.additive_Clauses,
+      extenseDate
+    );
+
+    let mergedBlob;
+    let base64D4Sign;   
+
+    if (selectAdditive.propouse?.file.data) {
+      const arrayBuffer = selectAdditive.propouse?.file.data;
+      const propouseData = new Uint8Array(arrayBuffer);
+
+      try {
+        const uploadedPDFDoc = await PDFDocument.load(propouseData);
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        mergedBlob = await mergePDFs(
+          uploadedPDFDoc,
+          createdPDFDoc,
+          selectAdditive,
+          "Aditivo"
+        );
+
+        const base64 = await blobToBase64(mergedBlob);
+        base64D4Sign = base64;
+      } catch (error) {
+        console.error("Error loading PDFs: ", error);
+        return;
+      }
+    } else {
+      try {
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        const mergedPDF = await PDFDocument.create();
+        for (const pageNum of createdPDFDoc.getPageIndices()) {
+          const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
+          mergedPDF.addPage(page);
+        }
+        const mergedPdfBytes = await mergedPDF.save();
+        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+
+        const base64 = await blobToBase64(mergedBlob);
+        base64D4Sign = base64;
+      } catch (error) {
+        console.error("Error creating PDF: ", error);
+        return;
+      }
+    }
+
+    const data = {
+      name: `Aditivo de ${contract.name} ${formatData(
+        new Date().getTime()
+      )}`,
+      file: base64D4Sign,
+      contractId: selectAdditive.id,
+    };
+
+    const response = await d4SignService.createAditive(data);
+
+    if (response.status === 200) {
+      const updatedData = additiveData.map((contract) =>
+        contract.id === selectAdditive.id
+          ? { ...contract, ...selectAdditive }
+          : contract
+      );
+
+      setAdditiveData(updatedData);
+      setLoading(false);
+      Toast.Success("Aditivo cadastrado com sucesso!");
+      window.location.reload();
+    }
+  };
+
+  const handleD4SignRegisterSign = () => {
+    setD4SignRegisterSignature(true);
+  };
+
+  const handleInsertSign = async (email) => {
+    if (email.length > 0) {
+      const documentData = {
+        id_document: selectAdditive.d4sign,
+        email: email,
+        act: "1",
+        foreign: "1",
+        certificadoicpbr: "0",
+        assinatura_presencial: "0",
+        docauth: "0",
+        docauthandselfie: "0",
+        embed_methodauth: "email",
+        embed_smsnumber: "",
+        upload_allow: "0",
+        upload_obs: "0",
+      };
+
+      await d4SignService.registerSignOnDocument(documentData).then(() => {
+        setEmail("");
+        setD4SignRegisterSignature(false);
+        Toast.Success("E-mail cadastrado com sucesso");
+      });
+    } else {
+      Toast.Error("Preencha o campo E-mail");
+    }
+  };
+
+  //-------------------------------------------------------------------------------------------------------
+
+  const cancelDelete = () => {
+    return;
+  }
 
   const handleAddClick = () => {
     setAdditive((prevContract) => ({
@@ -265,7 +539,6 @@ export default function AdditiveAndReajustment() {
         }));
       }
     }
-
   };
 
   const handleFormatReajustmentChange = (eventOrDate) => {
@@ -358,6 +631,8 @@ export default function AdditiveAndReajustment() {
     }
 
     const pdfUrl = URL.createObjectURL(mergedBlob);
+    console.log("URL", pdfUrl);
+
     window.open(pdfUrl, "_blank");
   };
 
@@ -473,7 +748,7 @@ export default function AdditiveAndReajustment() {
         }
 
         await fetchContract();
-        Toast.Success("Contrato atualizado com sucesso!");
+        Toast.Success("Aditivo atualizado com sucesso!");
         setModalUpdateAdditive(false);
       }
       return response;
@@ -522,6 +797,11 @@ export default function AdditiveAndReajustment() {
 
   const confirmDeleteAdditive = async (e) => {
     try {
+
+      if(e.d4sign) {
+        Toast.Info("Cancele o Aditivo no D4Sign antes!")
+        return;
+      }
       const response = await service.deleteAdditive(e.id);
 
       if (response.status === 200) {
@@ -613,6 +893,153 @@ export default function AdditiveAndReajustment() {
     },
   ];
 
+  const d4SignOptions = [
+    {
+      key: "status",
+      contract: selectAdditive.d4sign ? d4SignData : "Não cadastrado",
+      status: selectAdditive.d4sign ? d4SignData : "Não cadastrado",
+      exists: !!selectAdditive.d4sign,
+    },
+  ];
+
+  const d4SignColumns = [
+    {
+      title: "Aditivo",
+      dataIndex: "contract",
+      key: "contract",
+      render: (text, row) =>
+        row.contract.nameDoc && row.contract.nameDoc.length > 25 ? (
+          <Tooltip title={row.contract.nameDoc.toUpperCase()}>
+            <p
+              style={{
+                cursor: "pointer",
+                ...(window.innerWidth > 768 ? {} : { fontSize: "0.8rem" }),
+              }}
+            >
+              {row.contract.nameDoc.toUpperCase().substring(0, 25)}...
+            </p>
+          </Tooltip>
+        ) : (
+          <p style={{ cursor: "pointer" }}>
+            {row.contract.nameDoc ? row.contract.nameDoc.toUpperCase() : ""}
+          </p>
+        ),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (text, row) => {
+        return row.contract.statusName &&
+          row.contract.statusName.length > 10 ? (
+          <Tooltip title={row.contract.statusName.toUpperCase()}>
+            <p
+              style={{
+                cursor: "pointer",
+                backgroundColor: verificaCorDoStatus(row.contract.statusId),
+                color: "#ffffff",
+                borderRadius: "5px",
+                padding: "4px 15px",
+                margin: "15px",
+                display: "inline-block",
+              }}
+            >
+              {row.contract.statusName.toUpperCase().substring(0, 10)}...
+            </p>
+          </Tooltip>
+        ) : (
+          <p
+            style={{
+              cursor: "pointer",
+              backgroundColor: verificaCorDoStatus(row.contract.statusId),
+              color: "#ffffff",
+              borderRadius: "5px",
+              padding: "4px 15px",
+              margin: "15px",
+              display: "inline-block",
+            }}
+          >
+            {row.contract.statusName
+              ? row.contract.statusName.toUpperCase()
+              : ""}
+          </p>
+        );
+      },
+    },
+    {
+      title: "Ações",
+      key: "actions",
+      width: 100,
+      render: (text, record) => (
+        <ActionsContainer>
+          {record.exists && (
+            <Button
+              title="Controle de Assinatura"
+              style={{ backgroundColor: "#7B68EE", color: "#fff" }}
+              shape="circle"
+              icon={<ControlFilled />}
+              onClick={() => handleD4SignRegisterSign(record)}
+            />
+          )}
+          {record.exists && (
+            <Button
+              title="Enviar para Assinar"
+              style={{ backgroundColor: "#FF69B4", color: "#fff" }}
+              shape="circle"
+              icon={<SendOutlined />}
+              onClick={() => handleSendD4SignToSign(record)}
+            />
+          )}
+          {record.exists && (
+            <Button
+              title="Informações do Documento"
+              style={{ backgroundColor: "#808080", color: "#fff" }}
+              shape="circle"
+              icon={<InfoCircleFilled />}
+              onClick={() => handleD4signInfo(record)}
+            />
+          )}
+          {record.exists && (
+            <Button
+              title="Donwload do Documento"
+              style={{ backgroundColor: "#26D0F0", color: "#fff" }}
+              shape="circle"
+              icon={<DownloadOutlined />}
+              onClick={() => handleD4SignViewDocument(record)}
+            />
+          )}
+          {record.exists && (
+            <Popconfirm
+              title="Tem certeza?"
+              description="Você quer cancelar este contrato?"
+              onConfirm={() => deleteDocumentOnD4Sign(record)}
+              onCancel={() => cancelDelete(record)}
+              okText="Sim"
+              cancelText="Não"
+              icon={<QuestionCircleOutlined style={{ color: "red" }} />}
+            >
+              <Button
+                title="Cancelar Documento"
+                style={{ backgroundColor: "#c72424", color: "#fff" }}
+                shape="circle"
+                icon={<CloseOutlined />}
+              />
+            </Popconfirm>
+          )}
+          {!record.exists && (
+            <Button
+              title="Cadastrar Documento"
+              style={{ backgroundColor: "#9400D3", color: "#fff" }}
+              shape="circle"
+              icon={<FaFileUpload />}
+              onClick={() => handleD4SignRegister(record)}
+            />
+          )}
+        </ActionsContainer>
+      ),
+    },
+  ];
+
   const columnsReajustment = [
     {
       title: "Data",
@@ -642,7 +1069,7 @@ export default function AdditiveAndReajustment() {
 
   return (
     <>
-    {loading && <Loading />}
+      {loading && <Loading />}
       <Table.Root title={`Aditivos e Reajustes de ${contract.name}`}>
         {currentTab === "aditivos" && (
           <Button
@@ -663,7 +1090,7 @@ export default function AdditiveAndReajustment() {
           </Button>
         )}
         <Tabs activeKey={currentTab} onChange={setCurrentTab}>
-        <Item tab="Aditivos" key="aditivos">
+          <Item tab="Aditivos" key="aditivos">
             <Table.Table
               data={additiveData}
               columns={columnsAdditive}
@@ -763,6 +1190,186 @@ export default function AdditiveAndReajustment() {
               </Button>
             </Upload>
           </Form.Fragment>
+        </Modal>
+      )}
+      {d4signController && (
+        <>
+          {loading && <Loading />}
+          <Modal
+            title="Controle de assinaturas"
+            open={d4signController}
+            centered
+            width={"90%"}
+            onCancel={() => setD4signController(false)}
+            footer={[
+              <Button key="back" onClick={() => setD4signController(false)}>
+                Voltar
+              </Button>,
+            ]}
+          >
+            <Table.TableClean columns={d4SignColumns} data={d4SignOptions} />
+          </Modal>
+        </>
+      )}
+      {d4SignOpenInfo && (
+        <Modal
+          title="Informações do Documento"
+          open={d4SignOpenInfo}
+          centered
+          width={"45%"}
+          onCancel={() => setD4SignOpenInfo(false)}
+          footer={[
+            <Button key="back" onClick={() => setD4SignOpenInfo(false)}>
+              Voltar
+            </Button>,
+          ]}
+        >
+          <h1>E-mails cadastrados</h1>
+          {signatures.map((signatarios, index) =>
+            signatarios.list !== null ? (
+              signatarios.list.map((signatario, index) => {
+                const verificaCor = () => {
+                  if (signatario.signed === "0") {
+                    return "#c72424";
+                  } else if (signatario.signed === "1") {
+                    return "#1eb300";
+                  }
+                };
+                const verificaSeJaAssinou = () => {
+                  if (signatario.signed === "0") {
+                    return (
+                      <div>
+                        <TiArrowForward
+                          style={{
+                            marginLeft: "10px",
+                          }}
+                          cursor={"pointer"}
+                          size={20}
+                          color={"#05628F"}
+                          onClick={async () => {
+                            const data = {
+                              id_doc: signatarios.uuidDoc,
+                              email: signatario.email,
+                            };
+                            await d4SignService
+                              .resendSignature(data)
+                              .then(() => {
+                                Toast.Success("E-mail reenviado com sucesso");
+                              });
+                          }}
+                        />
+                        <MdPersonRemoveAlt1
+                          style={{
+                            marginLeft: "10px",
+                          }}
+                          cursor={"pointer"}
+                          size={20}
+                          color={"#c72424"}
+                          onClick={async () => {
+                            setLoading(true);
+                            const data = {
+                              id_doc: signatarios.uuidDoc,
+                              id_assinatura: signatario.key_signer,
+                              email_assinatura: signatario.email,
+                            };
+                            await d4SignService
+                              .cancelSignature(data)
+                              .then(() => {
+                                setSignatures([]);
+                                Toast.Success("E-mail removido com sucesso");
+                                setLoading(false);
+                              });
+                          }}
+                        />
+                      </div>
+                    );
+                  } else if (signatario.signed === "1") {
+                    return (
+                      <AiOutlineCheck
+                        style={{
+                          marginLeft: "10px",
+                        }}
+                        size={20}
+                        color={"#1eb300"}
+                      />
+                    );
+                  }
+                };
+
+                return (
+                  <div
+                    key={index}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "10px",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    {signatario.email.length > 20 ? (
+                      <Tooltip title={signatario.email}>
+                        <p
+                          style={{
+                            color: verificaCor(),
+                            cursor: "pointer",
+                          }}
+                        >
+                          {signatario.email.substring(0, 20)}...
+                        </p>
+                      </Tooltip>
+                    ) : (
+                      <p
+                        style={{
+                          color: verificaCor(),
+                          cursor: "pointer",
+                        }}
+                      >
+                        {signatario.email}
+                      </p>
+                    )}
+                    {verificaSeJaAssinou()}
+                  </div>
+                );
+              })
+            ) : (
+              <p key={index}>Nenhum e-mail cadastrado</p>
+            )
+          )}
+        </Modal>
+      )}
+      {d4SignRegisterSignature && (
+        <Modal
+          title="Cadastrar E-mail das assinaturas"
+          open={d4SignRegisterSignature}
+          centered
+          width={500}
+          onCancel={() => setD4SignRegisterSignature(false)}
+          footer={[
+            <Button
+              key="register"
+              style={{
+                backgroundColor: "#4168b0",
+                color: "white",
+              }}
+              onClick={() => handleInsertSign(email)}
+            >
+              Cadastrar
+            </Button>,
+            <Button
+              key="back"
+              onClick={() => setD4SignRegisterSignature(false)}
+            >
+              Voltar
+            </Button>,
+          ]}
+        >
+          <CustomInput.Input
+            label="E-mail"
+            type="text"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </Modal>
       )}
       {modalReajustment && (

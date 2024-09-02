@@ -209,7 +209,7 @@ const App = () => {
                 }
               />
               <Route
-                path="/documents/looseAdditive"
+                path="/documents/customers"
                 element={
                   <PrivatePage>
                     <Template>

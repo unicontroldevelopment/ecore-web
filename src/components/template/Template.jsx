@@ -125,7 +125,7 @@ const Template = (props) => {
         {
           key: "5-5",
           label: (
-            <Link to="/documents/looseAdditive">Clientes Sem Contrato</Link>
+            <Link to="/documents/customers">Aditivos/Reajustes</Link>
           ),
         },
       ],
