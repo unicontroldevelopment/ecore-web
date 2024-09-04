@@ -6,6 +6,7 @@ import { CustomInput } from "../../../components/input/index";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import EmployeeService from "../../../services/EmployeeService";
+import Utils from "../../../services/Utils";
 import { Formats } from "../../../utils/formats";
 import { Options } from "../../../utils/options";
 
@@ -13,6 +14,7 @@ export default function CreateEmployee() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const navigate = useNavigate();
   const service = new EmployeeService();
+  const utilsService = new Utils();
 
   const [values, setValues] = React.useState({
     name: "",
@@ -52,6 +54,28 @@ export default function CreateEmployee() {
     name: "",
     cpf: "",
   });
+
+  React.useEffect(() => {
+    const fetchAddress = async () => {
+      if (values.cep.length === 9) {
+        try {
+          const response = await utilsService.findCep(values.cep);
+          if (response) {
+            setValues((prevValues) => ({
+              ...prevValues,
+              road: response.data.logradouro,
+              neighborhood: response.data.bairro,
+              city: response.data.localidade,
+              state: response.data.uf,
+            }));
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+    fetchAddress();
+  }, [values.cep]);
 
   const handleChange = (event) => {
     if (event.target) {

@@ -23,6 +23,7 @@ export default function LooseAdditive() {
   const contractService = new ContractSignService();
   const service = new DocumentsService();
 
+  const [allContracts, setAllContracts] = React.useState([]);
   const [contracts, setContracts] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [signs, setSigns] = React.useState([]);
@@ -89,6 +90,7 @@ export default function LooseAdditive() {
       const request = await service.getContracts(nameFilter, filter.type);
       const dataContracts = request.data.listContracts;
 
+      setAllContracts(dataContracts);
       setContracts(dataContracts);
       if (isLoadingControlled) setLoading(false);
     } catch (error) {
@@ -115,10 +117,12 @@ export default function LooseAdditive() {
   }, []);
 
   React.useEffect(() => {
-    const fetchData = async () => {
-      await fetchContracts(filter.name);
-    };
-    fetchData();
+    const filteredContracts = allContracts.filter((contract) => {
+      const matchesName = contract.name.toLowerCase().includes(filter.name.toLowerCase());
+      return matchesName;
+    });
+
+    setContracts(filteredContracts);
   }, [filter.name]);
 
   React.useEffect(() => {

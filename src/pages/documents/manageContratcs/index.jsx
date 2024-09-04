@@ -37,6 +37,7 @@ import { MyDocument } from "../../../utils/pdf/createContract";
 
 export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "Comercial"]);
+  const [allContracts, setAllContracts] = React.useState([]);
   const [contracts, setContracts] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [services, setServices] = React.useState([]);
@@ -130,6 +131,7 @@ export default function ManageContracts() {
         })
       );
 
+      setAllContracts(updatedContracts);
       setContracts(updatedContracts);
       if (isLoadingControlled) setLoading(false);
     } catch (error) {
@@ -169,10 +171,12 @@ export default function ManageContracts() {
   }, []);
 
   React.useEffect(() => {
-    const fetchData = async () => {
-      await fetchContracts(filter.name);
-    };
-    fetchData();
+    const filteredContracts = allContracts.filter((contract) => {
+      const matchesName = contract.name.toLowerCase().includes(filter.name.toLowerCase());
+      return matchesName;
+    });
+
+    setContracts(filteredContracts)
   }, [filter.name]);
 
   React.useEffect(() => {
@@ -991,9 +995,9 @@ export default function ManageContracts() {
                 display: "inline-block",
               }}
             >
-              {statusText.length > 10
-                ? `${statusText.substring(0, 10)}...`
-                : statusText}
+    {statusText === "NÃO CADASTRADO" || statusText.length <= 10
+      ? statusText
+      : `${statusText.substring(0, 10)}...`}
             </p>
           </Tooltip>
         );
