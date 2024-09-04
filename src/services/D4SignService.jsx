@@ -123,4 +123,12 @@ export default class {
       return error;
     }
   }
+  async getAllContracts() {
+    try {
+      const response = await api.get("/buscarDocumentosDoCofre");
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }

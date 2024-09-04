@@ -42,7 +42,6 @@ export default function ManageContracts() {
   const [services, setServices] = React.useState([]);
   const [signs, setSigns] = React.useState([]);
   const [email, setEmail] = React.useState("");
-  const [additivePropouse, setAdditivePropouse] = React.useState(null);
   const [selectContract, setSelectContract] = React.useState({
     id: "",
     status: "Contrato",
@@ -78,19 +77,6 @@ export default function ManageContracts() {
   const [d4SignRegisterSignature, setD4SignRegisterSignature] =
     React.useState(false);
   const [signatures, setSignatures] = React.useState([]);
-  const [d4SignData, setD4SignData] = React.useState({
-    uuidDoc: "",
-    nameDoc: "",
-    type: "",
-    size: "",
-    pages: "",
-    uuidSafe: "",
-    safeName: "",
-    statusId: "",
-    statusName: "",
-    statusComment: "",
-    whoCanceled: "null",
-  });
   const navigate = useNavigate();
 
   const formatMoney = (value) => {
@@ -120,17 +106,30 @@ export default function ManageContracts() {
       const request = await service.getContracts(nameFilter, filter.type);
       const dataContracts = request.data.listContracts;
 
-      const updatedContracts = dataContracts.map((contract) => {
-        return {
-          ...contract,
-          value: formatMoney(contract.value),
-          clauses: contract.clauses.map((clause, index) => ({
-            ...clause,
-            currentId: index,
-            isExpanded: false,
-          })),
-        };
-      });
+      const d4SignRequest = await d4SignService.getAllContracts();
+      const d4SignContracts = d4SignRequest.data;
+      
+
+      const updatedContracts = await Promise.all(
+        dataContracts.map(async (contract) => {
+          const d4SignDoc = d4SignContracts.find(
+            (doc) => doc.uuidDoc === contract.d4sign
+          );
+          
+
+          return {
+            ...contract,
+            value: formatMoney(contract.value),
+            d4SignData: d4SignDoc || null,
+            clauses: contract.clauses.map((clause, index) => ({
+              ...clause,
+              currentId: index,
+              isExpanded: false,
+            })),
+          };
+        })
+      );
+
       setContracts(updatedContracts);
       if (isLoadingControlled) setLoading(false);
     } catch (error) {
@@ -385,9 +384,6 @@ export default function ManageContracts() {
     try {
       setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
 
-      const response = await d4SignService.getDocument(contract.d4sign);
-      setD4SignData(response.data.contract[0]);
-
       setD4signController(true);
     } catch (error) {
       console.error("Erro ao buscar documento no D4Sign:", error);
@@ -424,7 +420,8 @@ export default function ManageContracts() {
   const handleD4signInfo = async () => {
     setLoading(true);
     try {
-      const response = await d4SignService.getSignatures(d4SignData.uuidDoc);
+      
+      const response = await d4SignService.getSignatures(selectContract.d4SignData.uuidDoc);
       setSignatures(response.data.contract);
     } catch (error) {
       console.error(error);
@@ -435,11 +432,11 @@ export default function ManageContracts() {
   };
 
   const deleteDocumentOnD4Sign = async () => {
-    return d4SignData.statusName !== "Finalizado"
+    return selectContract.d4SignData.statusName !== "Finalizado"
       ? (setLoading(true),
         await d4SignService
           .cancelDocument({
-            id_doc: d4SignData.uuidDoc,
+            id_doc: selectContract.d4SignData.uuidDoc,
           })
           .then(() => {
             setLoading(false);
@@ -453,12 +450,12 @@ export default function ManageContracts() {
   const handleSendD4SignToSign = async () => {
     setLoading(true);
     const data = {
-      id_document: d4SignData.uuidDoc,
+      id_document: selectContract.d4SignData.uuidDoc,
       message: "Por Favor, Assinar!",
       skip_email: "0",
       workflow: "0",
     };
-    d4SignData.statusName !== "Finalizado"
+    selectContract.d4SignData.statusName !== "Finalizado"
       ? await d4SignService.sendToSignDocument(data).then((res) => {
           const verificaSeJaEnviouEmail = () => {
             if (
@@ -586,14 +583,33 @@ export default function ManageContracts() {
         upload_allow: "0",
         upload_obs: "0",
       };
-
-      await d4SignService.registerSignOnDocument(documentData).then(() => {
+      setLoading(true);
+  
+      try {
+        await d4SignService.registerSignOnDocument(documentData);
+  
+        const updatedD4SignData = await d4SignService.getDocument(selectContract.d4sign);
+  
+        setContracts((prevContracts) =>
+          prevContracts.map((contract) =>
+            contract.d4sign === selectContract.d4sign
+              ? { ...contract, d4SignData: updatedD4SignData.data.contract[0] }
+              : contract
+          )
+        );
+  
         setEmail("");
         setD4SignRegisterSignature(false);
         Toast.Success("E-mail cadastrado com sucesso");
-      });
+      } catch (error) {
+        console.error("Erro ao registrar assinatura no D4Sign:", error);
+        Toast.Error("Erro ao cadastrar o e-mail");
+      } finally {
+        setLoading(false);
+      }
     } else {
       Toast.Error("Preencha o campo E-mail");
+      setLoading(false);
     }
   };
 
@@ -645,7 +661,7 @@ export default function ManageContracts() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const { propouse, ...contractData } = updateData;
+      const { d4SignData, propouse, ...contractData } = updateData;
 
       const response = await service.updateContract(
         updateData.id,
@@ -952,9 +968,36 @@ export default function ManageContracts() {
       title: "D4Sign",
       key: "d4sign",
       dataIndex: "d4sign",
-      render: (text, record) => (
-        <span>{record.d4sign ? "Cadastrado" : "Não Cadastrado"}</span>
-      ),
+      render: (text, row) => {
+        const hasD4Sign = row.d4SignData;
+
+        const backgroundColor = hasD4Sign
+          ? verificaCorDoStatus(row.d4SignData.statusId)
+          : "#836FFF";
+        const statusText = hasD4Sign
+          ? row.d4SignData.statusName.toUpperCase()
+          : "NÃO CADASTRADO";
+
+        return (
+          <Tooltip title={statusText}>
+            <p
+              style={{
+                cursor: "pointer",
+                backgroundColor: backgroundColor,
+                color: "#ffffff",
+                borderRadius: "5px",
+                padding: "4px 15px",
+                margin: "15px",
+                display: "inline-block",
+              }}
+            >
+              {statusText.length > 10
+                ? `${statusText.substring(0, 10)}...`
+                : statusText}
+            </p>
+          </Tooltip>
+        );
+      },
     },
     {
       title: "D4Sign/Opções",
@@ -984,8 +1027,8 @@ export default function ManageContracts() {
   const d4SignOptions = [
     {
       key: "status",
-      contract: selectContract.d4sign ? d4SignData : "Não cadastrado",
-      status: selectContract.d4sign ? d4SignData : "Não cadastrado",
+      contract: selectContract.d4sign ? selectContract.d4SignData : "Não cadastrado",
+      status: selectContract.d4sign ? selectContract.d4SignData : "Não cadastrado",
       exists: !!selectContract.d4sign,
     },
   ];
@@ -995,14 +1038,14 @@ export default function ManageContracts() {
       {loading && <Loading />}
       <Table.Root title="Lista de Contratos">
         <Filter.Fragment section="Filtro">
-        <CustomInput.Root columnSize={24}>
-          <Filter.FilterInput
-            label="Nome do Cliente"
-            name="name"
-            onChange={handleChangeFilter}
-            value={filter.name}
-          />
-        </CustomInput.Root>
+          <CustomInput.Root columnSize={24}>
+            <Filter.FilterInput
+              label="Nome do Cliente"
+              name="name"
+              onChange={handleChangeFilter}
+              value={filter.name}
+            />
+          </CustomInput.Root>
         </Filter.Fragment>
         <Table.Table
           data={contracts}

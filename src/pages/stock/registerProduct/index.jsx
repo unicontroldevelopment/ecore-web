@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input";
 import { CustomSwitch } from "../../../components/switch";
+import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
-import { Options } from "../../../utils/options";
 
 export default function RegisterProduct() {
   VerifyUserRole(["Master", "Administrador", "Operacional"]);
@@ -15,22 +15,58 @@ export default function RegisterProduct() {
     name: "",
     unitOfMeasurement: "",
     unit: "",
-    quantity: "",
+    purchaseQuantity: "",
+    exitQuantity: "",
     quantityMinimum: "",
     numberNF: "",
     baseValue: "",
     barCode: "",
     agcView: false,
     test: "",
-    unitMedida: "",
+    unitEntrance: "",
+    unitExit: "",
   });
 
   React.useEffect(() => {
-    console.log(product);
-  }, [product]);
+    if (product.unit && product.unitOfMeasurement && product.purchaseQuantity) {
+        let quantityForExit = 0;
+        const quantity = parseFloat(product.purchaseQuantity);
+        const unitEntranceValue = parseFloat(product.unit);
+        const unitExitValue = parseFloat(product.unitOfMeasurement);
 
+        if (product.unitEntrance === "kg" && product.unitExit === "g") {
+            quantityForExit = (quantity * unitEntranceValue * 1000) / unitExitValue;
+        } else if (product.unitEntrance === "kg" && product.unitExit === "mg") {
+            quantityForExit = (quantity * unitEntranceValue * 1000000) / unitExitValue;
+        } else if (product.unitEntrance === "g" && product.unitExit === "mg") {
+            quantityForExit = (quantity * unitEntranceValue * 1000) / unitExitValue;
+        } else if (product.unitEntrance === "l" && product.unitExit === "ml") {
+            quantityForExit = (quantity * unitEntranceValue * 1000) / unitExitValue;
+        } else if (
+            (product.unitEntrance === "kg" && product.unitExit === "kg") ||
+            (product.unitEntrance === "g" && product.unitExit === "g") ||
+            (product.unitEntrance === "mg" && product.unitExit === "mg") ||
+            (product.unitEntrance === "l" && product.unitExit === "l") ||
+            (product.unitEntrance === "ml" && product.unitExit === "ml") ||
+            (product.unitEntrance === "unidade" && product.unitExit === "unidade")
+        ) {
+            quantityForExit = quantity * unitEntranceValue / unitExitValue;
+        } else {
+            Toast.Info("Ajuste as medidas para serem coerentes!");
+        }
+
+        setProduct((prevState) => ({
+            ...prevState,
+            exitQuantity: quantityForExit,
+        }));
+    } else {
+        setProduct((prevState) => ({
+            ...prevState,
+            exitQuantity: "",
+        }));
+    }
+}, [product.unit, product.unitOfMeasurement, product.purchaseQuantity]);
   const handleChange = (event) => {
-    
     setProduct((prevState) => ({
       ...prevState,
       [event.target.name]: event.target.value,
@@ -38,20 +74,34 @@ export default function RegisterProduct() {
   };
 
   const handleUnitChange = (inputValue, unit) => {
-    
-    if(inputValue.target?.value){
+    if (inputValue) {
       setProduct((prevState) => ({
         ...prevState,
-        [inputValue.target.name]: inputValue.target.value,
-        unitMedida: unit, // Atualiza a unidade, se necessário
+        unit: inputValue,
+        unitEntrance: unit,
       }));
     } else {
       setProduct((prevState) => ({
         ...prevState,
-        unitMedida: unit, // Atualiza a unidade, se necessário
+        unitEntrance: unit,
       }));
     }
-  }
+  };
+
+  const handleUnitExitChange = (inputValue, unit) => {
+    if (inputValue) {
+      setProduct((prevState) => ({
+        ...prevState,
+        unitOfMeasurement: inputValue,
+        unitExit: unit,
+      }));
+    } else {
+      setProduct((prevState) => ({
+        ...prevState,
+        unitExit: unit,
+      }));
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -68,40 +118,41 @@ export default function RegisterProduct() {
       handleSubmit={handleSubmit}
     >
       <Form.Fragment section="Dados do Produto">
-        <CustomInput.InputWithSelect
-          label="Nome do Produto"
-          name="test"
-          value={product.test}
-          onChange={(inputValue, unit) => handleUnitChange(inputValue, unit)}
-        />
         <CustomInput.Input
           label="Nome do Produto"
           name="name"
           value={product.name}
           onChange={handleChange}
         />
-
-        <CustomInput.Input
-          label="Unidade de Retirada"
-          type="text"
-          name="unitOfMeasurement"
-          value={product.unitOfMeasurement}
-          onChange={handleChange}
-        />
-        <CustomInput.Select
-          label="Unidade de Compra"
+        <CustomInput.InputWithSelect
+          label="Medida de Compra"
           type="text"
           name="unit"
           value={product.unit}
-          onChange={handleChange}
-          options={Options.Units()}
+          onChange={(inputValue, unit) => handleUnitChange(inputValue, unit)}
+        />
+        <CustomInput.InputWithSelect
+          label="Medida de Retirada"
+          type="text"
+          name="unitOfMeasurement"
+          value={product.unitOfMeasurement}
+          onChange={(inputValue, unit) =>
+            handleUnitExitChange(inputValue, unit)
+          }
         />
         <CustomInput.Input
           label="Quantidade"
           type="text"
-          name="quantity"
-          value={product.quantity}
+          name="purchaseQuantity"
+          value={product.purchaseQuantity}
           onChange={handleChange}
+        />
+        <CustomInput.Input
+          label="Quantidade para Retirada"
+          type="number"
+          name="exitQuantity"
+          value={product.exitQuantity}
+          disabled={true}
         />
         <CustomInput.Input
           label="Quantidade Mínima"
