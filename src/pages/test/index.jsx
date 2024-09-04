@@ -1,68 +1,71 @@
 /* eslint-disable react/prop-types */
-import { Button } from "antd";
-import { PDFDocument } from "pdf-lib";
 import * as React from "react";
-import { CustomInput } from "../../components/input";
-import { Reajustment } from "../../utils/pdf/reajustment";
+import * as XLSX from 'xlsx';
+import VerifyUserRole from "../../hooks/VerifyUserRole";
 
 const FileUpload = () => {
-  const [values, setValues] = React.useState({
-    index: null,
-    type: "",
-  });
+  VerifyUserRole(["Master", "Administrador"]);
+  const [movements, setMovements] = React.useState([
+    {
+      id: 1,
+      Produto: "Porta Isca",
+      Quantidade: 10,
+      Tipo: "Saida",
+      Valor: 100.00,
+      Data: "2024-09-01",
+      Operador: "Charles",
+    },
+    {
+      id: 1,
+      Produto: "Porta Isca",
+      Quantidade: 5,
+      Tipo: "Entrada",
+      Valor: 100.00,
+      Data: "2024-09-01",
+      Operador: "Daiana",
+    },
+    // mais movimentações...
+  ]);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  function exportToExcel() {
+    const worksheet = XLSX.utils.json_to_sheet(movements);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Movimentações");
 
-    setValues((prevValue) => ({
-      ...prevValue,
-      [name]: value,
-    }));
-  };
-
-  const handleCreateReajustment = async () => {
-    const pdfByte = await Reajustment(values.index, values.type);
-
-    let mergedBlob;
-    try {
-      const createdPDFDoc = await PDFDocument.load(pdfByte);
-      const mergedPDF = await PDFDocument.create();
-      for (const pageNum of createdPDFDoc.getPageIndices()) {
-        const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-        mergedPDF.addPage(page);
-      }
-      const mergedPdfBytes = await mergedPDF.save();
-      mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
-    } catch (error) {
-      console.error("Error creating PDF: ", error);
-      return;
-    }
-
-    const pdfUrl = URL.createObjectURL(mergedBlob);
-    window.open(pdfUrl, "_blank");
-  };
+    // Gerando arquivo Excel
+    XLSX.writeFile(workbook, "Movimentações.xlsx");
+  }
 
   return (
-    <>
-      <CustomInput.Input
-        name="index"
-        label="Indice"
-        type="number"
-        value={values.index}
-        onChange={handleChange}
-      />
-      <CustomInput.Input
-        name="type"
-        label="Tipo de Indice"
-        type="text"
-        value={values.type}
-        onChange={handleChange}
-      />
-      <Button key="submit" type="primary" onClick={handleCreateReajustment}>
-        Criar
-      </Button>
-    </>
+    <div>
+      <h1>Lista de Movimentações</h1>
+      <button onClick={exportToExcel}>Exportar para Excel</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Quantidade</th>
+            <th>Tipo</th>
+            <th>Operador</th>
+            <th>Valor</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          {movements.map((movement) => (
+            <tr key={movement.id}>
+              <td>{movement.Produto}</td>
+              <td>{movement.Quantidade}</td>
+              <td>{movement.Tipo}</td>
+              <td>{movement.Operador}</td>
+              <td>{movement.Valor}</td>
+              <td>{movement.Data}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
-};
+}
 
 export default FileUpload;
