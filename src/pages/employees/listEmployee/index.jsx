@@ -11,6 +11,7 @@ import { Table } from "../../../components/table";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import EmployeeService from "../../../services/EmployeeService";
+import { Formats } from "../../../utils/formats";
 import { Options } from "../../../utils/options";
 
 export default function ListEmployee() {
@@ -61,7 +62,17 @@ export default function ListEmployee() {
       setLoading(true); 
       try {
         const request = await service.getEmployees(filter.name, filter.office);
-        setUsers(request.data.listUsers);
+
+        const updatedEmployees = request.data.listUsers.map((contract) => {
+          return {
+            ...contract,
+            initialWage: formatMoney(contract.initialWage),
+            currentWage: formatMoney(contract.currentWage),
+          };
+        });
+
+
+        setUsers(updatedEmployees);
       } catch (error) {
         console.error('Error fetching users:', error);
       } finally {
@@ -70,6 +81,17 @@ export default function ListEmployee() {
     };
     fetchUsers();
   }, [filter]);
+
+  const formatMoney = (value) => {
+    if (value === undefined || value === null) return "";
+
+    const formatter = new Intl.NumberFormat("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    return formatter.format(value);
+  };
 
   const handleRegister = () => {
     navigate("/employee/create")
@@ -98,6 +120,23 @@ export default function ListEmployee() {
       ...prevState,
       dateAdmission: event ? dayjs(event) : null,
     }));
+  };
+
+  const handleFormatChange = (eventOrDate) => {
+    if (eventOrDate.target) {
+      const { name, value } = eventOrDate.target;
+      if (name === "initialWage") {
+        setSelectUser((prevState) => ({
+          ...prevState,
+          [name]: Formats.Money(value),
+        }));
+      } else {
+        setSelectUser((prevState) => ({
+          ...prevState,
+          [name]: Formats.Money(value),
+        }));
+      }
+    }
   };
 
   const handleDateResignation = (event) => {
@@ -533,7 +572,7 @@ export default function ListEmployee() {
                 type="text"
                 name="initialWage"
                 value={selectUser.initialWage}
-                onChange={handleChange}
+                onChange={handleFormatChange}
               />
             </CustomInput.Root>
             <CustomInput.Root columnSize={6}>
@@ -542,7 +581,7 @@ export default function ListEmployee() {
                 type="text"
                 name="currentWage"
                 value={selectUser.currentWage}
-                onChange={handleChange}
+                onChange={handleFormatChange}
               />
             </CustomInput.Root>
           </Form.Fragment>
