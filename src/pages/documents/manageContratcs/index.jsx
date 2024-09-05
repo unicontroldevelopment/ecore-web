@@ -67,6 +67,7 @@ export default function ManageContracts() {
   });
   const [filter, setFilter] = React.useState({
     name: "",
+    d4sign: "",
     type: "Contrato",
   });
   const [file, setFile] = React.useState();
@@ -109,14 +110,12 @@ export default function ManageContracts() {
 
       const d4SignRequest = await d4SignService.getAllContracts();
       const d4SignContracts = d4SignRequest.data;
-      
 
       const updatedContracts = await Promise.all(
         dataContracts.map(async (contract) => {
           const d4SignDoc = d4SignContracts.find(
             (doc) => doc.uuidDoc === contract.d4sign
           );
-          
 
           return {
             ...contract,
@@ -172,12 +171,37 @@ export default function ManageContracts() {
 
   React.useEffect(() => {
     const filteredContracts = allContracts.filter((contract) => {
-      const matchesName = contract.name.toLowerCase().includes(filter.name.toLowerCase());
+      const matchesName = contract.name
+        .toLowerCase()
+        .includes(filter.name.toLowerCase());
       return matchesName;
     });
 
-    setContracts(filteredContracts)
+    setContracts(filteredContracts);
   }, [filter.name]);
+
+  React.useEffect(() => {
+    const filteredContracts = allContracts.filter((contract) => {
+      if (filter.d4sign === "NÃO CADASTRADO") {
+        return !contract.d4SignData;
+      }
+
+      if (filter.d4sign) {
+        if (contract.d4SignData) {
+          const matchesName =
+            contract.d4SignData.statusName.toLowerCase() ===
+            filter.d4sign.toLowerCase();
+          return matchesName;
+        } else {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    setContracts(filteredContracts);
+  }, [filter.d4sign]);
 
   React.useEffect(() => {
     const fetchAddress = async () => {
@@ -424,8 +448,9 @@ export default function ManageContracts() {
   const handleD4signInfo = async () => {
     setLoading(true);
     try {
-      
-      const response = await d4SignService.getSignatures(selectContract.d4SignData.uuidDoc);
+      const response = await d4SignService.getSignatures(
+        selectContract.d4SignData.uuidDoc
+      );
       setSignatures(response.data.contract);
     } catch (error) {
       console.error(error);
@@ -588,12 +613,14 @@ export default function ManageContracts() {
         upload_obs: "0",
       };
       setLoading(true);
-  
+
       try {
         await d4SignService.registerSignOnDocument(documentData);
-  
-        const updatedD4SignData = await d4SignService.getDocument(selectContract.d4sign);
-  
+
+        const updatedD4SignData = await d4SignService.getDocument(
+          selectContract.d4sign
+        );
+
         setContracts((prevContracts) =>
           prevContracts.map((contract) =>
             contract.d4sign === selectContract.d4sign
@@ -601,7 +628,7 @@ export default function ManageContracts() {
               : contract
           )
         );
-  
+
         setEmail("");
         setD4SignRegisterSignature(false);
         Toast.Success("E-mail cadastrado com sucesso");
@@ -995,9 +1022,9 @@ export default function ManageContracts() {
                 display: "inline-block",
               }}
             >
-    {statusText === "NÃO CADASTRADO" || statusText.length <= 10
-      ? statusText
-      : `${statusText.substring(0, 10)}...`}
+              {statusText === "NÃO CADASTRADO" || statusText.length <= 10
+                ? statusText
+                : `${statusText.substring(0, 10)}...`}
             </p>
           </Tooltip>
         );
@@ -1031,8 +1058,12 @@ export default function ManageContracts() {
   const d4SignOptions = [
     {
       key: "status",
-      contract: selectContract.d4sign ? selectContract.d4SignData : "Não cadastrado",
-      status: selectContract.d4sign ? selectContract.d4SignData : "Não cadastrado",
+      contract: selectContract.d4sign
+        ? selectContract.d4SignData
+        : "Não cadastrado",
+      status: selectContract.d4sign
+        ? selectContract.d4SignData
+        : "Não cadastrado",
       exists: !!selectContract.d4sign,
     },
   ];
@@ -1042,12 +1073,21 @@ export default function ManageContracts() {
       {loading && <Loading />}
       <Table.Root title="Lista de Contratos">
         <Filter.Fragment section="Filtro">
-          <CustomInput.Root columnSize={24}>
+          <CustomInput.Root columnSize={18}>
             <Filter.FilterInput
               label="Nome do Cliente"
               name="name"
               onChange={handleChangeFilter}
               value={filter.name}
+            />
+          </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+            <Filter.Select
+              label="Status D4Sign"
+              name="d4sign"
+              onChange={handleChangeFilter}
+              value={filter.d4sign}
+              options={Options.D4SignStatus()}
             />
           </CustomInput.Root>
         </Filter.Fragment>

@@ -1,5 +1,6 @@
 import { Companies } from "./Companies";
 import { CostCenter } from "./CostCenter";
+import { D4SignStatus } from "./D4SignStatus";
 import { Departments } from "./Departments";
 import { Documents } from "./Documents";
 import { EPIs } from "./EPI";
@@ -37,5 +38,6 @@ export const Options = {
   Education,
   CostCenter,
   IndexContract,
-  SignDocument
+  SignDocument,
+  D4SignStatus
 };
