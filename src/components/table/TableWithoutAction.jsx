@@ -4,6 +4,7 @@ import { Table } from "antd";
   export const CustomTableClean = ({
     data,
     columns,
+    pagination = false,
   }) => {
     const columnsAndActions = [
       ...columns.map((column, index) => ({
@@ -18,7 +19,7 @@ import { Table } from "antd";
       <Table
         columns={columnsAndActions}
         dataSource={data}
-        pagination={false}
+        pagination={pagination}
         rowKey="id"
       />
     );

@@ -95,7 +95,7 @@ const Template = (props) => {
         },
         {
           key: "4-5",
-          label: <Link to="/dashboard">Horas Trabalhadas</Link>,
+          label: <Link to="/employee/workingHours">Horas Trabalhadas</Link>,
         },
       ],
     },

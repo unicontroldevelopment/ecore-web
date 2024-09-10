@@ -1,3 +1,3 @@
 export const Roles = () => {
-  return ["Master", "RH", "Operacional", "Comercial", "Franqueado"];
+  return ["Administrador", "RH", "Operacional", "Comercial", "Franqueado"];
 };
