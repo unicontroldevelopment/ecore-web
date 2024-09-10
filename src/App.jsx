@@ -26,6 +26,7 @@ import CreateEmployee from "./pages/employees/createEmployee";
 import CreateEmployeeInfo from "./pages/employees/createEmployeeInfo";
 import ListEmployee from "./pages/employees/listEmployee";
 import ManageEmployeeInfo from "./pages/employees/manageEmployeeInfo";
+import WorkingHours from "./pages/employees/workingHours";
 import Login from "./pages/login/Login";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
@@ -114,6 +115,16 @@ const App = () => {
                   <PrivatePage>
                     <Template>
                       <ManageEmployeeInfo />
+                    </Template>
+                  </PrivatePage>
+                }
+              />
+              <Route
+                path="/employee/workingHours"
+                element={
+                  <PrivatePage>
+                    <Template>
+                      <WorkingHours />
                     </Template>
                   </PrivatePage>
                 }
