@@ -27,6 +27,7 @@ import CreateEmployeeInfo from "./pages/employees/createEmployeeInfo";
 import ListEmployee from "./pages/employees/listEmployee";
 import ManageEmployeeInfo from "./pages/employees/manageEmployeeInfo";
 import WorkingHours from "./pages/employees/workingHours";
+import PublicForm from "./pages/forms";
 import Login from "./pages/login/Login";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
@@ -59,6 +60,7 @@ const App = () => {
           <AuthProvider>
             <Routes>
               <Route exact path="/" element={<Login />} />
+              <Route path="/public-form" element={<PublicForm />} />
               <Route
                 path="/accessDenied"
                 element={
