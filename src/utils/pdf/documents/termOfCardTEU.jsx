@@ -54,45 +54,31 @@ export const termOfCardTEU = (employee, values, date) => {
       fontSize: 13,
     },
     {
-      text: `\n\nCanoas, ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}\n\n\n\n\n\n\n\n\n\n\n\n\n\n`,
+      text: `\n\nCanoas, ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}\n\n\n\n\n\n\n\n\n\n\n`,
       alignment: "center",
       fontSize: 13,
     },
     {
-      canvas: [
-        {
-          type: "line",
-          x1: 0,
-          y1: 5,
-          x2: 300 - 2 * 40,
-          y2: 5,
-          lineWidth: 0.5,
-        },
-      ],
-      alignment: "center",
-    },
-    {
-      text: `${employee.company}\n\n\n\n\n\n\n`,
-      alignment: "center",
+      text: `Data de entrega:\n\n\n\n\n\n`,
+      alignment: "left",
       fontSize: 13,
     },
     {
-      canvas: [
-        {
-          type: "line",
-          x1: 0,
-          y1: 5,
-          x2: 300 - 2 * 40,
-          y2: 5,
-          lineWidth: 0.5,
-        },
-      ],
-      alignment: "center",
+      text: "________________________________________\t\t\t\t\t\t________________________________________\n",
     },
     {
-      text: `${employee.name}`,
-      alignment: "center",
+      text: `${employee.company}\t\t\t\t\t\t${employee.name}\n\n\n\n`,
+    },
+    {
+      text: `Data de devolução:\n\n\n\n\n\n`,
+      alignment: "left",
       fontSize: 13,
+    },
+    {
+      text: "________________________________________\t\t\t\t\t\t________________________________________\n",
+    },
+    {
+      text: `${employee.company}\t\t\t\t\t\t${employee.name}\n\n\n\n`,
     },
   ];
   const docDefinition = {
