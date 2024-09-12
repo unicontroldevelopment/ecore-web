@@ -14,6 +14,7 @@ import { FaBoxes, FaFileExport, FaUserLock, FaUsersCog } from "react-icons/fa";
 import { MdOutgoingMail, MdStarRate } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/Auth";
+import { UserTypeContext } from "../../contexts/UserTypeContext";
 import "./style.css";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -24,6 +25,20 @@ const Template = (props) => {
   const [collapsed, setCollapsed] = useState(false);
   const backToLastPage = useNavigate(-1);
   const { logoutAuth } = useContext(AuthContext);
+  const { userType } = useContext(UserTypeContext);
+
+  const hasAccess = (roles) => {
+    if (!Array.isArray(userType) || !userType.length) return false;
+
+    const userRoles = userType.map(role => {
+      if (typeof role === 'object' && role.role) {
+        return role.role.name;
+      }
+      return role;
+    });
+
+    return roles.some(role => userRoles.includes(role));
+  };
 
   const items = [
     {
@@ -70,7 +85,7 @@ const Template = (props) => {
           key: "3-2",
           label: <Link to="/serveraccess/list">Listar</Link>,
         },
-      ],
+      ]
     },
     {
       key: "4",

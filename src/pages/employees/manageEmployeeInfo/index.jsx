@@ -160,18 +160,6 @@ export default function ManageEmployeeInfo() {
         </span>
       ),
     },
-    {
-      title: "Setor",
-      key: "department",
-      dataIndex: "department",
-      render: (text, record) => <span>{record.department ?? "-"}</span>,
-    },
-    {
-      title: "Empresa",
-      dataIndex: "company",
-      key: "company",
-      render: (text, record) => <span>{record.company ?? "-"}</span>,
-    },
   ];
 
   return (
