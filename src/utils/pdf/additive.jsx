@@ -114,7 +114,7 @@ export const Additive = (
     background = esteio;
   } else if (
     tecSign.socialReason ===
-    "FRANPRAG POA CENTRO RS 25 - CONTROLE DE PRAGAS LTD..."
+    "FRANPRAG POA CENTRO RS 25 - CONTROLE DE PRAGAS LTDA"
   ) {
     background = poaCentro;
   } else if (
