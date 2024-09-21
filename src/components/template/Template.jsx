@@ -190,11 +190,11 @@ const Template = (props) => {
     {
       key: "8",
       icon: <FaBoxes />,
-      label: "Laboratório",
+      label: "Formulários",
       items: [
         {
           key: "8-1",
-          label: <Link to="/teste">Aba de Testes</Link>,
+          label: <Link to="/forms">Gerenciar Formulários</Link>,
         },
       ],
     },
