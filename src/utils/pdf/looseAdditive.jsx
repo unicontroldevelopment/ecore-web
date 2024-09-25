@@ -2,21 +2,21 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import {
-    baciaDoJacui,
-    canaa,
-    canoas,
-    erechim,
-    esteio,
-    floresDaCunha,
-    limao,
-    lucena,
-    master,
-    poaCentro,
-    poaZN,
-    recife,
-    saoLourenco,
-    vacaria,
-    valeDosSinos,
+  baciaDoJacui,
+  canaa,
+  canoas,
+  erechim,
+  esteio,
+  floresDaCunha,
+  limao,
+  lucena,
+  master,
+  poaCentro,
+  poaZN,
+  recife,
+  saoLourenco,
+  vacaria,
+  valeDosSinos,
 } from "../../assets/folhas/folhas";
 import { Formats } from "../formats";
 
@@ -109,14 +109,14 @@ export const LooseAdditivePDF = (
   } else if (
     tecSign.socialReason === "UNICONTROL PASTEUR CONTROLE DE PRAGAS LTDA"
   ) {
-    background = undefined;
+    background = orizona;
   } else if (
     tecSign.socialReason === "FRANPRAG ESTEIO RS 28 - CONTROLE DE PRAGAS LTDA"
   ) {
     background = esteio;
   } else if (
     tecSign.socialReason ===
-    "FRANPRAG POA CENTRO RS 25 - CONTROLE DE PRAGAS LTD..."
+    "FRANPRAG POA CENTRO RS 25 - CONTROLE DE PRAGAS LTDA"
   ) {
     background = poaCentro;
   } else if (
@@ -126,13 +126,19 @@ export const LooseAdditivePDF = (
   } else if (
     tecSign.socialReason === "FRANPRAG BAURU SP 17 CONTROLE DE PRAGAS LTDA"
   ) {
-    background = canaa;
+    background = bauru;
   } else if (
     tecSign.socialReason === "FRANPRAG BAURU SP 17 CONTROLE DE PRAGAS LTDA"
   ) {
     background = limao;
+  } else if (tecSign.socialReason === "FRANPRAG SAO LEOPOLDO RS 07 - CONTROLE DE PRAGAS LTDA") { 
+    background = saoLeopoldo;
+  } else if (tecSign.socialReason === "FRANPRAG ARARAS SP 34 CONTROLE DE PRAGAS LTDA") { 
+    background = araras;
+  } else if (tecSign.socialReason === "UNICONTROL CARSON CONTROLE DE PRAGAS LTDA") { 
+    background = rioGrande;
   } else {
-    background = undefined;
+    background= undefined
   }
 
   const docDefinition = {
