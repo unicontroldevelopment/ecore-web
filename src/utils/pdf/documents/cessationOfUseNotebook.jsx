@@ -97,16 +97,32 @@ export const cessationOfUseNotebook = (
       lineHeight: 1.2,
     },
     {
-      text: `Canoas/RS, ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}.\n\n\n\n`,
+      text: `Canoas/RS, ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}.\n\n\n\n\n\n\n`,
       alignment: "center",
       fontSize: 13,
       lineHeight: 1.2,
     },
     {
-      text: "________________________________________\t\t\t\t\t\t________________________________________\n\n",
+      text: `Data de entrega:  _____/_____/_____\n\n\n\n`,
+      alignment: "left",
+      fontSize: 13,
     },
     {
-      text: `${employee.company}\t\t\t\t\t\t${employee.name}\n\n`,
+      text: "________________________________________\t\t\t\t\t\t________________________________________\n",
+    },
+    {
+      text: `${employee.company}\t\t\t\t\t\t${employee.name}\n\n\n\n\n\n\n`,
+    },
+    {
+      text: `Data de devolução:  _____/_____/_____\n\n\n\n`,
+      alignment: "left",
+      fontSize: 13,
+    },
+    {
+      text: "________________________________________\t\t\t\t\t\t________________________________________\n",
+    },
+    {
+      text: `${employee.company}\t\t\t\t\t\t${employee.name}\n\n\n\n`,
     },
   ];
   const docDefinition = {
