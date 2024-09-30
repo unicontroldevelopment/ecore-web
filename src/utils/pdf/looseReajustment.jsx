@@ -2,7 +2,9 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import {
+  araras,
   baciaDoJacui,
+  bauru,
   canaa,
   canoas,
   erechim,
@@ -11,9 +13,12 @@ import {
   limao,
   lucena,
   master,
+  orizona,
   poaCentro,
   poaZN,
   recife,
+  rioGrande,
+  saoLeopoldo,
   saoLourenco,
   vacaria,
   valeDosSinos,
