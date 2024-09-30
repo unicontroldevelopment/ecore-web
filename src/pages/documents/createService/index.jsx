@@ -1,8 +1,13 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
-import { DeleteOutlined, EditOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  QuestionCircleOutlined,
+} from "@ant-design/icons";
 import { Button, Modal, Popconfirm } from "antd";
+import Loading from "../../../components/animations/Loading";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input";
@@ -17,6 +22,8 @@ export default function CreateService() {
   const navigate = useNavigate();
   const service = new DocumentsService();
   const [dataServices, setDataServices] = React.useState([]);
+  const [services, setServices] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
   const [selectService, setSelectService] = React.useState({});
   const [editModal, setEditModal] = React.useState(false);
   const [filter, setFilter] = React.useState({
@@ -28,14 +35,34 @@ export default function CreateService() {
     code: "",
   });
 
-  React.useEffect(() => {
-    const fetchData = async () => {
+  const fetchServices = async () => {
+    try {
       const response = await service.getServices();
 
       setDataServices(response.data.listServices);
+      setServices(response.data.listServices);
+    } catch (error) {
+      console.error("Erro ao buscar serviços:", error);
+    }
+  };
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      await Promise.all([fetchServices()]);
     };
     fetchData();
   }, []);
+
+  React.useEffect(() => {
+    const filteredServices = dataServices.filter((service) => {
+      const matchesName = service.description
+        .toLowerCase()
+        .includes(filter.name.toLowerCase());
+      return matchesName;
+    });
+
+    setServices(filteredServices);
+  }, [filter.name]);
 
   const [messageError, setMessageError] = React.useState({
     description: "",
@@ -67,13 +94,6 @@ export default function CreateService() {
       };
       return updatedValues;
     });
-
-    if (event.target.value !== "") {
-      setMessageError((prevState) => ({
-        ...prevState,
-        [event.target.name]: "",
-      }));
-    }
   };
 
   const areRequiredFieldsFilled = () => {
@@ -109,19 +129,54 @@ export default function CreateService() {
       return;
     } else {
       Toast.Success("Serviço cadastrado com sucesso!");
+      await fetchServices();
     }
   };
 
-  const handleDelete = () => {
-    return;
+  const handleUpdate = async (updateData) => {
+    try {
+      setLoading(true);
+
+      const response = await service.updateService(updateData.id, updateData);
+
+      Toast.Success("Serviço atualizado com sucesso!");
+      setEditModal(false);
+      setLoading(false);
+      await fetchServices();
+      return response;
+    } catch (error) {
+      Toast.Error(error);
+      setLoading(false);
+      return error;
+    }
   };
 
-  const handleEdit = () => {
-    return;
+  const handleDelete = async (e) => {
+    try {
+      const response = await service.deleteService(e.id);
+
+      if (response.status === 200) {
+        setDataServices(dataServices.filter((service) => service.id !== e.id));
+
+        Toast.Success("Serviço deletado com sucesso!");
+      }
+      return response;
+    } catch (error) {
+      Toast.Error("Erro ao deletar serviço");
+      return error;
+    }
   };
 
-  const handleChangeFilter = () => {
-    return;
+  const handleEdit = (service) => {
+    setSelectService(service);
+    setEditModal(true);
+  };
+
+  const handleChangeFilter = (event) => {
+    setFilter((prevState) => ({
+      ...prevState,
+      [event.target.name]: event.target.value,
+    }));
   };
 
   const handleRegister = () => {
@@ -179,6 +234,7 @@ export default function CreateService() {
 
   return (
     <>
+      {loading && <Loading />}
       <Table.Root title="Lista de Serviços">
         <Filter.Fragment section="Filtros">
           <CustomInput.Root columnSize={6}>
@@ -193,10 +249,7 @@ export default function CreateService() {
             <Filter.Button label="Novo Serviço" onClick={handleRegister} />
           </CustomInput.Root>
         </Filter.Fragment>
-        <Table.TableClean
-          columns={columns}
-          data={dataServices}
-        />
+        <Table.TableClean columns={columns} data={services} pagination />
         {createServiceModal && (
           <Modal
             title="Criar novo serviço"
@@ -215,7 +268,7 @@ export default function CreateService() {
               >
                 Cadastrar
               </Button>,
-              <Button key="back" onClick={() => handleCancel()}>
+              <Button key="back" onClick={() => setCreateServiceModal(false)}>
                 Voltar
               </Button>,
             ]}
@@ -244,7 +297,7 @@ export default function CreateService() {
             </Form.Fragment>
           </Modal>
         )}
-                {createServiceModal && (
+        {editModal && (
           <Modal
             title="Editar serviço"
             open={editModal}
@@ -258,11 +311,11 @@ export default function CreateService() {
                   backgroundColor: "#4168b0",
                   color: "white",
                 }}
-                onClick={() => handleUpdate()}
+                onClick={() => handleUpdate(selectService)}
               >
-                Cadastrar
+                Atualizar
               </Button>,
-              <Button key="back" onClick={() => handleCancel()}>
+              <Button key="back" onClick={() => setEditModal(false)}>
                 Voltar
               </Button>,
             ]}
