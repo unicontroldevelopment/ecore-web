@@ -59,7 +59,7 @@ export const termOfCardTEU = (employee, values, date) => {
       fontSize: 13,
     },
     {
-      text: `Data de entrega:\n\n\n\n\n\n`,
+      text: `Data de entrega:  _____/_____/_____\n\n\n\n`,
       alignment: "left",
       fontSize: 13,
     },
@@ -67,10 +67,10 @@ export const termOfCardTEU = (employee, values, date) => {
       text: "________________________________________\t\t\t\t\t\t________________________________________\n",
     },
     {
-      text: `${employee.company}\t\t\t\t\t\t${employee.name}\n\n\n\n`,
+      text: `${employee.company}\t\t\t\t\t\t${employee.name}\n\n\n\n\n\n\n`,
     },
     {
-      text: `Data de devolução:\n\n\n\n\n\n`,
+      text: `Data de devolução:  _____/_____/_____\n\n\n\n`,
       alignment: "left",
       fontSize: 13,
     },
