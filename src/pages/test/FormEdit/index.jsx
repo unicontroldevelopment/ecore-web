@@ -4,7 +4,7 @@ import { getFormById } from "../../../components/formController/Form";
 import { Toast } from "../../../components/toasts";
 import FormBuilder from "./FormBuilder";
 
-function BuilderPage() {
+function BuilderEditPage() {
   const { id } = useParams();
   const [form, setForm] = useState();
   const [loading, setLoading] = useState(true);
@@ -32,4 +32,4 @@ function BuilderPage() {
   );
 }
 
-export default BuilderPage;
+export default BuilderEditPage;

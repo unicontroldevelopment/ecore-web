@@ -1,17 +1,16 @@
-/* eslint-disable react/prop-types */
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from "@mui/icons-material/Delete";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Button, IconButton, InputAdornment, TextField } from "@mui/material";
 
-export function LongText({ label, isExpanded, onExpandToggle, onDelete, onChange, value }) {
-  const adornmentStyle = {
-    position: "absolute",
-    right: 0,
-    top: 25,
-    marginRight: "0px",
-  };
-
+export function LongText({
+  label,
+  isExpanded,
+  onExpandToggle,
+  onDelete,
+  onChange,
+  value,
+}) {
   const calculateRows = (text) => {
     if (!isExpanded) return 1;
     const lines = (text.match(/\n/g) || []).length + 2;
@@ -19,10 +18,17 @@ export function LongText({ label, isExpanded, onExpandToggle, onDelete, onChange
   };
 
   return (
-    <div style={{ width: "100%", marginBottom: "20px"}}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+        marginBottom: "20px",
+      }}
+    >
       <TextField
         sx={{
-          width: "94%",
+          flexGrow: 1,
           minHeight: 64,
         }}
         label={label}
@@ -30,18 +36,17 @@ export function LongText({ label, isExpanded, onExpandToggle, onDelete, onChange
         value={value}
         multiline
         onChange={onChange}
-        fullWidth
         InputProps={{
           endAdornment: (
-            <InputAdornment position="end" style={adornmentStyle}>
-              <IconButton onClick={onExpandToggle}>
+            <InputAdornment position="end">
+              <IconButton onClick={onExpandToggle} size="small">
                 {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
               </IconButton>
             </InputAdornment>
           ),
         }}
       />
-            <Button style={{ width: "1%"}} onClick={onDelete}>
+      <Button onClick={onDelete} style={{ marginLeft: "8px" }}>
         <DeleteIcon />
       </Button>
     </div>

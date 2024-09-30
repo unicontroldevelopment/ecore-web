@@ -5,22 +5,24 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaSmile } from "react-icons/fa";
 import { z } from "zod";
+import happyEmoji from "../../../assets/form/emojis/happy.png"; // Substitua pelo caminho correto
+import neutralEmoji from "../../../assets/form/emojis/neutral.png"; // Substitua pelo caminho correto
+import sadEmoji from "../../../assets/form/emojis/sad.png";
 import { cn } from "../../../lib/utils";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "../../ui/form";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
 import useDesigner from "../hooks/useDesigner";
 
 const propertiesSchema = z.object({
-  label: z.string().min(2).max(50),
+  label: z.string().min(2, { message: "O campo deve ter pelo menos 2 caracteres" }).max(50, { message: "O campo deve ter no máximo 50 caracteres" }),
   required: z.boolean().default(false),
   value: z.enum(["bad", "neutral", "good"]),
 });
@@ -65,7 +67,7 @@ export const EmojiFieldFormElement = {
       return element.extraAtribbutes.value !== "";
     }
     return true;
-  }
+  },
 };
 
 const DesignerComponent = ({ elementInstance }) => {
@@ -78,15 +80,20 @@ const DesignerComponent = ({ elementInstance }) => {
         {required && "*"}
       </Label>
       <div className="flex justify-between">
-        <EmojiOption emoji="😟" isSelected={value === "sad"} />
-        <EmojiOption emoji="😐" isSelected={value === "neutral"} />
-        <EmojiOption emoji="😄" isSelected={value === "happy"} />
+        <EmojiOption imageSrc={happyEmoji} isSelected={value === "happy"} />
+        <EmojiOption imageSrc={neutralEmoji} isSelected={value === "neutral"} />
+        <EmojiOption imageSrc={sadEmoji} isSelected={value === "sad"} />
       </div>
     </div>
   );
 };
 
-const FormComponent = ({ elementInstance, submitValue, isInvalid, defaultValue }) => {
+const FormComponent = ({
+  elementInstance,
+  submitValue,
+  isInvalid,
+  defaultValue,
+}) => {
   const [value, setValue] = useState(defaultValue || null);
   const [error, setError] = useState(false);
 
@@ -96,8 +103,12 @@ const FormComponent = ({ elementInstance, submitValue, isInvalid, defaultValue }
 
   const { label, required } = elementInstance.extraAtribbutes;
 
-  const handleSelect = (emojiValue) => {
+  const handleEmojiClick = (emojiValue) => {
     setValue(emojiValue);
+    if (!submitValue) return;
+
+    const valid = EmojiFieldFormElement.validate(elementInstance, emojiValue);
+    setError(!valid);
     submitValue(elementInstance.id, emojiValue);
   };
 
@@ -109,19 +120,19 @@ const FormComponent = ({ elementInstance, submitValue, isInvalid, defaultValue }
       </Label>
       <div className="flex justify-between">
         <EmojiOption
-          emoji="😟"
-          isSelected={value === "sad"}
-          onClick={() => handleSelect("sad")}
-        />
-        <EmojiOption
-          emoji="😐"
-          isSelected={value === "neutral"}
-          onClick={() => handleSelect("neutral")}
-        />
-        <EmojiOption
-          emoji="😄"
+          imageSrc={happyEmoji}
           isSelected={value === "happy"}
-          onClick={() => handleSelect("happy")}
+          onClick={() => handleEmojiClick("happy")}
+        />
+        <EmojiOption
+          imageSrc={neutralEmoji}
+          isSelected={value === "neutral"}
+          onClick={() => handleEmojiClick("neutral")}
+        />
+        <EmojiOption
+          imageSrc={sadEmoji}
+          isSelected={value === "sad"}
+          onClick={() => handleEmojiClick("sad")}
         />
       </div>
       {error && <p className="text-red-500">Este campo é obrigatório</p>}
@@ -129,30 +140,29 @@ const FormComponent = ({ elementInstance, submitValue, isInvalid, defaultValue }
   );
 };
 
-const EmojiOption = ({ emoji, isSelected, onClick }) => (
+const EmojiOption = ({ imageSrc, isSelected, onClick }) => (
   <div
     onClick={onClick}
     className={cn(
-      "text-3xl cursor-pointer p-2",
+      "cursor-pointer p-2 border-4",
       isSelected ? "bg-blue-200 rounded-lg" : ""
     )}
   >
-    {emoji}
+    <img src={imageSrc} alt="emoji" className="w-30 h-20" />{" "}
   </div>
 );
-
 
 const PropertiesComponent = ({ elementInstance }) => {
   const element = elementInstance;
   const { updateElement } = useDesigner();
-  
+
   const form = useForm({
     resolver: zodResolver(propertiesSchema),
     mode: "onBlur",
     defaultValues: {
       label: element.extraAtribbutes.label,
       required: element.extraAtribbutes.required,
-      value: element.extraAtribbutes.value || "neutral", // Defina um valor padrão
+      value: element.extraAtribbutes.value || "neutral",
     },
   });
 
@@ -166,7 +176,7 @@ const PropertiesComponent = ({ elementInstance }) => {
       extraAtribbutes: {
         label: values.label,
         required: values.required,
-        value: values.value,  // Inclui o valor do emoji
+        value: values.value,
       },
     });
   }
@@ -174,7 +184,6 @@ const PropertiesComponent = ({ elementInstance }) => {
   return (
     <Form {...form}>
       <form onBlur={form.handleSubmit(applyChanges)} className="space-y-3">
-        {/* Campos existentes */}
         <FormField
           control={form.control}
           name="label"
@@ -182,46 +191,13 @@ const PropertiesComponent = ({ elementInstance }) => {
             <FormItem>
               <FormLabel>Título</FormLabel>
               <FormControl>
-                <Input {...field} onKeyDown={(e) => {
-                  if (e.key === "Enter") e.currentTarget.blur();
-                }} />
+                <Input
+                  {...field}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                />
               </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="value"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Selecione um Emoji</FormLabel>
-              <FormControl>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    className={`emoji-button ${field.value === "bad" ? "selected" : ""}`}
-                    onClick={() => field.onChange("bad")}
-                  >
-                    😠
-                  </button>
-                  <button
-                    type="button"
-                    className={`emoji-button ${field.value === "neutral" ? "selected" : ""}`}
-                    onClick={() => field.onChange("neutral")}
-                  >
-                    😐
-                  </button>
-                  <button
-                    type="button"
-                    className={`emoji-button ${field.value === "good" ? "selected" : ""}`}
-                    onClick={() => field.onChange("good")}
-                  >
-                    😃
-                  </button>
-                </div>
-              </FormControl>
-              <FormDescription>Selecione o emoji que representa o valor.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

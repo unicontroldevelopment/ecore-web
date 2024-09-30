@@ -72,7 +72,9 @@
 
     --radius: 0.5rem;
   }
+}
 
+@layer base {
   * {
     @apply border-border;
   }
@@ -81,6 +83,7 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
+
 
 
 * {

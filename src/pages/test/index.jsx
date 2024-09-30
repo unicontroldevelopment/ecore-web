@@ -90,7 +90,7 @@ function FormCard({ form }) {
   const service = new FormService();
   const navigate = useNavigate();
   if (!form || !form.name) {
-    return <div>No data available</div>;
+    return <div>Sem informações do formulário</div>;
   }
 
   const handleDelete = async () => {
@@ -178,7 +178,7 @@ function FormCard({ form }) {
             className="w-full mt-2 text-md gap-4"
             onClick={() => navigate(`/form/${form.id}`)}
           >
-            Visualizar Envios <BiRightArrowAlt />
+            Detalhes do Formulário<BiRightArrowAlt />
           </Button>
         ) : (
           <Button

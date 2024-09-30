@@ -5,11 +5,15 @@ import * as pdfMake from "pdfmake/build/pdfmake";
 import * as pdfFonts from "pdfmake/build/vfs_fonts";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import happyEmoji from "../../../assets/form/emojis/happy.png";
+import neutralEmoji from "../../../assets/form/emojis/neutral.png";
+import sadEmoji from "../../../assets/form/emojis/sad.png";
 import Loading from "../../../components/animations/Loading";
 import {
   getFormById,
   getSubmissions,
 } from "../../../components/formController/Form";
+import EditBtn from "../../../components/formDetails/EditBtn";
 import FormLinkShare from "../../../components/formDetails/FormLinkShare";
 import VisitBtn from "../../../components/formDetails/VisitBtn";
 import { Button } from "../../../components/ui/button";
@@ -61,10 +65,13 @@ function FormDetails() {
 
   return (
     <div className="flex w-full flex-col flex-grow mx-auto">
-      <div className="py-10 border-b border-muted bg-slate-200 border rounded-md">
+      <div className="py-10 border-b border-muted bg-slate-200">
         <div className="flex justify-between container">
           <h1 className="text-4xl font-bold truncate">{form.name}</h1>
-          <VisitBtn shareUrl={form.shareUrl} />
+          <div className="space-x-2">
+            <VisitBtn shareUrl={form.shareUrl} />
+            <EditBtn shareUrl={form.shareUrl} />
+          </div>
         </div>
       </div>
       <div className="py-4 border-b border-muted bg-gray-400">
@@ -145,6 +152,7 @@ function SubmissionsTable({ id }) {
       case "DateField":
       case "SelectField":
       case "CheckboxField":
+      case "EmojiField":
         columns.push({
           id: element.id,
           label: element.extraAtribbutes?.label,
@@ -278,6 +286,29 @@ function RowCell({ type, value }) {
         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
           {value}
         </span>
+      ) : (
+        <span className="text-gray-500">Sem seleção</span>
+      );
+      break;
+    case "EmojiField":
+      let emojiSrc;
+
+      switch (value) {
+        case "happy":
+          emojiSrc = happyEmoji;
+          break;
+        case "neutral":
+          emojiSrc = neutralEmoji;
+          break;
+        case "sad":
+          emojiSrc = sadEmoji;
+          break;
+        default:
+          emojiSrc = null;
+      }
+
+      node = emojiSrc ? (
+        <img src={emojiSrc} alt={value} className="w-14 h-14" />
       ) : (
         <span className="text-gray-500">Sem seleção</span>
       );

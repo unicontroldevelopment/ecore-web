@@ -96,7 +96,9 @@ const Designer = () => {
         const activeId = active.data?.current?.elementId;
         const overId = over.data?.current?.elementId;
 
-        const activeElementIndex = elements.findIndex((el) => el.id === activeId);
+        const activeElementIndex = elements.findIndex(
+          (el) => el.id === activeId
+        );
         const overElementIndex = elements.findIndex((el) => el.id === overId);
 
         if (activeElementIndex === -1 || overElementIndex === -1) {
@@ -118,38 +120,38 @@ const Designer = () => {
 
   return (
     <div style={{ display: "flex", width: "100%", height: "100%" }}>
-      <div
-        style={{ padding: "16px", width: "100%" }}
-        onClick={() => {
-          if (selectedElement) setSelectedElement(null);
-        }}
-      >
         <div
-          ref={droppable.setNodeRef}
-          className={cn(
-            "bg-background max-w-[920px] h-full m-auto rounded-xl flex flex-col flex-grow items-center justify-start flex-1 overflow-y-auto",
-            droppable.isOver && "ring-4 ring-primary ring-inset"
-          )}
+          style={{ padding: "16px", width: "100%" }}
+          onClick={() => {
+            if (selectedElement) setSelectedElement(null);
+          }}
         >
-          {!droppable.isOver && elements.lenght === 0 && (
-            <p className="text-3xl text-muted-foreground flex flex-grow items-center font-bold">
-              Drop here
-            </p>
-          )}
-          {droppable.isOver && elements.lenght === 0 && (
-            <div className="p-4 w-full">
-              <div className="h-[80px] rounded-md bg-primary/20"></div>
-            </div>
-          )}
-          {elements.length > 0 && (
-            <div className="flex flex-col text-background w-full gap-2 p-4">
-              {elements.map((element) => (
-                <DesignerElementWrapper key={element.id} element={element} />
-              ))}
-            </div>
-          )}
+          <div
+            ref={droppable.setNodeRef}
+            className={cn(
+              "bg-background max-w-[920px] h-full m-auto rounded-xl flex flex-col flex-grow items-center justify-start flex-1 overflow-y-auto",
+              droppable.isOver && "ring-4 ring-primary ring-inset"
+            )}
+          >
+            {!droppable.isOver && elements.lenght === 0 && (
+              <p className="text-3xl text-muted-foreground flex flex-grow items-center font-bold">
+                Largue aqui
+              </p>
+            )}
+            {droppable.isOver && elements.lenght === 0 && (
+              <div className="p-4 w-full">
+                <div className="h-[80px] rounded-md bg-primary/20"></div>
+              </div>
+            )}
+            {elements.length > 0 && (
+              <div className="flex flex-col text-background w-full gap-2 p-4">
+                {elements.map((element) => (
+                  <DesignerElementWrapper key={element.id} element={element} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       <DesignerSidebar />
     </div>
   );

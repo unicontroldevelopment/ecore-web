@@ -121,7 +121,7 @@ const Template = (props) => {
       items: [
         {
           key: "5-1",
-          label: <Link to="/documents/createService">Cadastrar Serviço</Link>,
+          label: <Link to="/documents/createService">Controle de Serviços</Link>,
         },
         {
           key: "5-2",

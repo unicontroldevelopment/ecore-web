@@ -107,7 +107,7 @@ const FormComponent = ({
     elementInstance.extraAtribbutes;
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex flex-col gap-2 w-ful">
       <Label className={cn(error && "text-red-500")}>
         {label}
         {required && "*"}
