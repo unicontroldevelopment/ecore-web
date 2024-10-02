@@ -30,6 +30,8 @@ import ListEmployee from "./pages/employees/listEmployee";
 import ManageEmployeeInfo from "./pages/employees/manageEmployeeInfo";
 import WorkingHours from "./pages/employees/workingHours";
 import Login from "./pages/login/Login";
+import PPA from "./pages/PPA-PPO/PPA";
+import PPO from "./pages/PPA-PPO/PPO";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
 import StockMovements from "./pages/stock/movements";
@@ -157,6 +159,26 @@ const App = () => {
                     </PrivatePage>
                   }
                 />
+                <Route
+                  path="/PPA-PPO/PPA"
+                  element={
+                    <PrivatePage>
+                      <Template>
+                        <PPA />
+                      </Template>
+                    </PrivatePage>
+                  }
+                />
+                <Route
+                  path="/PPA-PPO/PPO"
+                  element={
+                    <PrivatePage>
+                      <Template>
+                        <PPO />
+                      </Template>
+                    </PrivatePage>
+                  }
+                />                
                 <Route
                   path="/emails/create"
                   element={

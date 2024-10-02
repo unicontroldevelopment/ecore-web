@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaSmile } from "react-icons/fa";
 import { z } from "zod";
-import happyEmoji from "../../../assets/form/emojis/happy.png"; // Substitua pelo caminho correto
-import neutralEmoji from "../../../assets/form/emojis/neutral.png"; // Substitua pelo caminho correto
+import happyEmoji from "../../../assets/form/emojis/happy.png";
+import neutralEmoji from "../../../assets/form/emojis/neutral.png";
 import sadEmoji from "../../../assets/form/emojis/sad.png";
 import { cn } from "../../../lib/utils";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,12 +20,17 @@ import {
 } from "../../ui/form";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
+import { Separator } from "../../ui/separator";
+import { Switch } from "../../ui/switch";
 import useDesigner from "../hooks/useDesigner";
 
 const propertiesSchema = z.object({
-  label: z.string().min(2, { message: "O campo deve ter pelo menos 2 caracteres" }).max(50, { message: "O campo deve ter no máximo 50 caracteres" }),
+  label: z
+    .string()
+    .min(2, { message: "O campo deve ter pelo menos 2 caracteres" })
+    .max(50, { message: "O campo deve ter no máximo 50 caracteres" }),
   required: z.boolean().default(false),
-  value: z.enum(["bad", "neutral", "good"]),
+  emoji: z.enum(["bad", "neutral", "good"]).nullable(),
 });
 
 export const EmojiFieldFormElement = {
@@ -35,7 +41,7 @@ export const EmojiFieldFormElement = {
     extraAtribbutes: {
       label: "Selecione seu humor",
       required: false,
-      value: null,
+      emoji: null,
     },
   }),
   designerBtnElement: {
@@ -64,14 +70,18 @@ export const EmojiFieldFormElement = {
   validate: (formElement, currentValue) => {
     const element = formElement;
     if (element.extraAtribbutes.required) {
-      return element.extraAtribbutes.value !== "";
+      return (
+        currentValue === "bad" ||
+        currentValue === "neutral" ||
+        currentValue === "good"
+      );
     }
     return true;
   },
 };
 
 const DesignerComponent = ({ elementInstance }) => {
-  const { label, required, value } = elementInstance.extraAtribbutes;
+  const { label, required, emoji } = elementInstance.extraAtribbutes;
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -80,9 +90,9 @@ const DesignerComponent = ({ elementInstance }) => {
         {required && "*"}
       </Label>
       <div className="flex justify-between">
-        <EmojiOption imageSrc={happyEmoji} isSelected={value === "happy"} />
-        <EmojiOption imageSrc={neutralEmoji} isSelected={value === "neutral"} />
-        <EmojiOption imageSrc={sadEmoji} isSelected={value === "sad"} />
+        <EmojiOption imageSrc={happyEmoji} isSelected={emoji === "good"} />
+        <EmojiOption imageSrc={neutralEmoji} isSelected={emoji === "neutral"} />
+        <EmojiOption imageSrc={sadEmoji} isSelected={emoji === "bad"} />
       </div>
     </div>
   );
@@ -121,8 +131,8 @@ const FormComponent = ({
       <div className="flex justify-between">
         <EmojiOption
           imageSrc={happyEmoji}
-          isSelected={value === "happy"}
-          onClick={() => handleEmojiClick("happy")}
+          isSelected={value === "good"}
+          onClick={() => handleEmojiClick("good")}
         />
         <EmojiOption
           imageSrc={neutralEmoji}
@@ -131,8 +141,8 @@ const FormComponent = ({
         />
         <EmojiOption
           imageSrc={sadEmoji}
-          isSelected={value === "sad"}
-          onClick={() => handleEmojiClick("sad")}
+          isSelected={value === "bad"}
+          onClick={() => handleEmojiClick("bad")}
         />
       </div>
       {error && <p className="text-red-500">Este campo é obrigatório</p>}
@@ -154,15 +164,14 @@ const EmojiOption = ({ imageSrc, isSelected, onClick }) => (
 
 const PropertiesComponent = ({ elementInstance }) => {
   const element = elementInstance;
-  const { updateElement } = useDesigner();
-
+  const { updateElement, setSelectedElement } = useDesigner();
   const form = useForm({
     resolver: zodResolver(propertiesSchema),
     mode: "onBlur",
     defaultValues: {
       label: element.extraAtribbutes.label,
       required: element.extraAtribbutes.required,
-      value: element.extraAtribbutes.value || "neutral",
+      emoji: element.extraAtribbutes.emoji,
     },
   });
 
@@ -176,7 +185,7 @@ const PropertiesComponent = ({ elementInstance }) => {
       extraAtribbutes: {
         label: values.label,
         required: values.required,
-        value: values.value,
+        emoji: values.emoji,
       },
     });
   }
@@ -189,13 +198,36 @@ const PropertiesComponent = ({ elementInstance }) => {
           name="label"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Título</FormLabel>
+              <FormLabel>Titulo</FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") e.currentTarget.blur();
                   }}
+                />
+              </FormControl>
+              <FormDescription>
+                O Titulo do campo <br /> Irá aparecer acima do campo
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Separator />
+        <FormField
+          control={form.control}
+          name="required"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+              <div className="space-y0.5">
+                <FormLabel>Requer?</FormLabel>
+                <FormDescription>Este campo é obrigatório?</FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />

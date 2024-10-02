@@ -25,7 +25,7 @@ import {
 } from "../../assets/folhas/folhas";
 import { Formats } from "../formats";
 
-export const Reajustment = (index, type, signOnContract, value, name, date) => {
+export const Reajustment = (index, type, signOnContract, value, name, date, text) => {
   const newValue = (valorAtual, indiceReajuste) => {
     const valorFormatado = valorAtual.replace(/\./g, "").replace(",", ".");
     const newFloat = parseFloat(valorFormatado);
@@ -165,6 +165,11 @@ export const Reajustment = (index, type, signOnContract, value, name, date) => {
         text: `\nA presente proposta tem como objetivo, por parte da ${tecSign.socialReason}, o reajuste anual de seu contrato, previsto para o mês ${Formats.ExtenseMonth(
           date
         )} de ${new Date().getFullYear()}. Índice de ${index}%.`,
+        alignment: "justify",
+        margin: [0, 0, 0, 20],
+      },
+      {
+        text: `${text ? text : ""}.`,
         alignment: "justify",
         margin: [0, 0, 0, 20],
       },

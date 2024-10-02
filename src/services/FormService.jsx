@@ -1,3 +1,4 @@
+import qs from "qs";
 import { api } from "./api";
 
 export default class {
@@ -65,10 +66,16 @@ export default class {
       return error;
     }
   }
-  async getForms() {
+  async getForms(formId, type) {
+    const query = {
+      formId,
+      type
+  };
+    
     try {
-      const response = await api.get(`/forms`);
-      return response;
+      const response = await api.get(`/forms?${qs.stringify(query)}`);
+
+      return response
     } catch (error) {
       return error;
     }

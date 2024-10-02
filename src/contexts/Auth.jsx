@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }) => {
   const logoutAuth = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("userId");
     context.setUserType(null);
     api.defaults.headers.Authorization = null;
     setUser(null);
@@ -61,6 +62,9 @@ export const AuthProvider = ({ children }) => {
         context.setUserType(loggedUser.role);
         localStorage.setItem("user", JSON.stringify(loggedUser));
         localStorage.setItem("token", token);
+        localStorage.setItem("userId", loggedUser.id);
+        console.log("Logado", loggedUser.id);
+        
   
         api.defaults.headers.Authorization = `Bearer ${token}`;
         setUser(loggedUser);

@@ -69,6 +69,7 @@ export default function AdditiveAndReajustment() {
     value: null,
     index: null,
     type: "",
+    text: null,
   });
   const [d4signController, setD4signController] = React.useState(false);
   const [d4SignOpenInfo, setD4SignOpenInfo] = React.useState(false);
@@ -621,7 +622,8 @@ export default function AdditiveAndReajustment() {
       contract.signOnContract,
       render.value,
       contract.name,
-      extenseDate
+      extenseDate,
+      render.text
     );
 
     let mergedBlob;
@@ -641,8 +643,6 @@ export default function AdditiveAndReajustment() {
     }
 
     const pdfUrl = URL.createObjectURL(mergedBlob);
-    console.log("URL", pdfUrl);
-
     window.open(pdfUrl, "_blank");
   };
 
@@ -1457,6 +1457,14 @@ export default function AdditiveAndReajustment() {
                 options={Options.IndexContract()}
               />
             </CustomInput.Root>
+            <CustomInput.Root columnSize={12}>
+              <CustomInput.LongInput
+                label="Campo de texto"
+                name="text"
+                value={reajustment.text}
+                onChange={handleReajustmentValues}
+              />
+            </CustomInput.Root>
           </Form.Fragment>
         </Modal>
       )}
@@ -1591,6 +1599,14 @@ export default function AdditiveAndReajustment() {
                 value={selectReajustment.type}
                 onChange={handleUpdateReajustmentValues}
                 options={Options.IndexContract()}
+              />
+            </CustomInput.Root>
+            <CustomInput.Root columnSize={12}>
+              <CustomInput.LongInput
+                label="Campo de texto"
+                name="text"
+                value={selectReajustment.text}
+                onChange={handleUpdateReajustmentValues}
               />
             </CustomInput.Root>
           </Form.Fragment>

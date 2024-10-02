@@ -17,7 +17,7 @@ const SiderBarBtnElement = ({ formElement }) => {
       variant={"outline"}
       ref={draggable.setNodeRef}
       className={cn(
-        "flex flex-col gap-2 h-[120px] w-[120px] cursor-grab",
+        "flex flex-col gap-2 h-[120px] w-[120px] mb-2 cursor-grab",
         draggable.isDragging && "ring-2 ring-primary"
       )}
       {...draggable.listeners}

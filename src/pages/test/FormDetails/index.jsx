@@ -1,18 +1,11 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { PDFDocument } from "pdf-lib";
 import * as pdfMake from "pdfmake/build/pdfmake";
 import * as pdfFonts from "pdfmake/build/vfs_fonts";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import happyEmoji from "../../../assets/form/emojis/happy.png";
-import neutralEmoji from "../../../assets/form/emojis/neutral.png";
-import sadEmoji from "../../../assets/form/emojis/sad.png";
 import Loading from "../../../components/animations/Loading";
-import {
-  getFormById,
-  getSubmissions,
-} from "../../../components/formController/Form";
+import { getFormById } from "../../../components/formController/Form";
 import EditBtn from "../../../components/formDetails/EditBtn";
 import FormLinkShare from "../../../components/formDetails/FormLinkShare";
 import VisitBtn from "../../../components/formDetails/VisitBtn";
@@ -26,7 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table";
-import { formPdf } from "../../../utils/pdf/forms/formPdf";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 function FormDetails() {
@@ -61,26 +53,44 @@ function FormDetails() {
     submissionsRate = (submissions / visits) * 100;
   }
 
-  const bounceRate = 100 - submissionsRate;
-
   return (
-    <div className="flex w-full flex-col flex-grow mx-auto">
-      <div className="py-10 border-b border-muted bg-slate-200">
-        <div className="flex justify-between container">
-          <h1 className="text-4xl font-bold truncate">{form.name}</h1>
-          <div className="space-x-2">
-            <VisitBtn shareUrl={form.shareUrl} />
-            <EditBtn shareUrl={form.shareUrl} />
+    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
+      {/* Header do formulário */}
+      <div className="py-10 border-b border-white/10">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-4xl font-bold truncate text-white">
+              {form.name}
+            </h1>
+            <div className="space-x-4">
+              <VisitBtn
+                shareUrl={form.shareUrl}
+                className="bg-white text-blue-600 hover:bg-blue-100 transition-colors duration-200 py-2 px-6 rounded-full font-semibold shadow-lg"
+              />
+              <EditBtn
+                id={id}
+                className="bg-purple-500 text-white hover:bg-purple-600 transition-colors duration-200 py-2 px-6 rounded-full font-semibold shadow-lg"
+              />
+            </div>
           </div>
         </div>
       </div>
-      <div className="py-4 border-b border-muted bg-gray-400">
-        <div className="container flex gap-2 items-center justify-between">
-          <FormLinkShare shareUrl={form.shareUrl} />
+
+      {/* Link compartilhável */}
+      <div className="py-6 border-b border-white/10">
+        <div className="container mx-auto px-4">
+          <FormLinkShare shareUrl={form.shareUrl} className="text-white" />
         </div>
       </div>
-      <div style={{ width: "100%", height: "100%", backgroundColor: "gray" }}>
-        <SubmissionsTable id={form.id} />
+
+      {/* Seção de envios */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="bg-white shadow-2xl rounded-xl overflow-hidden">
+          <SubmissionsTable
+            id={form.id}
+            className="w-full"
+          />
+        </div>
       </div>
     </div>
   );
@@ -175,16 +185,18 @@ function SubmissionsTable({ id }) {
   });
 
   return (
-    <div className="flex w-full h-screen">
-      <div className="w-1/4 border-r border-gray-300 rounded-md bg-gray-100 overflow-y-auto">
-        <div className="py-4 px-4 border-b border-gray-300">
-          <h2 className="text-xl font-bold">Envios</h2>
+    <div className="flex w-full h-screen bg-gray-100">
+      {/* Sidebar de Envios */}
+      <div className="w-1/4 border-r border-gray-200 bg-white shadow-lg overflow-y-auto">
+        <div className="py-6 px-4 bg-blue-600 text-white">
+          <h2 className="text-2xl font-bold">Envios</h2>
         </div>
+
         <Table className="w-full">
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Data</TableHead>
+              <TableHead className="text-black font-semibold">Nome</TableHead>
+              <TableHead className="text-black font-semibold">Data</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -192,9 +204,9 @@ function SubmissionsTable({ id }) {
               <TableRow
                 key={index}
                 onClick={() => setSelectedSubmission(row)}
-                className={`cursor-pointer hover:bg-gray-200 ${
+                className={`cursor-pointer hover:bg-blue-50 transition-colors ${
                   selectedSubmission?.submittedAt === row.submittedAt
-                    ? "bg-gray-300"
+                    ? "bg-blue-100"
                     : ""
                 }`}
               >
@@ -209,44 +221,78 @@ function SubmissionsTable({ id }) {
           </TableBody>
         </Table>
       </div>
-      <div className="w-3/4 bg-white p-6">
+
+      {/* Detalhes do Envio */}
+      <div className="w-3/4 bg-white p-8 overflow-y-auto">
         {selectedSubmission ? (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-bold">Detalhes do Envio</h1>
-              <Button onClick={() => generatePdf(selectedSubmission, columns)}>
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            {/* Cabeçalho com Botão de PDF */}
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl font-bold text-blue-600">Detalhes do Envio</h1>
+              <Button
+                className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 transition shadow-md"
+                onClick={() => generatePdf(selectedSubmission, columns)}
+              >
                 Gerar PDF
               </Button>
             </div>
-            <div className="p-4 bg-white rounded-lg shadow-md">
-              <div className="flex items-center mb-4">
-                <label className="font-bold mr-4" style={{ width: "200px" }}>
+
+            {/* Seção de Detalhes */}
+            <div className="p-6 bg-gray-50 rounded-lg shadow-md">
+              {/* Data de envio */}
+              <div className="flex items-center mb-6">
+                <label
+                  className="font-bold text-gray-700 mr-4"
+                  style={{ width: "200px" }}
+                >
                   Data de envio:
                 </label>
                 <span className="text-lg">
                   {format(
                     new Date(selectedSubmission.submittedAt),
                     "dd/MM/yyyy",
-                    { locale: ptBR }
+                    {
+                      locale: ptBR,
+                    }
                   )}
                 </span>
               </div>
+
+              {/* Exibir Colunas do Envio */}
               {columns.map((column) => (
-                <div key={column.id} className="flex items-center mb-10 gap-6">
-                  <label className="font-bold mr-4" style={{ width: "300px" }}>
+                <div key={column.id} className="flex items-center mb-6 gap-6">
+                  <label
+                    className="font-bold text-gray-700 mr-4"
+                    style={{ width: "300px" }}
+                  >
                     {column.label} {column.required ? "*" : ""}
                   </label>
                   <RowCell
                     type={column.type}
                     value={selectedSubmission[column.id]}
+                    className="bg-white border border-gray-300 rounded-md p-2 flex-grow"
                   />
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <div className="text-center">
-            <p className="text-lg text-gray-500">
+          <div className="flex flex-col items-center justify-center h-full text-gray-500">
+            <svg
+              className="w-24 h-24 mb-4 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            <p className="text-2xl font-semibold">
               Selecione um envio à esquerda para ver os detalhes.
             </p>
           </div>
@@ -283,7 +329,7 @@ function RowCell({ type, value }) {
       break;
     case "SelectField":
       node = value ? (
-        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
           {value}
         </span>
       ) : (

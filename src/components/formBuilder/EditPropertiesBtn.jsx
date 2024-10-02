@@ -1,23 +1,23 @@
-"use client";
+import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
+("use client");
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { BsFileEarmarkPlus } from "react-icons/bs";
+import { FaEdit } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { z } from "zod";
 import EmployeeService from "../../services/EmployeeService";
+import Loading from "../animations/Loading";
 import { MultiSelect } from "../custom/multi-select";
+import { getFormById, updateProperties } from "../formController/Form";
 import { Toast } from "../toasts";
 import { Button } from "../ui/button";
 import {
-  Dialog,
-  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Input } from "../ui/input";
@@ -29,7 +29,6 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-import { createForm } from "./Form";
 
 const formSchema = z.object({
   name: z
@@ -48,21 +47,63 @@ const formSchema = z.object({
     ),
 });
 
-function CreateFormBtn({ onFormCreated }) {
+function EditPropertiesBtn({ id }) {
   const [users, setUsers] = useState([]);
+  const [formData, setFormData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const service = new EmployeeService();
   const form = useForm({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      type: "",
+      users: [],
+      emails: "",
+    },
   });
+
+  const { reset } = form;
 
   async function onSubmit(values) {
     try {
-      await createForm(values);
-      Toast.Success("Formulário criado com sucesso!");
-      await onFormCreated();
+      await updateProperties(id, values);
+      Toast.Success("Propriedades editadas com sucesso!");
     } catch (error) {
       Toast.Error("Algo deu errado, tente novamente!");
     }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getFormById(id);
+        const registeredInfoRequest = await service.getEmployeesInfo();
+        const registeredInfo = registeredInfoRequest.data.listUsers;
+
+        setUsers(registeredInfo);
+        setFormData(response);
+
+        reset({
+          name: response.name || "",
+          description: response.description || "",
+          type: response.type || "",
+          users: response.users?.map((user) => user.userId) || [],
+          emails: response.emails?.map((email) => email.email).join(",") || "",
+        });
+      } catch (error) {
+        Toast.Error("Erro ao carregar dados.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id, reset]);
+
+  if (loading) {
+    return (
+      <Loading />
+    );
   }
 
   const dataUser = users.map((user) => ({
@@ -71,36 +112,21 @@ function CreateFormBtn({ onFormCreated }) {
     id: user.id,
   }));
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const registeredInfoRequest = await service.getEmployeesInfo();
-      const registeredInfo = registeredInfoRequest.data.listUsers;
-
-      setUsers(registeredInfo);
-    };
-    fetchUsers();
-  }, []);
+  const selectedUserIds = formData.users?.map((user) => user.userId);
 
   return (
     <Dialog>
       <DialogTrigger>
-        <Button
-          vairant={"outline"}
-          className="group border border-primary/20 h-[190px] items-center 
-            justify-center flex flex-col hover:border-primary hover:cursor-pointer 
-            border-dashed gap-4 bg-background w-full"
-        >
-          <BsFileEarmarkPlus className="h-8 w-8 text-muted-foreground group-hover:text-primary" />
-          <p className="font-bold text-xl text-muted-foreground group-hover:text-primary">
-            Criar Novo Formulário
-          </p>
+        <Button variant={"outline"} className="gap-2">
+          <FaEdit className="h-6 w-6" />
+          Propriedades
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Criar Formulário</DialogTitle>
+          <DialogTitle>Editar Propriedades</DialogTitle>
           <DialogDescription>
-            Criar novo formulário para coletar dados
+            Quem poderá acessar o formulário,receber os e-mails e o tipo.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -137,7 +163,7 @@ function CreateFormBtn({ onFormCreated }) {
                   <FormLabel>Tipo de Formulário:</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    defaultValue={formData.type}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -166,7 +192,7 @@ function CreateFormBtn({ onFormCreated }) {
                       onValueChange={(selectedIds) =>
                         field.onChange(selectedIds)
                       }
-                      defaultValue={field.value}
+                      defaultValue={selectedUserIds}
                       placeholder="Usuarios que poderão visualizar o formulário"
                       variant="inverted"
                     />
@@ -183,6 +209,11 @@ function CreateFormBtn({ onFormCreated }) {
                   <FormControl>
                     <Textarea
                       {...field}
+                      defaultValue={
+                        formData.emails[0]?.email
+                          ? formData.emails[0]?.email
+                          : "Sem e-mails"
+                      }
                       placeholder="Digite os e-mails separados por vírgula"
                     />
                   </FormControl>
@@ -208,4 +239,4 @@ function CreateFormBtn({ onFormCreated }) {
   );
 }
 
-export default CreateFormBtn;
+export default EditPropertiesBtn;

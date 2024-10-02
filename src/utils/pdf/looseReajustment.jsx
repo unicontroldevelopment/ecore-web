@@ -25,7 +25,7 @@ import {
 } from "../../assets/folhas/folhas";
 import { Formats } from "../formats";
 
-export const LooseReajustmentPDF = (index, type, signOnContract, value, name, date) => {
+export const LooseReajustmentPDF = (index, type, signOnContract, value, name, date, text) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
   const newValue = (valorAtual, indiceReajuste) => {
@@ -168,6 +168,11 @@ export const LooseReajustmentPDF = (index, type, signOnContract, value, name, da
         text: `\nA presente proposta tem como objetivo, por parte da ${tecSign.socialReason}, o reajuste anual de seu contrato, previsto para o mês ${Formats.ExtenseMonth(
             date
           )} de ${new Date().getFullYear()}. Índice de ${index}%.`,
+        alignment: "justify",
+        margin: [0, 0, 0, 20],
+      },
+      {
+        text: `\n${text ? text : ""}.`,
         alignment: "justify",
         margin: [0, 0, 0, 20],
       },
