@@ -41,6 +41,7 @@
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.0.0",
     "date-fns": "^3.0.0",
     "dayjs": "^1.11.12",
     "lottie-react": "^2.4.0",

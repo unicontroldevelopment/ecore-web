@@ -1,10 +1,12 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
 import { happy, neutral, sad } from "../../../assets/form/emojis/code64";
 
-const getEmojiSrc = (value) => {
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
+const getEmojiSrc = (value) => {
   switch (value) {
     case "happy":
       return happy;
@@ -35,9 +37,9 @@ const getFormattedValue = (type, value) => {
 
     case "EmojiField":
       const emojiSrc = getEmojiSrc(value);
-      
+
       if (emojiSrc) {
-        return { image: emojiSrc, width: 100, height: 120 };
+        return { image: emojiSrc, width: 50, height: 50 };
       }
       return "Sem seleção";
 
@@ -45,6 +47,7 @@ const getFormattedValue = (type, value) => {
       return value || "N/A";
   }
 };
+
 export const formPdf = (submission, columns) => {
   const docDefinition = {
     pageSize: "A4",
@@ -56,28 +59,26 @@ export const formPdf = (submission, columns) => {
           { locale: ptBR }
         )}`,
         style: "header",
+        alignment: "center",
       },
-      {
-        table: {
-          widths: ["*", "*"],
-          body: [
-            ...columns.map((column) => [
-              { text: column.label, bold: true },
-              getFormattedValue(column.type, submission[column.id]),
-            ]),
-          ],
-        },
-      },
+      ...columns.map((column) => ({
+        columns: [
+          { text: column.label, bold: true, alignment: 'right', width: 100 },
+          getFormattedValue(column.type, submission[column.id]),
+        ],
+        columnGap: 5,
+        margin: [0, 0, 0, 10],
+      })),
     ],
     styles: {
       header: {
         fontSize: 18,
         bold: true,
-        margin: [0, 0, 0, 10],
+        margin: [0, 0, 0, 20],
       },
       subheader: {
         fontSize: 14,
-        margin: [0, 10, 0, 5],
+        bold: true,
       },
     },
   };

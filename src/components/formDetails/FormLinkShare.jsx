@@ -21,7 +21,7 @@ function FormLinkShare({ shareUrl }) {
   const sharedLink = `${window.location.origin}/submit/${shareUrl}`;
 
   return (
-    <div className="flex flex-grow gap-4 items-center border rounded-md shadow-md bg-white">
+    <div className="flex flex-grow items-center border rounded-md shadow-md bg-white">
       <Input value={sharedLink} readOnly />
       <Button
         className="max-w-[250px]"

@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState, useTransition } from "react";
 import { HiCursorClick } from "react-icons/hi";
+import logo from "../../assets/Logo Unicontrol_Branco.6616856fcd6763.94801307.png";
 import FormService from "../../services/FormService";
 import Loading from "../animations/Loading";
 import FormElements from "../formBuilder/FormElements";
@@ -95,7 +96,8 @@ function FormSubmitComponent({ formUrl, content }) {
   }
 
   return (
-    <div className="flex justify-center w-full h-full items-center p-8 bg-slate-400">
+    <div className="flex flex-col justify-center w-full h-full items-center p-8 bg-blue-400">
+      <img src={logo} alt="Logo" className="max-w-[450px] max-h-[80px] flex flex-col mb-5"/>
       <div
         key={renderKey}
         className="max-w-[620px] flex flex-col gap-4 flex-grow bg-background w-full p-8 overflow-y-auto border shadow-xl shadow-gray-500 rounded"

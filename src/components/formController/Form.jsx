@@ -16,11 +16,14 @@ export async function createForm(data) {
     throw new Error("Formulário invalido!");
   }
 
-  const { name, description } = data;
+  const { name, description, type, users, emails } = data;
   const form = await service.create({
     data: {
       name: name,
       description: description,
+      type: type,
+      users: users,
+      emails: emails
     },
   });
 
@@ -31,8 +34,8 @@ export async function createForm(data) {
   return form.data.form.id;
 }
 
-export async function getForms() {
-    const form = await service.getForms();
+export async function getForms(formId = null, type) {
+    const form = await service.getForms( formId, type );
 
     return form.data.listForms;
 }
@@ -53,6 +56,12 @@ export async function getSubmissions(id) {
     const form = await service.getSubmissions(id);
 
     return form.data.form;
+}
+
+export async function updateProperties(id, data) {
+  const form = await service.update(id, data);
+
+  return form.data.form;
 }
 
 

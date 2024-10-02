@@ -1,17 +1,17 @@
 import {
-    DndContext,
-    MouseSensor,
-    TouchSensor,
-    useSensor,
-    useSensors,
+  DndContext,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
 import Designer from "../../../components/formBuilder/Designer";
 import DragOverlayWrapper from "../../../components/formBuilder/DragOverlayWarpper";
+import EditPropertiesBtn from "../../../components/formBuilder/EditPropertiesBtn";
 import PreviewDialogBtn from "../../../components/formBuilder/PreviewDialogBtn";
-import PublishFormBtn from "../../../components/formBuilder/PublishFormBtn";
 import SaveFormBtn from "../../../components/formBuilder/SaveFormBtn";
 import useDesigner from "../../../components/formBuilder/hooks/useDesigner";
 
@@ -87,9 +87,9 @@ function FormBuilder({ form }) {
             {form.name}
           </h2>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <EditPropertiesBtn id={form.id} />
             <PreviewDialogBtn />
             <SaveFormBtn id={form.id} />
-            <PublishFormBtn id={form.id} />
           </div>
         </nav>
         <div

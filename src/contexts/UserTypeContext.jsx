@@ -4,15 +4,24 @@ import { createContext, useEffect, useState } from "react";
 const UserTypeContext = createContext();
 
 const UserTypeProvider = ({ children }) => {
+  const [userType, setUserType] = useState("");
+  const [userId, setUserId] = useState(null);
+
   useEffect(() => {
-    const userType = localStorage.getItem("userType");
-    if (userType) {
-      setUserType(userType);
+    const storedUserType = localStorage.getItem("userType");
+    const storedUserId = localStorage.getItem("userId"); //
+
+    if (storedUserType) {
+      setUserType(storedUserType);
+    }
+
+    if (storedUserId) {
+      setUserId(storedUserId);
     }
   }, []);
-  const [userType, setUserType] = useState("");
+
   return (
-    <UserTypeContext.Provider value={{ userType, setUserType }}>
+    <UserTypeContext.Provider value={{ userType, setUserType, userId, setUserId }}>
       {children}
     </UserTypeContext.Provider>
   );
