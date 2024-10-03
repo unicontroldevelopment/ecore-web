@@ -2,9 +2,9 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  DeleteOutlined,
-  EditOutlined,
-  QuestionCircleOutlined,
+    DeleteOutlined,
+    EditOutlined,
+    QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { Button, Modal, Popconfirm } from "antd";
 import Loading from "../../../components/animations/Loading";

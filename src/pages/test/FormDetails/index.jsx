@@ -4,6 +4,9 @@ import * as pdfMake from "pdfmake/build/pdfmake";
 import * as pdfFonts from "pdfmake/build/vfs_fonts";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import happyEmoji from "../../../assets/form/emojis/happy.png";
+import neutralEmoji from "../../../assets/form/emojis/neutral.png";
+import sadEmoji from "../../../assets/form/emojis/sad.png";
 import Loading from "../../../components/animations/Loading";
 import {
   getFormById,
@@ -103,6 +106,8 @@ function SubmissionsTable({ id }) {
       try {
         const data = await getSubmissions(Number(id)); 
         setForm(data);
+        console.log(data);
+        
       } catch (error) {
         console.error("Erro ao buscar os envios:", error);
       } finally {
@@ -322,7 +327,7 @@ function RowCell({ type, value }) {
       let emojiSrc;
 
       switch (value) {
-        case "happy":
+        case "good":
           emojiSrc = happyEmoji;
           break;
         case "neutral":
@@ -336,7 +341,7 @@ function RowCell({ type, value }) {
       }
 
       node = emojiSrc ? (
-        <img src={emojiSrc} alt={value} className="w-14 h-14" />
+        <img src={emojiSrc} alt={value} className="w-40 h-50" />
       ) : (
         <span className="text-gray-500">Sem seleção</span>
       );
