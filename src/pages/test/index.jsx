@@ -65,7 +65,6 @@ function Teste() {
 
       setIsMaster(hasRole);
       const data = await getForms(hasRole ? null : userId, "Public");
-      console.log(isMaster);
 
       setForms(data);
     } catch (error) {
@@ -89,7 +88,7 @@ function Teste() {
       <h2 className="text-4xl font-bold col-span-2">Seus Formulários</h2>
       <Separator className="my-6" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isMaster && <CreateFormBtn onFormCreated={fetchForms} />}
+        <CreateFormBtn onFormCreated={fetchForms} />
         <Suspense fallback={<FormCardsSkeleton />}>
           {forms.map((form) => (
             <FormCard key={form.id} form={form} onDelete={fetchForms} />
