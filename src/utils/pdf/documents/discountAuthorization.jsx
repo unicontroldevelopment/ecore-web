@@ -58,7 +58,7 @@ export const discountAuthorization = (employee) => {
     {
       image: verificaImagemDoDocumento(),
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: `\n\n\nAUTORIZAÇÃO DE DESCONTO\nEmpregador: ${

@@ -41,7 +41,7 @@ export const termOfCardTEU = (employee, values, date) => {
     {
       image: verificaImagemDoDocumento(),
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: `\n\n\nTERMO DE RESPONSABILIDADE CARTÃO TEU\n\n`,

@@ -54,7 +54,7 @@ export const renouncesVT = (employee) => {
     {
       image: verificaImagemDoDocumento(),
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: "\n\nDECLARAÇÃO DE RENÚNCIA DE VALE TRANSPORTE\n\n\n",

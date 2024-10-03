@@ -34,7 +34,7 @@ export const cessationOfUseNotebook = (
     {
       image: logo,
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: "\n\nCESSÃO DE USO DE NOTEBOOK\n",
