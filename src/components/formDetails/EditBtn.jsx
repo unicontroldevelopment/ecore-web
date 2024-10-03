@@ -5,7 +5,7 @@ const EditBtn = ({id}) => {
   const navigate = useNavigate("/form")
   return (
     <Button
-    className="w-[200px]"
+    className="w-[205px]"
     onClick={() => navigate(`/formEdit/${id}`)}
   >
     Editar

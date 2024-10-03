@@ -10,7 +10,7 @@ import {
 import { Dropdown, Layout, Menu, Space } from "antd";
 import { useContext, useState } from "react";
 import { AiFillDashboard } from "react-icons/ai";
-import { FaBoxes, FaFileExport, FaUserLock, FaUsersCog } from "react-icons/fa";
+import { FaBoxes, FaFileAlt, FaFileExport, FaUserLock, FaUsersCog } from "react-icons/fa";
 import { MdOutgoingMail, MdStarRate } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/Auth";
@@ -179,17 +179,21 @@ const Template = (props) => {
         },
         {
           key: "7-4",
-          label: <Link to="/dashboard">Código de Barras</Link>,
+          label: <Link to="/stock/movements">Estoque Colaborador</Link>,
         },
         {
           key: "7-5",
+          label: <Link to="/dashboard">Código de Barras</Link>,
+        },
+        {
+          key: "7-6",
           label: <Link to="/stock/movements">Movimentações</Link>,
         },
       ],
     },
     {
       key: "8",
-      icon: <FaBoxes />,
+      icon: <FaFileAlt />,
       label: "Formulários",
       items: [
         {

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { ImShare } from "react-icons/im";
 import { Toast } from "../toasts";
-import { Input } from "../ui/input";
 
 const { Button } = require("../ui/button");
 
@@ -21,17 +20,16 @@ function FormLinkShare({ shareUrl }) {
   const sharedLink = `${window.location.origin}/submit/${shareUrl}`;
 
   return (
-    <div className="flex flex-grow items-center border rounded-md shadow-md bg-white">
-      <Input value={sharedLink} readOnly />
+    <div className="flex flex-grow items-center w-[205px]">
       <Button
-        className="max-w-[250px]"
+        className="max-w-[205px] w-[205px] "
         onClick={() => {
           navigator.clipboard.writeText(sharedLink);
           Toast.Success("Link Copiado");
         }}
       >
         <ImShare className="mr-2 h-4 w-4" />
-        Compartilhar Link
+        Link
       </Button>
     </div>
   );

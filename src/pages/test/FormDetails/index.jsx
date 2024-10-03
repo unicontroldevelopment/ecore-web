@@ -17,6 +17,7 @@ import EditBtn from "../../../components/formDetails/EditBtn";
 import FormLinkShare from "../../../components/formDetails/FormLinkShare";
 import VisitBtn from "../../../components/formDetails/VisitBtn";
 import { Button } from "../../../components/ui/button";
+import { Card, CardContent } from "../../../components/ui/card";
 import { Checkbox } from "../../../components/ui/checkbox";
 import { DataTable } from "../../../components/ui/data-table";
 import { formPdf } from "../../../utils/pdf/forms/formPdf";
@@ -56,37 +57,59 @@ function FormDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-r bg-gray-200">
+    <div className="min-h-screen bg-gradient-to-r from-gray-100 to-gray-200">
       {/* Header do formulário */}
-      <div className="py-10 border-b border-white/10 bg-slate-400">
+      <div className="py-8 bg-white shadow-md">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold truncate text-black max-w-[60%]">
-              {form.name}
-            </h1>
-            <div className="space-x-4">
-              <VisitBtn
-                shareUrl={form.shareUrl}
-                className="bg-white text-blue-600 hover:bg-blue-100 transition-colors duration-200 py-2 px-6 rounded-full font-semibold shadow-lg"
-              />
-              <EditBtn
-                id={id}
-                className="bg-purple-500 text-white hover:bg-purple-600 transition-colors duration-200 py-2 px-6 rounded-full font-semibold shadow-lg"
-              />
+          <div className="flex flex-col items-center space-y-6">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="bg-blue-600 p-3 rounded-full mt-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-800 break-words text-center">
+                {form.name}
+              </h1>
+            </div>
+            <div className="w-full flex justify-center">
+              <Card className="w-full max-w-2xl mt-4">
+                <CardContent className="flex flex-wrap justify-center gap-2 p-4">
+                  <VisitBtn
+                    shareUrl={form.shareUrl}
+                  >
+                    Visitar
+                  </VisitBtn>
+                  <EditBtn
+                    id={id}
+                  >
+                    Editar
+                  </EditBtn>
+                  <FormLinkShare
+                    shareUrl={form.shareUrl}
+                  >
+                    Compartilhar
+                  </FormLinkShare>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Link compartilhável */}
-      <div className="py-6 border-b border-white/10">
-        <div className="container mx-auto px-4">
-          <FormLinkShare shareUrl={form.shareUrl} className="text-white" />
-        </div>
-      </div>
-
       {/* Seção de envios */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 ">
         <div className="bg-white shadow-2xl rounded-xl overflow-hidden">
           <SubmissionsTable id={form.id} className="w-full" />
         </div>
@@ -105,10 +128,8 @@ function SubmissionsTable({ id }) {
   useEffect(() => {
     const fetchForms = async () => {
       try {
-        const data = await getSubmissions(Number(id)); 
+        const data = await getSubmissions(Number(id));
         setForm(data);
-        console.log(data);
-        
       } catch (error) {
         console.error("Erro ao buscar os envios:", error);
       } finally {
@@ -214,7 +235,7 @@ function SubmissionsTable({ id }) {
           <div className="bg-white rounded-lg shadow-lg p-6">
             {/* Cabeçalho com Botão de PDF */}
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-blue-600">
+              <h1 className="text-3xl font-bold text-black">
                 Detalhes do Envio
               </h1>
               <Button

@@ -25,7 +25,7 @@ function PreviewDialogBtn() {
             Assim que o formulário irá aparecer para os usuarios
           </p>
         </div>
-        <div className="bg-accent flex flex-col flex-grow items-center justify-center p-4">
+        <div className="bg-accent flex flex-col flex-grow items-center justify-center p-4 bg-blue-400">
           <div className="max-w-[620px] flex flex-col gap-4 flex-grow bg-background h-full w-full rounded-2xl p-8 overflow-y-auto">
             {elements.map((element) => {
               const FormComponent = FormElements[element.type].formComponent;
