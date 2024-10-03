@@ -9,7 +9,7 @@ const UserTypeProvider = ({ children }) => {
 
   useEffect(() => {
     const storedUserType = localStorage.getItem("userType");
-    const storedUserId = localStorage.getItem("userId"); //
+    const storedUserId = localStorage.getItem("userId");
 
     if (storedUserType) {
       setUserType(storedUserType);
