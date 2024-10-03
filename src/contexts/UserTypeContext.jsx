@@ -20,6 +20,23 @@ const UserTypeProvider = ({ children }) => {
     }
   }, []);
 
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "userId") {
+        setUserId(e.newValue);
+      }
+      if (e.key === "userType") {
+        setUserType(e.newValue);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
   return (
     <UserTypeContext.Provider value={{ userType, setUserType, userId, setUserId }}>
       {children}
@@ -28,4 +45,3 @@ const UserTypeProvider = ({ children }) => {
 };
 
 export { UserTypeContext, UserTypeProvider };
-

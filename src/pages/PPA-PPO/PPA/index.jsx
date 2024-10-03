@@ -38,7 +38,6 @@ import FormService from "../../../services/FormService";
   function Teste() {
     const [forms, setForms] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isMaster, setIsMaster] = useState(false);
     const { userId, userType } = useContext(UserTypeContext);
 
     const fetchForms = async () => {
@@ -57,8 +56,11 @@ import FormService from "../../../services/FormService";
   
         const hasRole = userRoles.some((userRole) => roles.includes(userRole));
   
-        setIsMaster(hasRole);
         const data = await getForms(hasRole ? null : userId, "PPA");
+        console.log(userId);
+        console.log(data);
+        
+        
   
         setForms(data);
       } catch (error) {
