@@ -78,7 +78,7 @@ export const experienceContract = (employee) => {
     {
       image: verificaImagemDoDocumento(),
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: `\n\nCONTRATO DE TRABALHO POR EXPERIÊNCIA\n\n\n`,

@@ -46,7 +46,7 @@ export const knowledgeOfMonitoring = (employee) => {
     {
       image: verificaImagemDoDocumento(),
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: `\n\nTERMO DE CIÊNCIA DE MONITORAMENTO DE ATIVIDADES\n\n\n`,

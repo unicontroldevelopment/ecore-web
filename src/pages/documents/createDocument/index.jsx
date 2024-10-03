@@ -21,6 +21,7 @@ import { discountAuthorization } from "../../../utils/pdf/documents/discountAuth
 import { experienceContract } from "../../../utils/pdf/documents/experienceContract";
 import { knowledgeOfMonitoring } from "../../../utils/pdf/documents/knowledgeOfMonitoring";
 import { renouncesVT } from "../../../utils/pdf/documents/renouncesVT";
+import { termOfBenefit } from "../../../utils/pdf/documents/termOfBenefit";
 import { termOfCardTEU } from "../../../utils/pdf/documents/termOfCardTEU";
 import { termOfProrrogation } from "../../../utils/pdf/documents/termOfProrogation";
 
@@ -257,7 +258,9 @@ export default function CreateDocument() {
       document = await experienceContract(values.employeeDetails)
     } else if (values.document === "Termo de Prorrogação") {
       document = await termOfProrrogation(values.employeeDetails)
-    } else {
+    } else if (values.document === "Termo de Adesão do Benefício") {
+      document = await termOfBenefit(values.employeeDetails, dateObj)
+    }else {
       Toast.Error("Documento não encontrado")
       return;
     }

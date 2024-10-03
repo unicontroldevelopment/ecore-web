@@ -40,7 +40,7 @@ export const cessationOfUsePhone = (employee, phone, date) => {
     {
       image: logo,
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: "\n\nTERMO DE ENTREGA DE CELULAR\n",

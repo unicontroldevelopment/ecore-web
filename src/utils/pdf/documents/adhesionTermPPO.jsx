@@ -38,7 +38,7 @@ export const adhesionTermPPO = (employee) => {
     {
       image: verificaImagemDoDocumento(),
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: `\n\nTERMO DE ADESÃO AOS PROGRAMAS DE BONIFICAÇÃO DA ÁREA OPERACIONAL\n\n\n`,

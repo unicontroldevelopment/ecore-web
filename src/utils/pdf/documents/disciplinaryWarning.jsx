@@ -72,7 +72,7 @@ export const disciplinaryWarining = (employee, warningData, date) => {
     {
       image: verificaImagemDoDocumento(),
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: `\n\nADVERTÊNCIA DISCIPLINAR\n\n`,

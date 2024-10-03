@@ -48,7 +48,7 @@ export const termOfProrrogation = (employee) => {
     {
       image: verificaImagemDoDocumento(),
       width: 150,
-      alignment: "left",
+      alignment: "center",
     },
     {
       text: "\n\n\n\n\nProrrogação de contrato de trabalho por experiência\n\n\n\n\n",
