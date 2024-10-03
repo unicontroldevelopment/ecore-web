@@ -38,13 +38,14 @@ import FormService from "../../../services/FormService";
   function Teste() {
     const [forms, setForms] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isMaster, setIsMaster] = useState(false);
     const { userId, userType } = useContext(UserTypeContext);
 
     const fetchForms = async () => {
       setLoading(true);
       try {
         if (!Array.isArray(userType) || !userType.length) return;
-
+  
         const userRoles = userType.map((role) => {
           if (typeof role === "object" && role.role) {
             return role.role.name;
@@ -57,10 +58,11 @@ import FormService from "../../../services/FormService";
         const hasRole = userRoles.some((userRole) => roles.includes(userRole));
   
         setIsMaster(hasRole);
-        const data = await getForms(hasRole ? null : userId, "Public");
-
+        const data = await getForms(hasRole ? null : userId, "PPA");
+  
         setForms(data);
       } catch (error) {
+        console.log(error);
         Toast.Error("Erro ao carregar formulários");
       } finally {
         setLoading(false);
