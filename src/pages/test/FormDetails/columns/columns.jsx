@@ -101,6 +101,7 @@ export const columnsData = [
             <DropdownMenuSeparator />
             <DropdownMenuItem>Gerar Excel</DropdownMenuItem>
             <DropdownMenuItem>Gerar PDF</DropdownMenuItem>
+            <DropdownMenuItem>Excluir Envio</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
