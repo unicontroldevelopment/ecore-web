@@ -8,7 +8,7 @@ pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 const getEmojiSrc = (value) => {
   switch (value) {
-    case "happy":
+    case "good":
       return happy;
     case "neutral":
       return neutral;
