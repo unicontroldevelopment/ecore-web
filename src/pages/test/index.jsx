@@ -68,6 +68,7 @@ function Teste() {
 
       setForms(data);
     } catch (error) {
+      console.log(error);
       Toast.Error("Erro ao carregar formulários");
     } finally {
       setLoading(false);
