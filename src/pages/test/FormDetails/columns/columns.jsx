@@ -4,12 +4,12 @@ import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { Checkbox } from "../../../../components/ui/checkbox";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "../../../../components/ui/dropdown-menu";
 
 export const columnsData = [
@@ -39,18 +39,18 @@ export const columnsData = [
     accessorKey: "sendBy",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Nome
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Nome
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
       );
     },
     cell: ({ row }) => {
       const name = row.getValue("sendBy");
-      return <div className="text-left font-medium">{name}</div>;
+      return <div className="ml-4 font-medium">{name}</div>;
     },
   },
   {
@@ -92,15 +92,15 @@ export const columnsData = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(payment.id)}
             >
-              Copy payment ID
+              Copiar conteúdo
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            <DropdownMenuItem>Gerar Excel</DropdownMenuItem>
+            <DropdownMenuItem>Gerar PDF</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
