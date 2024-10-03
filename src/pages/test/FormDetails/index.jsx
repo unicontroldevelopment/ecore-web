@@ -5,20 +5,18 @@ import * as pdfFonts from "pdfmake/build/vfs_fonts";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
-import { getFormById } from "../../../components/formController/Form";
+import {
+  getFormById,
+  getSubmissions,
+} from "../../../components/formController/Form";
 import EditBtn from "../../../components/formDetails/EditBtn";
 import FormLinkShare from "../../../components/formDetails/FormLinkShare";
 import VisitBtn from "../../../components/formDetails/VisitBtn";
 import { Button } from "../../../components/ui/button";
 import { Checkbox } from "../../../components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../../components/ui/table";
+import { DataTable } from "../../../components/ui/data-table";
+import { formPdf } from "../../../utils/pdf/forms/formPdf";
+import { columnsData } from "./columns/columns";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 function FormDetails() {
@@ -54,12 +52,12 @@ function FormDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600">
+    <div className="min-h-screen bg-gradient-to-r bg-gray-200">
       {/* Header do formulário */}
-      <div className="py-10 border-b border-white/10">
+      <div className="py-10 border-b border-white/10 bg-slate-400">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-4xl font-bold truncate text-white">
+            <h1 className="text-4xl font-bold truncate text-black">
               {form.name}
             </h1>
             <div className="space-x-4">
@@ -86,10 +84,7 @@ function FormDetails() {
       {/* Seção de envios */}
       <div className="container mx-auto px-4 py-12">
         <div className="bg-white shadow-2xl rounded-xl overflow-hidden">
-          <SubmissionsTable
-            id={form.id}
-            className="w-full"
-          />
+          <SubmissionsTable id={form.id} className="w-full" />
         </div>
       </div>
     </div>
@@ -106,7 +101,7 @@ function SubmissionsTable({ id }) {
   useEffect(() => {
     const fetchForms = async () => {
       try {
-        const data = await getSubmissions(Number(id));
+        const data = await getSubmissions(Number(id)); 
         setForm(data);
       } catch (error) {
         console.error("Erro ao buscar os envios:", error);
@@ -184,6 +179,14 @@ function SubmissionsTable({ id }) {
     };
   });
 
+  const handleRowSelect = (rowData) => {
+    setSelectedSubmission(rowData);
+  };
+
+  const handleClick = () => {
+    return;
+  };
+
   return (
     <div className="flex w-full h-screen bg-gray-100">
       {/* Sidebar de Envios */}
@@ -191,35 +194,12 @@ function SubmissionsTable({ id }) {
         <div className="py-6 px-4 bg-blue-600 text-white">
           <h2 className="text-2xl font-bold">Envios</h2>
         </div>
-
-        <Table className="w-full">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-black font-semibold">Nome</TableHead>
-              <TableHead className="text-black font-semibold">Data</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((row, index) => (
-              <TableRow
-                key={index}
-                onClick={() => setSelectedSubmission(row)}
-                className={`cursor-pointer hover:bg-blue-50 transition-colors ${
-                  selectedSubmission?.submittedAt === row.submittedAt
-                    ? "bg-blue-100"
-                    : ""
-                }`}
-              >
-                <TableCell>{row.sendBy || "N/A"}</TableCell>
-                <TableCell>
-                  {format(new Date(row.submittedAt), "dd/MM/yyyy", {
-                    locale: ptBR,
-                  })}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <DataTable
+          columns={columnsData}
+          data={rows}
+          onClick={handleClick}
+          onRowSelect={handleRowSelect}
+        />
       </div>
 
       {/* Detalhes do Envio */}
@@ -228,7 +208,9 @@ function SubmissionsTable({ id }) {
           <div className="bg-white rounded-lg shadow-lg p-6">
             {/* Cabeçalho com Botão de PDF */}
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-blue-600">Detalhes do Envio</h1>
+              <h1 className="text-3xl font-bold text-blue-600">
+                Detalhes do Envio
+              </h1>
               <Button
                 className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 transition shadow-md"
                 onClick={() => generatePdf(selectedSubmission, columns)}

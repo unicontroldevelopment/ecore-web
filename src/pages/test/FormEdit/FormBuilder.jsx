@@ -5,7 +5,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
 import Designer from "../../../components/formBuilder/Designer";
@@ -14,10 +14,13 @@ import EditPropertiesBtn from "../../../components/formBuilder/EditPropertiesBtn
 import PreviewDialogBtn from "../../../components/formBuilder/PreviewDialogBtn";
 import SaveFormBtn from "../../../components/formBuilder/SaveFormBtn";
 import useDesigner from "../../../components/formBuilder/hooks/useDesigner";
+import { UserTypeContext } from "../../../contexts/UserTypeContext";
 
 function FormBuilder({ form }) {
   const { setElements, setSelectedElement } = useDesigner();
+  const [isMaster, setIsMaster] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const { userType } = useContext(UserTypeContext);
   const navigate = useNavigate();
 
   const mouseSensor = useSensor(MouseSensor, {
@@ -43,6 +46,21 @@ function FormBuilder({ form }) {
       setElements(elements);
     }
 
+    if (!Array.isArray(userType) || !userType.length) return;
+
+    const userRoles = userType.map((role) => {
+      if (typeof role === "object" && role.role) {
+        return role.role.name;
+      }
+      return role;
+    });
+
+    const roles = ["Master"];
+
+    const hasRole = userRoles.some((userRole) => roles.includes(userRole));
+
+    setIsMaster(hasRole);
+
     const readyTimeout = setTimeout(() => setIsReady(true), 500);
     return () => clearTimeout(readyTimeout);
   }, [form, setElements, setSelectedElement]);
@@ -50,8 +68,6 @@ function FormBuilder({ form }) {
   if (!isReady) {
     return <Loading />;
   }
-
-  const shareUrl = `${window.location.origin}/submit/${form.shareUrl}`;
 
   return (
     <DndContext sensors={sensors}>
@@ -87,7 +103,7 @@ function FormBuilder({ form }) {
             {form.name}
           </h2>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <EditPropertiesBtn id={form.id} />
+            {isMaster && <EditPropertiesBtn id={form.id} />}
             <PreviewDialogBtn />
             <SaveFormBtn id={form.id} />
           </div>
