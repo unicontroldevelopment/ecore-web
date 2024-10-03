@@ -57,7 +57,7 @@ function FormDetails() {
       <div className="py-10 border-b border-white/10 bg-slate-400">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-4xl font-bold truncate text-black">
+            <h1 className="text-2xl font-bold truncate text-black max-w-[60%]">
               {form.name}
             </h1>
             <div className="space-x-4">
