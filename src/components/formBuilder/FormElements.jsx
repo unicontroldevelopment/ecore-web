@@ -1,6 +1,7 @@
 import { CheckboxFieldFormElement } from "./elements/CheckboxField";
 import { DateFieldFormElement } from "./elements/DateField";
 import { EmojiFieldFormElement } from "./elements/EmojiField";
+import { ImagesFieldFormElement } from "./elements/ImagesField";
 import { NumberFieldFormElement } from "./elements/NumberField";
 import { ParagraphFieldFormElement } from "./elements/Paragraph";
 import { SelectFieldFormElement } from "./elements/SelectField";
@@ -24,6 +25,7 @@ const FormElements = {
   SelectField: SelectFieldFormElement,
   CheckboxField: CheckboxFieldFormElement,
   EmojiField: EmojiFieldFormElement,
+  ImagesField: ImagesFieldFormElement,
 };
 
 export default FormElements;

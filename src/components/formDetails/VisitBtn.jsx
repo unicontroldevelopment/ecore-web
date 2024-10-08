@@ -24,7 +24,7 @@ function VisitBtn({ shareUrl }) {
         window.open(sharedLink, "_blank");
       }}
     >
-      Visitar
+      Preencher
     </Button>
   );
 }

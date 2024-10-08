@@ -86,19 +86,9 @@ function FormDetails() {
             <div className="w-full flex justify-center">
               <Card className="w-full max-w-2xl mt-4">
                 <CardContent className="flex flex-wrap justify-center gap-2 p-4">
-                  <VisitBtn
-                    shareUrl={form.shareUrl}
-                  >
-                    Visitar
-                  </VisitBtn>
-                  <EditBtn
-                    id={id}
-                  >
-                    Editar
-                  </EditBtn>
-                  <FormLinkShare
-                    shareUrl={form.shareUrl}
-                  >
+                  <VisitBtn shareUrl={form.shareUrl}/>
+                  <EditBtn id={id}/>
+                  <FormLinkShare shareUrl={form.shareUrl}>
                     Compartilhar
                   </FormLinkShare>
                 </CardContent>
@@ -130,6 +120,7 @@ function SubmissionsTable({ id }) {
       try {
         const data = await getSubmissions(Number(id));
         setForm(data);
+        console.log(data);
       } catch (error) {
         console.error("Erro ao buscar os envios:", error);
       } finally {
@@ -184,6 +175,7 @@ function SubmissionsTable({ id }) {
       case "DateField":
       case "SelectField":
       case "CheckboxField":
+      case "ImagesField":
       case "EmojiField":
         columns.push({
           id: element.id,
@@ -191,6 +183,9 @@ function SubmissionsTable({ id }) {
           required: element.extraAtribbutes?.required,
           type: element.type,
         });
+        console.log(columns);
+        console.log(element);
+
         break;
       default:
         break;
@@ -368,9 +363,33 @@ function RowCell({ type, value }) {
         <span className="text-gray-500">Sem seleção</span>
       );
       break;
+    case "ImagesField":
+      console.log("Entrou imagem", value);
+
+      node = <ImageGallery images={JSON.parse(value || "[]")} />;
+      break;
     default:
       break;
   }
 
   return <div className="flex items-center gap-2">{node}</div>;
+}
+
+function ImageGallery({ images }) {
+  if (!images || images.length === 0) {
+    return <span className="text-gray-500">Sem imagens</span>;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {images.map((img, index) => (
+        <img
+          key={index}
+          src={img.data}
+          alt={img.name}
+          className="w-20 h-20 object-cover rounded-md"
+        />
+      ))}
+    </div>
+  );
 }
