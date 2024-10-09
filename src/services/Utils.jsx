@@ -73,4 +73,22 @@ export default class {
       return error;
     }
   }
+
+  async searchDate(initialDate, endDate) {
+    try {
+      const response = await api.post("/buscaHorasTrabalhadasRH", { date_ini: initialDate, date_fim: endDate});
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async buscaInsumos() {
+    try {
+      const response = await api.get("/buscaInsumos");
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }
