@@ -49,7 +49,17 @@ export const termOfBenefit = (employee, date) => {
         fontSize: 13,
       },
     {
-      text: `\n\nEu, ${employee.name}, funcionário da empresa ${employee.company}, autorizo DESCONTO DO MEU SALÁRIO MENSAL, o valor das compras efetuadas na farmácia São João - vinculadas ao convênio. Os descontos poderão ser em até 3 vezes, conforme compra parcelada na farmácia.\n\n`,
+      text: `\n\nEu ${employee.name}, portador do CPF ${employee.cpf}, funcionário(a) da empresa ${employee.company}, autorizo o desconto na folha de pagamento mensal, referente as compras realizadas na farmácia São João, vinculadas ao convênio.\n\n`,
+      alignment: "justify",
+      fontSize: 13,
+    },
+    {
+      text: `Declaro que em caso de demissão. FICAREI OBRIGADO A PAGAR DE UMA SÓ VEZ, todas as parcelas vinculadas ao convênio, SENDO O VALOR TOTAL DESCONTANDO EM MINHA RESCISÃO CONTRATUAL DE TRABALHO.\n\n`,
+      alignment: "justify",
+      fontSize: 13,
+    },
+    {
+      text: `\n\nPor todo exposto, assino de livre e espontânea vontade a presente autorização, para que produza os efeitos jurídicos necessários.\n\n`,
       alignment: "justify",
       fontSize: 13,
     },

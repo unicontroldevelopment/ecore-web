@@ -1,305 +1,152 @@
-import {
-  EllipsisOutlined,
-  MinusOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
-import { Button, Modal } from "antd";
-import * as React from "react";
-import { Filter } from "../../../components/filter";
-import { CustomInput } from "../../../components/input/index";
-import { Table } from "../../../components/table";
-import { ActionsContainer } from "../../../components/table/styles";
-import VerifyUserRole from "../../../hooks/VerifyUserRole";
-import { Options } from "../../../utils/options";
+import { EditOutlined, ExportOutlined, ImportOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Modal, Select, Space, Table, message } from 'antd';
+import { useEffect, useState } from 'react';
+import Utils from '../../../services/Utils';
 
-export default function StockControl() {
-  VerifyUserRole(["Master", "Administrador", "Operacional"]);
-  const [filter, setFilter] = React.useState({
-    type: "",
-    name: "",
-  });
-  const [columns, setColumns] = React.useState([]);
-  const [exitModal, setExitModal] = React.useState(false);
-  const [enterModal, setEnderModal] = React.useState(false);
-  const [editModal, setEditModal] = React.useState(false);
-  const [selected, setSelected] = React.useState({});
-  const [data, setData] = React.useState();
+const { Option } = Select;
 
-  const handleChangeFilter = (event) => {
-    const selectedRole = event.target.value;
-    setFilter((prevState) => ({
-      ...prevState,
-      [event.target.name]: selectedRole,
-    }));
+const StockControl = () => {
+  const [stock, setStock] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [form] = Form.useForm();
+  const service = new Utils()
 
-    if (selectedRole === "Produtos") {
-      const products = Options.Users();
-      setData(products);
-      setColumns(optionsProduct);
-    } else if (selectedRole === "Uniformes e EPI's") {
-      const products = Options.EPIs();
-      setData(products);
-      setColumns(optionsEPI);
+  useEffect(() => {
+    fetchStockData();
+  }, []);
+
+  const fetchStockData = async () => {
+    try {
+      const response = await service.buscaInsumos();
+      console.log(response);
+      
+      setStock(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar dados do estoque:', error);
+      message.error('Falha ao carregar dados do estoque');
     }
   };
 
-  const handleExitModal = (choice = null) => {
-    setSelected(choice);
-    setExitModal(true);
+  const showModal = (type, item = null) => {
+    setModalType(type);
+    setSelectedItem(item);
+    setIsModalVisible(true);
+    if (item) {
+      form.setFieldsValue(item);
+    } else {
+      form.resetFields();
+    }
   };
 
-  const handleEnterModal = (choice = null) => {
-    setSelected(choice);
-    setEnderModal(true);
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    form.resetFields();
   };
 
-  const handleEditModal = (choice = null) => {
-    console.log(choice);
-
-    setSelected(choice);
-    setEditModal(true);
+  const handleSubmit = async (values) => {
+    try {
+      if (modalType === 'add') {
+      } else if (modalType === 'edit') {
+      } else if (modalType === 'entrada') {
+      } else if (modalType === 'saida') {
+      }
+      setIsModalVisible(false);
+      form.resetFields();
+      fetchStockData();
+      message.success('Operação realizada com sucesso');
+    } catch (error) {
+      console.error('Erro na operação:', error);
+      message.error('Falha na operação');
+    }
   };
 
-  const optionsProduct = [
+  const columns = [
+    { title: 'Nome', dataIndex: 'nom_ins', key: 'nom_ins' },
+    { title: 'Quantidade', dataIndex: 'quantidade', key: 'quantidade' },
+    { title: 'Valor', dataIndex: 'valor', key: 'valor' },
+    { title: 'Nota Fiscal', dataIndex: 'nota_fiscal', key: 'nota_fiscal' },
     {
-      title: "Nome",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Quantidade",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Valor",
-      dataIndex: "baseValue",
-      key: "baseValue",
-    },
-    {
-      title: "Ações",
-      key: "actions",
-      width: 150,
-      render: (render) => (
-        <ActionsContainer>
-          <Button
-            title="Entrada"
-            style={{ backgroundColor: "#32CD32", color: "#fff" }}
-            icon={<PlusOutlined />}
-            shape="circle"
-            onClick={handleEnterModal}
-          />
-          <Button
-            title="Saida"
-            style={{ backgroundColor: "#DC143C", color: "#fff" }}
-            icon={<MinusOutlined />}
-            shape="circle"
-            onClick={handleExitModal}
-          />
-          <Button
-            title="Editar"
-            style={{ backgroundColor: "#00BFFF", color: "#fff" }}
-            icon={<EllipsisOutlined />}
-            shape="circle"
-            onClick={() => handleEditModal(render)}
-          />
-        </ActionsContainer>
+      title: 'Ações',
+      key: 'acoes',
+      render: (_, record) => (
+        <Space size="middle">
+          <Button icon={<EditOutlined />} onClick={() => showModal('edit', record)}>
+            Editar
+          </Button>
+          <Button icon={<ImportOutlined />} onClick={() => showModal('entrada', record)}>
+            Entrada
+          </Button>
+          <Button icon={<ExportOutlined />} onClick={() => showModal('saida', record)}>
+            Saída
+          </Button>
+        </Space>
       ),
     },
   ];
 
-  const optionsEPI = [
-    {
-      title: "Nome",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Tamanho",
-      dataIndex: "size",
-      key: "size",
-    },
-    {
-      title: "Quantidade",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Valor",
-      dataIndex: "baseValue",
-      key: "baseValue",
-    },
-    {
-      title: "Ações",
-      key: "actions",
-      width: 150,
-      render: (render) => (
-        <ActionsContainer>
-          <Button
-            title="Entrada"
-            style={{ backgroundColor: "#32CD32", color: "#fff" }}
-            icon={<PlusOutlined />}
-            shape="circle"
-          />
-          <Button
-            title="Saida"
-            style={{ backgroundColor: "#DC143C", color: "#fff" }}
-            icon={<MinusOutlined />}
-            shape="circle"
-            onClick={handleExitModal}
-          />
-          <Button
-            title="Editar"
-            style={{ backgroundColor: "#00BFFF", color: "#fff" }}
-            icon={<EllipsisOutlined />}
-            shape="circle"
-          />
-        </ActionsContainer>
-      ),
-    },
-  ];
+  const getModalTitle = () => {
+    switch (modalType) {
+      case 'add':
+        return 'Cadastrar Produto';
+      case 'edit':
+        return 'Editar Produto';
+      case 'entrada':
+        return 'Entrada de Produto';
+      case 'saida':
+        return 'Saída de Produto';
+      default:
+        return '';
+    }
+  };
 
   return (
-    <>
-      <Table.Root title="Lista de Movimentações">
-        <Filter.Fragment section="Tipo de Item">
-          <CustomInput.Root columnSize={12}>
-            <Filter.FilterInput
-              label="Nome"
-              name="name"
-              type="text"
-              value={filter.name}
-              onChange={handleChangeFilter}
-            />
-          </CustomInput.Root>
-          <CustomInput.Root columnSize={12}>
-            <Filter.Select
-              label="Tipo"
-              name="type"
-              value={filter.type}
-              onChange={handleChangeFilter}
-              options={Options.Type()}
-            />
-          </CustomInput.Root>
-        </Filter.Fragment>
-        <Table.TableClean data={data} columns={columns} />
-      </Table.Root>
-      {exitModal && (
-        <>
-          <Modal
-            title="Saida de Produto"
-            open={exitModal}
-            centered
-            width={250}
-            onCancel={() => setExitModal(false)}
-            footer={[
-              <Button type="primary" key="back" onClick={() => setExitModal(false)}>
-              Criar
-            </Button>,
-              <Button key="back" onClick={() => setExitModal(false)}>
-                Voltar
-              </Button>,
-            ]}
-          >
-            <CustomInput.Input
-              label="Medida de Saida"
-              name="quantity"
-              type="text"
-              value={"200ml"}
-              disabled={true}
-            />
-            <CustomInput.Input
-              label="Quantidade de Saida"
-              name="unifOfExit"
-              type="text"
-              value={10}
-            />
-            <CustomInput.Input
-              label="Operador"
-              name="unifOfExit"
-              type="text"
-              value={"Charles"}
-            />
-          </Modal>
-        </>
-      )}
-      {enterModal && (
-        <>
-          <Modal
-            title="Entrada de Produto"
-            open={enterModal}
-            centered
-            width={250}
-            onCancel={() => setEnderModal(false)}
-            footer={[
-              <Button key="back" onClick={() => setEnderModal(false)}>
-                Voltar
-              </Button>,
-            ]}
-          >
-            <CustomInput.Input
-              label="Medida de Entrada"
-              name="quantity"
-              type="text"
-              value={"5L"}
-              disabled={true}
-            />
-            <CustomInput.Input
-              label="Quantidade"
-              name="quantity"
-              type="text"
-              value={5}
-            />
-            <CustomInput.Input
-              label="Valor Pago"
-              name="value"
-              type="text"
-              value={100}
-            />
-            <CustomInput.Input
-              label="Nota Fiscal"
-              name="noteNF"
-              type="text"
-              value={12345}
-            />
-          </Modal>
-        </>
-      )}
-      {editModal && (
-        <>
-          <Modal
-            title="Editar Produto"
-            open={editModal}
-            centered
-            width={250}
-            onCancel={() => setEditModal(false)}
-            footer={[
-              <Button key="back" onClick={() => setEditModal(false)}>
-                Voltar
-              </Button>,
-            ]}
-          >
-            <CustomInput.Input
-              label="Quantidade"
-              name="quantity"
-              type="text"
-              value={5}
-            />
-            <CustomInput.Input
-              label="Valor Pago"
-              name="value"
-              type="text"
-              value={5}
-            />
-            <CustomInput.Input
-              label="Nota Fiscal"
-              name="noteNF"
-              type="text"
-              value={5}
-            />
-          </Modal>
-        </>
-      )}
-    </>
+    <div>
+      <h1>Controle de Estoque</h1>
+      <Button type="primary" onClick={() => showModal('add')} icon={<PlusOutlined />} style={{ marginBottom: 16 }}>
+        Cadastrar Produto
+      </Button>
+      <Table dataSource={stock} columns={columns} rowKey="id" />
+
+      <Modal
+        title={getModalTitle()}
+        open={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+      >
+        <Form form={form} onFinish={handleSubmit} layout="vertical">
+          {modalType !== 'saida' && modalType !== 'entrada' && (
+            <>
+              <Form.Item name="nome" label="Nome" rules={[{ required: true }]}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="tipo" label="Tipo" rules={[{ required: true }]}>
+                <Select>
+                  <Option value="desratização">Desratização</Option>
+                  {/* Adicione mais opções conforme necessário */}
+                </Select>
+              </Form.Item>
+              <Form.Item name="valor" label="Valor" rules={[{ required: true }]}>
+                <Input type="number" step="0.01" />
+              </Form.Item>
+              <Form.Item name="nota_fiscal" label="Nota Fiscal">
+                <Input />
+              </Form.Item>
+            </>
+          )}
+          <Form.Item name="quantidade" label="Quantidade" rules={[{ required: true }]}>
+            <Input type="number" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              {modalType === 'add' ? 'Cadastrar' : 'Confirmar'}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
   );
-}
+};
+
+export default StockControl;
