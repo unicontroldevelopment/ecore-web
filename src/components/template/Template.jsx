@@ -32,6 +32,8 @@ import { MdOutgoingMail, MdStarRate } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/Auth";
 import { UserTypeContext } from "../../contexts/UserTypeContext";
+import EmployeeService from "../../services/EmployeeService";
+import { Toast } from "../toasts";
 import "./style.css";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -45,6 +47,7 @@ const Template = (props) => {
   const backToLastPage = useNavigate(-1);
   const { logoutAuth } = useContext(AuthContext);
   const { userType, userData } = useContext(UserTypeContext);
+  const service = new EmployeeService();
 
   const hasAccess = (roles) => {
     if (!Array.isArray(userType) || !userType.length) return false;
@@ -68,11 +71,15 @@ const Template = (props) => {
     form.resetFields();
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     form
       .validateFields()
-      .then((values) => {
-        console.log("Senhas:", values);
+      .then(async (values) => {
+        
+        const response = await service.changePassword(userData.id, values)
+        if(response.status === 200) {
+          Toast.Success("Senha alterada com sucesso!");
+        }
         setIsModalVisible(false);
       })
       .catch((error) => {
@@ -398,7 +405,7 @@ const Template = (props) => {
               onClick={() => backToLastPage(-1)}
             />
           </Space>
-          <Dropdown  menu={userMenu} trigger={["click"]}>
+          <Dropdown  overlay={userMenu} trigger={["click"]}>
             <Space className="trigger" style={{ float: "right" }}>
               <UserOutlined style={{ color: "#fff" }} />
             </Space>

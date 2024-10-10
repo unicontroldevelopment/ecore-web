@@ -57,9 +57,6 @@ import FormService from "../../../services/FormService";
         const hasRole = userRoles.some((userRole) => roles.includes(userRole));
   
         const data = await getForms(hasRole ? null : userId, "PPA");
-        console.log(userId);
-        console.log(data);
-        
         
   
         setForms(data);
