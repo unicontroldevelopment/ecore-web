@@ -49,12 +49,12 @@ export const termOfBenefit = (employee, date, type) => {
         fontSize: 13,
       },
     {
-      text: `\n\nEu ${employee.name}, portador do CPF ${employee.cpf}, funcionário(a) da empresa ${employee.company}, autorizo o desconto na ${type === "CLT" ? "folha de pagamento mensal" : "nota de prestação de serviço mensal"}, referente as compras realizadas na farmácia São João, vinculadas ao convênio.\n\n`,
+      text: `\n\nEu ${employee.name}, portador do CPF ${employee.cpf}, ${type === "CLT" ? "funcionário(a)" : "contratado(a)"} da empresa ${employee.company}, autorizo o desconto na ${type === "CLT" ? "folha de pagamento mensal" : "nota de prestação de serviço mensal"}, referente as compras realizadas na farmácia São João, vinculadas ao convênio.\n\n`,
       alignment: "justify",
       fontSize: 13,
     },
     {
-      text: `Declaro que em caso de demissão. FICAREI OBRIGADO A PAGAR DE UMA SÓ VEZ, todas as parcelas vinculadas ao convênio, SENDO O VALOR TOTAL DESCONTANDO EM MINHA RESCISÃO CONTRATUAL DE TRABALHO.\n\n`,
+      text: `${type === "CLT" ? "Declaro que em caso de demissão. FICAREI OBRIGADO A PAGAR DE UMA SÓ VEZ, todas as parcelas vinculadas ao convênio, SENDO O VALOR TOTAL DESCONTANDO EM MINHA RESCISÃO CONTRATUAL DE TRABALHO" : "Declaro que em caso de contrato de serviço rescindido. FICAREI OBRIGADO A PAGAR DE UMA SÓ VEZ, todas as parcelas vinculadas ao convênio, SENDO O VALOR TOTAL DESCONTANDO"}.\n\n`,
       alignment: "justify",
       fontSize: 13,
     },
