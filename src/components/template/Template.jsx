@@ -1,16 +1,33 @@
 /* eslint-disable react/prop-types */
 import {
   ArrowLeftOutlined,
+  EditOutlined,
   HeartFilled,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   PoweroffOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Dropdown, Layout, Menu, Space } from "antd";
+import {
+  Button,
+  Card,
+  Dropdown,
+  Form,
+  Input,
+  Layout,
+  Menu,
+  Modal,
+  Space,
+} from "antd";
 import { useContext, useState } from "react";
 import { AiFillDashboard } from "react-icons/ai";
-import { FaBoxes, FaFileAlt, FaFileExport, FaUserLock, FaUsersCog } from "react-icons/fa";
+import {
+  FaBoxes,
+  FaFileAlt,
+  FaFileExport,
+  FaUserLock,
+  FaUsersCog,
+} from "react-icons/fa";
 import { MdOutgoingMail, MdStarRate } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/Auth";
@@ -22,27 +39,65 @@ const { Header, Sider, Content, Footer } = Layout;
 const { SubMenu } = Menu;
 
 const Template = (props) => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
   const [collapsed, setCollapsed] = useState(false);
   const backToLastPage = useNavigate(-1);
   const { logoutAuth } = useContext(AuthContext);
-  const { userType } = useContext(UserTypeContext);
+  const { userType, userData } = useContext(UserTypeContext);
 
   const hasAccess = (roles) => {
     if (!Array.isArray(userType) || !userType.length) return false;
 
-    const userRoles = userType.map(role => {
-      if (typeof role === 'object' && role.role) {
+    const userRoles = userType.map((role) => {
+      if (typeof role === "object" && role.role) {
         return role.role.name;
       }
       return role;
     });
 
-    return roles.some(role => userRoles.includes(role));
+    return roles.some((role) => userRoles.includes(role));
+  };
+
+  const showChangePasswordModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    form.resetFields();
+  };
+
+  const handlePasswordChange = () => {
+    form
+      .validateFields()
+      .then((values) => {
+        console.log("Senhas:", values);
+        setIsModalVisible(false);
+      })
+      .catch((error) => {
+        console.log("Erro ao validar o formulário:", error);
+      });
+  };
+
+  const handleMenuClick = (e) => {
+    const selectedItem = items.find((item) => item.key === e.key);
+    if (selectedItem && selectedItem.onClick) {
+      selectedItem.onClick();
+    }
   };
 
   const items = [
     {
       key: "1",
+      label: "Alterar senha",
+      onClick: () => {
+        showChangePasswordModal();
+      },
+      icon: <EditOutlined />,
+    },
+    {
+      key: "2",
       label: "Logout",
       onClick: () => {
         logoutAuth();
@@ -85,7 +140,7 @@ const Template = (props) => {
           key: "3-2",
           label: <Link to="/serveraccess/list">Listar</Link>,
         },
-      ]
+      ],
     },
     {
       key: "4",
@@ -121,7 +176,9 @@ const Template = (props) => {
       items: [
         {
           key: "5-1",
-          label: <Link to="/documents/createService">Controle de Serviços</Link>,
+          label: (
+            <Link to="/documents/createService">Controle de Serviços</Link>
+          ),
         },
         {
           key: "5-2",
@@ -139,9 +196,7 @@ const Template = (props) => {
         },
         {
           key: "5-5",
-          label: (
-            <Link to="/documents/customers">Aditivos/Reajustes</Link>
-          ),
+          label: <Link to="/documents/customers">Aditivos/Reajustes</Link>,
         },
       ],
     },
@@ -203,6 +258,48 @@ const Template = (props) => {
       ],
     },
   ];
+
+  const userMenu = (
+    <Card
+      style={{
+        width: 250,
+        borderRadius: 12,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        overflow: "hidden",
+      }}
+      bodyStyle={{ padding: 0 }}
+    >
+      <div
+        style={{
+          background: "#4f76be",
+          padding: "16px 20px",
+          color: "white",
+        }}
+      >
+        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 500 }}>
+          Olá, <strong>{userData.name ? userData.name : "Usuário"}</strong>
+        </h3>
+      </div>
+      <Menu
+        onClick={handleMenuClick}
+        selectable={false}
+        style={{ border: "none" }}
+      >
+        {items.map((item) => (
+          <Menu.Item
+            key={item.key}
+            icon={item.icon}
+            style={{
+              padding: "12px 20px",
+              fontSize: 14,
+            }}
+          >
+            {item.label}
+          </Menu.Item>
+        ))}
+      </Menu>
+    </Card>
+  );
 
   return (
     <Layout
@@ -301,20 +398,13 @@ const Template = (props) => {
               onClick={() => backToLastPage(-1)}
             />
           </Space>
-          <Dropdown
-            trigger={["click"]}
-            menu={{ items }}
-            autoAdjustOverflow={true}
-          >
+          <Dropdown  menu={userMenu} trigger={["click"]}>
             <Space className="trigger" style={{ float: "right" }}>
-              <UserOutlined
-                style={{
-                  color: "#fff",
-                }}
-              />
+              <UserOutlined style={{ color: "#fff" }} />
             </Space>
           </Dropdown>
         </Header>
+
         <Content
           style={{
             margin: "1%",
@@ -340,6 +430,67 @@ const Template = (props) => {
           Made with <HeartFilled /> by NewSis
         </Footer>
       </Layout>
+      <Modal
+        title="Alterar Senha"
+        open={isModalVisible}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="cancel" onClick={handleCancel}>
+            Cancelar
+          </Button>,
+          <Button key="submit" type="primary" onClick={handlePasswordChange}>
+            Alterar Senha
+          </Button>,
+        ]}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Senha Atual"
+            name="currentPassword"
+            rules={[
+              {
+                required: true,
+                message: "Por favor, insira sua senha atual!",
+              },
+            ]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item
+            label="Nova Senha"
+            name="newPassword"
+            rules={[
+              {
+                required: true,
+                message: "Por favor, insira sua nova senha!",
+              },
+            ]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item
+            label="Confirmar Nova Senha"
+            name="confirmPassword"
+            dependencies={["newPassword"]}
+            rules={[
+              {
+                required: true,
+                message: "Por favor, confirme sua nova senha!",
+              },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("newPassword") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error("As senhas não coincidem!"));
+                },
+              }),
+            ]}
+          >
+            <Input.Password />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Layout>
   );
 };

@@ -6,13 +6,20 @@ const UserTypeContext = createContext();
 const UserTypeProvider = ({ children }) => {
   const [userType, setUserType] = useState("");
   const [userId, setUserId] = useState(null);
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const storedUserType = localStorage.getItem("userType");
     const storedUserId = localStorage.getItem("userId");
+    const storedUserData = localStorage.getItem("user");
+    
 
     if (storedUserType) {
       setUserType(storedUserType);
+    }
+
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
     }
 
     if (storedUserId) {
@@ -28,6 +35,9 @@ const UserTypeProvider = ({ children }) => {
       if (e.key === "userType") {
         setUserType(e.newValue);
       }
+      if (e.key === "userData") {
+        setUserData(e.newValue);
+      }
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -38,10 +48,11 @@ const UserTypeProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserTypeContext.Provider value={{ userType, setUserType, userId, setUserId }}>
+    <UserTypeContext.Provider value={{ userType, setUserType, userId, setUserId, userData, setUserData }}>
       {children}
     </UserTypeContext.Provider>
   );
 };
 
 export { UserTypeContext, UserTypeProvider };
+
