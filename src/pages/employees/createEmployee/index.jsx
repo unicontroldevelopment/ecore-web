@@ -41,9 +41,9 @@ export default function CreateEmployee() {
     company: "",
     costCenter: "",
     dateAdmission: dayjs(),
-    dateResignation: null,
-    initialWage: null,
-    currentWage: null,
+    dateResignation: dayjs(),
+    initialWage: 0,
+    currentWage: 0,
   });
   const [valueMoney, setValueMoney] = React.useState("");
   const [currentMoney, setCurrentMoney] = React.useState("");

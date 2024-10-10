@@ -1,9 +1,9 @@
 import * as React from "react";
 
 import { Button } from "antd";
-import dayjs from 'dayjs';
-import 'dayjs/locale/pt-br';
-import localeData from 'dayjs/plugin/localeData';
+import dayjs from "dayjs";
+import "dayjs/locale/pt-br";
+import localeData from "dayjs/plugin/localeData";
 import { PDFDocument } from "pdf-lib";
 import { Form } from "../../../components/form";
 import { CustomInput } from "../../../components/input";
@@ -26,7 +26,7 @@ import { termOfCardTEU } from "../../../utils/pdf/documents/termOfCardTEU";
 import { termOfProrrogation } from "../../../utils/pdf/documents/termOfProrogation";
 
 dayjs.extend(localeData);
-dayjs.locale('pt-br');
+dayjs.locale("pt-br");
 
 export default function CreateDocument() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
@@ -64,8 +64,12 @@ export default function CreateDocument() {
     number: "",
     value: "",
   });
+  const [benefit, setBenefit] = React.useState({
+    type: "",
+  });
 
   const state = ["Novo", "Usado"];
+  const type = ["CLT", "PJ"]
 
   React.useEffect(() => {
     const fetchUsers = async () => {
@@ -155,7 +159,7 @@ export default function CreateDocument() {
   };
 
   const handleSign = (event) => {
-    const { name, value } = event.target
+    const { name, value } = event.target;
 
     setCurrentAccountData((prevState) => {
       const updatedValues = {
@@ -164,8 +168,8 @@ export default function CreateDocument() {
       };
 
       return updatedValues;
-    })
-  }
+    });
+  };
 
   const handleChangeTEU = (event) => {
     const { name, value } = event.target;
@@ -191,14 +195,25 @@ export default function CreateDocument() {
     }
   };
 
+  const handleChangeBenefit = (event) => {
+    const { name, value } = event.target;
+    setBenefit((prevState) => {
+      const updatedValues = {
+        ...prevState,
+        [name]: value,
+      };
+      return updatedValues;
+    });
+  };
+
   const handleDate = (e) => {
-      const selectedDate = dayjs(e);    
-      setDate(selectedDate);
+    const selectedDate = dayjs(e);
+    setDate(selectedDate);
   };
 
   const handleGenerate = async () => {
     let document;
-    const dateObj = dayjs(date).toDate()
+    const dateObj = dayjs(date).toDate();
     const extenseDate = new Date().getMonth() + 1;
 
     if (values.document === "Cessão de uso de Notebook") {
@@ -223,7 +238,11 @@ export default function CreateDocument() {
     } else if (values.document === "Autorização Desconto") {
       document = await discountAuthorization(values.employeeDetails);
     } else if (values.document === "Abertura de Conta Corrente") {
-      document = await currentAccount(values.employeeDetails,currentAccountData.sign, dateObj);
+      document = await currentAccount(
+        values.employeeDetails,
+        currentAccountData.sign,
+        dateObj
+      );
     } else if (values.document === "Declaração de Renúncia VT") {
       document = await renouncesVT(values.employeeDetails);
     } else if (values.document === "Termo Adesão PPO") {
@@ -255,13 +274,13 @@ export default function CreateDocument() {
     } else if (values.document === "Termo de Responsabilidade TEU") {
       document = await termOfCardTEU(values.employeeDetails, teu, dateObj);
     } else if (values.document === "Contrato Expêriencia não vendedor") {
-      document = await experienceContract(values.employeeDetails)
+      document = await experienceContract(values.employeeDetails);
     } else if (values.document === "Termo de Prorrogação") {
-      document = await termOfProrrogation(values.employeeDetails)
+      document = await termOfProrrogation(values.employeeDetails);
     } else if (values.document === "Termo de Adesão do Benefício") {
-      document = await termOfBenefit(values.employeeDetails, dateObj)
-    }else {
-      Toast.Error("Documento não encontrado")
+      document = await termOfBenefit(values.employeeDetails, dateObj, benefit.type);
+    } else {
+      Toast.Error("Documento não encontrado");
       return;
     }
 
@@ -328,12 +347,12 @@ export default function CreateDocument() {
             />
           </CustomInput.Root>
           <CustomInput.Root columnSize={6}>
-          <CustomInput.DateInput
-            label="Data"
-            value={date}
-            onChange={handleDate}
-          />
-        </CustomInput.Root>
+            <CustomInput.DateInput
+              label="Data"
+              value={date}
+              onChange={handleDate}
+            />
+          </CustomInput.Root>
         </Form.Fragment>
       )}
       {values.document === "Termo de Entrega de Celular" && (
@@ -394,12 +413,12 @@ export default function CreateDocument() {
             />
           </CustomInput.Root>
           <CustomInput.Root columnSize={6}>
-          <CustomInput.DateInput
-            label="Data"
-            value={date}
-            onChange={handleDate}
-          />
-        </CustomInput.Root>
+            <CustomInput.DateInput
+              label="Data"
+              value={date}
+              onChange={handleDate}
+            />
+          </CustomInput.Root>
         </Form.Fragment>
       )}
       {values.document === "Advertência Disciplinar" && (
@@ -450,12 +469,12 @@ export default function CreateDocument() {
             />
           </CustomInput.Root>
           <CustomInput.Root columnSize={6}>
-          <CustomInput.DateInput
-            label="Data"
-            value={date}
-            onChange={handleDate}
-          />
-        </CustomInput.Root>
+            <CustomInput.DateInput
+              label="Data"
+              value={date}
+              onChange={handleDate}
+            />
+          </CustomInput.Root>
         </Form.Fragment>
       )}
       {values.document === "Termo de Responsabilidade TEU" && (
@@ -479,12 +498,26 @@ export default function CreateDocument() {
             />
           </CustomInput.Root>
           <CustomInput.Root columnSize={6}>
-          <CustomInput.DateInput
-            label="Data"
-            value={date}
-            onChange={handleDate}
-          />
-        </CustomInput.Root>
+            <CustomInput.DateInput
+              label="Data"
+              value={date}
+              onChange={handleDate}
+            />
+          </CustomInput.Root>
+        </Form.Fragment>
+      )}
+      {values.document === "Termo de Adesão do Benefício" && (
+        <Form.Fragment section="Informações do colaborador">
+          <CustomInput.Root columnSize={6}>
+            <CustomInput.Select
+              label="Tipo de Contrato"
+              type="text"
+              name="type"
+              value={benefit.type}
+              onChange={handleChangeBenefit}
+              options={type}
+            />
+          </CustomInput.Root>
         </Form.Fragment>
       )}
       {values.document === "Abertura de Conta Corrente" && (
@@ -500,12 +533,12 @@ export default function CreateDocument() {
             />
           </CustomInput.Root>
           <CustomInput.Root columnSize={6}>
-          <CustomInput.DateInput
-            label="Data"
-            value={date}
-            onChange={handleDate}
-          />
-        </CustomInput.Root>
+            <CustomInput.DateInput
+              label="Data"
+              value={date}
+              onChange={handleDate}
+            />
+          </CustomInput.Root>
         </Form.Fragment>
       )}
       <Form.Fragment section="Gerar documento">

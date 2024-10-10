@@ -3,7 +3,7 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { logo, logoFitoLog, logoNewsis } from "../../../assets/logos/logo";
 
-export const termOfBenefit = (employee, date) => {
+export const termOfBenefit = (employee, date, type) => {
 
   const verificaImagemDoDocumento = () => {
     if (employee.company === "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA") {
@@ -49,7 +49,7 @@ export const termOfBenefit = (employee, date) => {
         fontSize: 13,
       },
     {
-      text: `\n\nEu ${employee.name}, portador do CPF ${employee.cpf}, funcionário(a) da empresa ${employee.company}, autorizo o desconto na folha de pagamento mensal, referente as compras realizadas na farmácia São João, vinculadas ao convênio.\n\n`,
+      text: `\n\nEu ${employee.name}, portador do CPF ${employee.cpf}, funcionário(a) da empresa ${employee.company}, autorizo o desconto na ${type === "CLT" ? "folha de pagamento mensal" : "nota de prestação de serviço mensal"}, referente as compras realizadas na farmácia São João, vinculadas ao convênio.\n\n`,
       alignment: "justify",
       fontSize: 13,
     },
