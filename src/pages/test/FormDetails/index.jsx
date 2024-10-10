@@ -211,7 +211,7 @@ function SubmissionsTable({ id }) {
     );
     const trimestreAvaliadoField = columns.find(
       (column) =>
-        column.label === "Trimestre Avaliado" && column.type === "SelectField"
+        column.label === "Trimestre avaliado" && column.type === "SelectField"
     );
 
     const avaliadoComo = trimestreAvaliadoField
