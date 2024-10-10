@@ -105,4 +105,13 @@ export default class {
       return error;
     }
   }
+
+  async changePassword(employeeId, employeeData) {
+    try {
+      const response = await api.put(`/employeePassword/${employeeId}`, employeeData);
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }

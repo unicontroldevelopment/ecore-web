@@ -22,6 +22,7 @@ import { Checkbox } from "../../../components/ui/checkbox";
 import { DataTable } from "../../../components/ui/data-table";
 import { formPdf } from "../../../utils/pdf/forms/formPdf";
 import { columnsData } from "./columns/columns";
+import { columnsDataPPA } from "./columns/columnsPPAPPO";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 function FormDetails() {
@@ -86,8 +87,8 @@ function FormDetails() {
             <div className="w-full flex justify-center">
               <Card className="w-full max-w-2xl mt-4">
                 <CardContent className="flex flex-wrap justify-center gap-2 p-4">
-                  <VisitBtn shareUrl={form.shareUrl}/>
-                  <EditBtn id={id}/>
+                  <VisitBtn shareUrl={form.shareUrl} />
+                  <EditBtn id={id} />
                   <FormLinkShare shareUrl={form.shareUrl}>
                     Compartilhar
                   </FormLinkShare>
@@ -136,7 +137,7 @@ function SubmissionsTable({ id }) {
 
   const generatePdf = async (submission, columns) => {
     console.log(form);
-    
+
     const pdfByte = await formPdf(submission, columns, form);
 
     if (!pdfByte) {
@@ -194,10 +195,39 @@ function SubmissionsTable({ id }) {
 
   const rows = form.FormSubmissions.map((submission) => {
     const content = JSON.parse(submission.content);
+    const rowData = {};
+
+    columns.forEach((column) => {
+      const fieldValue = content[column.id];
+
+      if (fieldValue !== undefined) {
+        rowData[column.id] = fieldValue;
+      }
+    });
+
+    const valorRecebidoField = columns.find(
+      (column) =>
+        column.label === "Valor recebido" && column.type === "TextField"
+    );
+    const trimestreAvaliadoField = columns.find(
+      (column) =>
+        column.label === "Trimestre Avaliado" && column.type === "SelectField"
+    );
+
+    const avaliadoComo = trimestreAvaliadoField
+      ? content[trimestreAvaliadoField.id]
+      : null;
+    const notaDada = valorRecebidoField
+      ? content[valorRecebidoField.id]
+      : null;
+
+
     return {
       ...content,
       submittedAt: submission.createdAt,
       sendBy: submission.sendBy,
+      avaliatedAt: avaliadoComo,
+      valueNote: notaDada
     };
   });
 
@@ -209,19 +239,31 @@ function SubmissionsTable({ id }) {
     return;
   };
 
+  console.log("Tipo", form.type);
+  
+
   return (
     <div className="flex w-full h-screen bg-gray-100">
       {/* Sidebar de Envios */}
-      <div className="w-1/4 border-r border-gray-200 bg-white shadow-lg overflow-y-auto">
+      <div className="w-1/3 border-r border-gray-200 bg-white shadow-lg overflow-y-auto">
         <div className="py-6 px-4 bg-blue-600 text-white">
           <h2 className="text-2xl font-bold">Envios</h2>
         </div>
-        <DataTable
-          columns={columnsData}
-          data={rows}
-          onClick={handleClick}
-          onRowSelect={handleRowSelect}
-        />
+        {(form.type === "PPA" || form.type === "PPO") ? (
+          <DataTable
+            columns={columnsDataPPA}
+            data={rows}
+            onClick={handleClick}
+            onRowSelect={handleRowSelect}
+          />
+        ) : (
+          <DataTable
+            columns={columnsData}
+            data={rows}
+            onClick={handleClick}
+            onRowSelect={handleRowSelect}
+          />
+        )}
       </div>
 
       {/* Detalhes do Envio */}
@@ -364,14 +406,15 @@ function RowCell({ type, value }) {
       );
       break;
     case "ImagesField":
-
       node = <ImageGallery images={JSON.parse(value || "[]")} />;
       break;
     default:
       break;
   }
 
-  return <div className="flex items-center justify-between w-full gap-2">{node}</div>;
+  return (
+    <div className="flex items-center justify-between w-full gap-2">{node}</div>
+  );
 }
 
 function ImageGallery({ images }) {

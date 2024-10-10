@@ -1,22 +1,22 @@
 "use client";
 
 import {
-    flexRender,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    useReactTable,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
 } from "@tanstack/react-table";
 
 import { useState } from "react";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "../../components/ui/table";
 import { Button } from "./button";
 import { Input } from "./input";
@@ -60,7 +60,7 @@ export function DataTable({ columns, data, onClick, onRowSelect }) {
           onChange={(event) =>
             table.getColumn("sendBy")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w"
         />
       </div>
       <div className="rounded-md border">
