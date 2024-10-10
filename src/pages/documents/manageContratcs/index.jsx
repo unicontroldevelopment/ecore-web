@@ -110,7 +110,6 @@ export default function ManageContracts() {
 
       const d4SignRequest = await d4SignService.getAllContracts();
       const d4SignContracts = d4SignRequest.data;
-      console.log(dataContracts);
       
 
       const updatedContracts = await Promise.all(
@@ -121,7 +120,6 @@ export default function ManageContracts() {
 
           return {
             ...contract,
-            date: dayjs(contract.date).format('DD/MM/YYYY'),
             value: formatMoney(contract.value),
             d4SignData: d4SignDoc || null,
             clauses: contract.clauses.map((clause, index) => ({
@@ -132,8 +130,6 @@ export default function ManageContracts() {
           };
         })
       );
-
-      console.log(updatedContracts);
       
 
       setAllContracts(updatedContracts);
