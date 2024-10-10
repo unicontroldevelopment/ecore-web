@@ -110,6 +110,8 @@ export default function ManageContracts() {
 
       const d4SignRequest = await d4SignService.getAllContracts();
       const d4SignContracts = d4SignRequest.data;
+      console.log(dataContracts);
+      
 
       const updatedContracts = await Promise.all(
         dataContracts.map(async (contract) => {
@@ -119,6 +121,7 @@ export default function ManageContracts() {
 
           return {
             ...contract,
+            date: dayjs(contract.date).format('DD/MM/YYYY'),
             value: formatMoney(contract.value),
             d4SignData: d4SignDoc || null,
             clauses: contract.clauses.map((clause, index) => ({
@@ -129,6 +132,9 @@ export default function ManageContracts() {
           };
         })
       );
+
+      console.log(updatedContracts);
+      
 
       setAllContracts(updatedContracts);
       setContracts(updatedContracts);
@@ -699,12 +705,13 @@ export default function ManageContracts() {
         contractData
       );
 
-      if (response.status === 200) {
-        if (file && response) {
-          formData.append("id", updateData.id);
-          await utilsService.updatePDF(formData);
-          setFile(null);
-        }
+      if (file && response) {
+        formData.append("id", updateData.id);
+        await utilsService.updatePDF(formData);
+        setFile(null);
+      }
+
+      if (response) {
 
         await fetchContracts();
         Toast.Success("Contrato atualizado com sucesso!");
