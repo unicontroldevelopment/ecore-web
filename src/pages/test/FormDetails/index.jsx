@@ -135,7 +135,9 @@ function SubmissionsTable({ id }) {
   }
 
   const generatePdf = async (submission, columns) => {
-    const pdfByte = await formPdf(submission, columns);
+    console.log(form);
+    
+    const pdfByte = await formPdf(submission, columns, form);
 
     if (!pdfByte) {
       console.error("PDF byte array is null or undefined");
@@ -183,8 +185,6 @@ function SubmissionsTable({ id }) {
           required: element.extraAtribbutes?.required,
           type: element.type,
         });
-        console.log(columns);
-        console.log(element);
 
         break;
       default:
@@ -364,7 +364,6 @@ function RowCell({ type, value }) {
       );
       break;
     case "ImagesField":
-      console.log("Entrou imagem", value);
 
       node = <ImageGallery images={JSON.parse(value || "[]")} />;
       break;
@@ -372,7 +371,7 @@ function RowCell({ type, value }) {
       break;
   }
 
-  return <div className="flex items-center gap-2">{node}</div>;
+  return <div className="flex items-center justify-between w-full gap-2">{node}</div>;
 }
 
 function ImageGallery({ images }) {

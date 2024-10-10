@@ -26,7 +26,7 @@ function FormSubmit() {
 
   const formContent = form && form.content ? JSON.parse(form.content || "[]") : [];
 
-  return <FormSubmitComponent formUrl={id} content={formContent} />;
+  return <FormSubmitComponent formUrl={id} content={formContent} type={form.type}/>;
 }
 
 export default FormSubmit;

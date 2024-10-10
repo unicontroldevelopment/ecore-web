@@ -9,7 +9,7 @@ import FormElements from "../formBuilder/FormElements";
 import { Toast } from "../toasts";
 import { Button } from "../ui/button";
 
-function FormSubmitComponent({ formUrl, content }) {
+function FormSubmitComponent({ formUrl, content, type }) {
   const formValues = useRef({});
   const formErrors = useRef({});
   const [renderKey, setRenderKey] = useState(new Date().getTime());
@@ -83,7 +83,7 @@ function FormSubmitComponent({ formUrl, content }) {
 
   if (submitted) {
     return (
-      <div className="flex justify-center w-full h-full items-center p-8">
+      <div className="flex justify-center w-full h-full items-center p-8 bg-blue-400">
         <div className="max-w-[620px] flex flex-col gap-4 flex-grow bg-background w-full p-8 overflow-y-auto border shadow-xl shadow-gray-500 rounded">
           <h1 className="text-2xl font-bold">Formulário enviado</h1>
           <p className="text-muted-foreground">
@@ -97,7 +97,11 @@ function FormSubmitComponent({ formUrl, content }) {
 
   return (
     <div className="flex flex-col justify-center w-full h-full items-center p-8 bg-blue-400">
-      <img src={logo} alt="Logo" className="max-w-[450px] max-h-[80px] flex flex-col mb-5"/>
+      <img
+        src={logo}
+        alt="Logo"
+        className="max-w-[450px] max-h-[80px] flex flex-col mb-5"
+      />
       <div
         key={renderKey}
         className="max-w-[620px] flex flex-col gap-4 flex-grow bg-background w-full p-8 overflow-y-auto border shadow-xl shadow-gray-500 rounded"
@@ -120,7 +124,7 @@ function FormSubmitComponent({ formUrl, content }) {
           disabled={pending}
         >
           {!pending && (
-            <div>
+            <div className="flex justify-between">
               <HiCursorClick className="mr-2" />
               Enviar
             </div>
@@ -133,13 +137,24 @@ function FormSubmitComponent({ formUrl, content }) {
         <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-lg">
             <h2 className="text-xl font-bold mb-4">Confirmação de Envio</h2>
-            <p className="mb-4">Por favor, insira seu nome antes de enviar o formulário:</p>
+            {type === "PPA" || type === "PPO" ? (
+              <p className="mb-4">
+                Por favor, insira o nome de quem vai ser avaliado:
+              </p>
+            ) : (
+              <p className="mb-4">
+                Por favor, insira seu nome antes de enviar o formulário:
+              </p>
+            )}
+
             <input
               type="text"
               value={senderName}
               onChange={(e) => setSenderName(e.target.value)}
-              className={`border p-2 w-full mb-4 ${nameError ? 'border-red-500' : ''}`}
-              placeholder="Seu nome"
+              className={`border p-2 w-full mb-4 ${
+                nameError ? "border-red-500" : ""
+              }`}
+              placeholder="Nome"
             />
             {nameError && (
               <p className="text-red-500 text-sm mb-4">{nameError}</p>
@@ -152,7 +167,9 @@ function FormSubmitComponent({ formUrl, content }) {
                 Cancelar
               </Button>
               <Button
-                onClick={() => {startTransition(handleConfirmSubmit)}}
+                onClick={() => {
+                  startTransition(handleConfirmSubmit);
+                }}
               >
                 Confirmar Envio
               </Button>
