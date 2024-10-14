@@ -10,11 +10,20 @@ const UserTypeProvider = ({ children }) => {
   const updateUserData = useCallback((data) => {
     setUserData(data);
     localStorage.setItem("user", JSON.stringify(data));
+    if (data && data.id) {
+      setUserId(data.id);
+      localStorage.setItem("userId", data.id);
+    }
   }, []);
 
   const updateUserType = useCallback((type) => {
     setUserType(type);
     localStorage.setItem("userType", JSON.stringify(type));
+  }, []);
+
+  const updateUserId = useCallback((id) => {
+    setUserId(id);
+    localStorage.setItem("userId", id);
   }, []);
 
   const clearUserData = useCallback(() => {
@@ -33,14 +42,26 @@ const UserTypeProvider = ({ children }) => {
 
     if (storedUserType) setUserType(JSON.parse(storedUserType));
     if (storedUserId) setUserId(storedUserId);
-    if (storedUserData) setUserData(JSON.parse(storedUserData));
+    if (storedUserData) {
+      const parsedUserData = JSON.parse(storedUserData);
+      setUserData(parsedUserData);
+      if (parsedUserData && parsedUserData.id) {
+        setUserId(parsedUserData.id);
+      }
+    }
   }, []);
 
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "userId") setUserId(e.newValue);
       if (e.key === "userType") setUserType(JSON.parse(e.newValue));
-      if (e.key === "user") setUserData(JSON.parse(e.newValue));
+      if (e.key === "user") {
+        const parsedUserData = JSON.parse(e.newValue);
+        setUserData(parsedUserData);
+        if (parsedUserData && parsedUserData.id) {
+          setUserId(parsedUserData.id);
+        }
+      }
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -53,7 +74,7 @@ const UserTypeProvider = ({ children }) => {
         userType, 
         setUserType: updateUserType, 
         userId, 
-        setUserId, 
+        setUserId: updateUserId, 
         userData, 
         updateUserData,
         clearUserData
@@ -65,3 +86,4 @@ const UserTypeProvider = ({ children }) => {
 };
 
 export { UserTypeContext, UserTypeProvider };
+
