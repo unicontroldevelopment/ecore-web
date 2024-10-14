@@ -440,6 +440,16 @@ export default function AdditiveAndReajustment() {
     }));
   };
 
+  const handleAddClickSelected = () => {
+    setSelectAdditive((prevContract) => ({
+      ...prevContract,
+      additive_Clauses: [
+        ...prevContract.additive_Clauses,
+        { id: Date.now(), description: "", isExpanded: false },
+      ],
+    }));
+  };
+
   const toggleExpandAdditive = (id) => {
     setAdditive((prevContract) => ({
       ...prevContract,
@@ -1514,7 +1524,7 @@ export default function AdditiveAndReajustment() {
                 variant="contained"
                 style={{ marginBottom: "20px" }}
                 color="primary"
-                onClick={handleAddClick}
+                onClick={handleAddClickSelected}
               >
                 Adicionar Cláusula
               </Button>
