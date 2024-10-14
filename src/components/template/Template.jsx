@@ -75,9 +75,8 @@ const Template = (props) => {
     form
       .validateFields()
       .then(async (values) => {
-        
-        const response = await service.changePassword(userData.id, values)
-        if(response.status === 200) {
+        const response = await service.changePassword(userData.id, values);
+        if (response.status === 200) {
           Toast.Success("Senha alterada com sucesso!");
         }
         setIsModalVisible(false);
@@ -284,7 +283,7 @@ const Template = (props) => {
         }}
       >
         <h3 style={{ margin: 0, fontSize: 18, fontWeight: 500 }}>
-          Olá, <strong>{userData.name ? userData.name : "Usuário"}</strong>
+          Olá, <strong>{userData?.name || "Usuário"}</strong>
         </h3>
       </div>
       <Menu
@@ -405,7 +404,7 @@ const Template = (props) => {
               onClick={() => backToLastPage(-1)}
             />
           </Space>
-          <Dropdown  overlay={userMenu} trigger={["click"]}>
+          <Dropdown overlay={userMenu} trigger={["click"]}>
             <Space className="trigger" style={{ float: "right" }}>
               <UserOutlined style={{ color: "#fff" }} />
             </Space>
