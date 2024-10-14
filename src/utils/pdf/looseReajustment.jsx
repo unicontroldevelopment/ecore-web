@@ -134,6 +134,7 @@ export const LooseReajustmentPDF = (index, type, signOnContract, value, name, da
 
   const docDefinition = {
     pageSize: "A4",
+    pageMargins: [40, 100, 40, 40],
     background: background
       ? {
           image: background,
@@ -144,7 +145,7 @@ export const LooseReajustmentPDF = (index, type, signOnContract, value, name, da
       : undefined,
     content: [
       {
-        text: `\n\n\n\n\n${
+        text: `${
           tecSign.city
         }, ${new Date().getDate()} de ${Formats.ExtenseMonth(
           date
