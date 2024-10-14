@@ -146,6 +146,7 @@ export const Additive = (
 
   const docDefinition = {
     pageSize: "A4",
+    pageMargins: [40, 100, 40, 40],
     background: background
     ? {
         image: background,
@@ -156,7 +157,7 @@ export const Additive = (
     : undefined,
     content: [
       {
-        text: "\n\n\n\n\n\nADITIVO DE PRESTAÇÃO DE SERVIÇOS \n\n",
+        text: "ADITIVO DE PRESTAÇÃO DE SERVIÇOS \n\n",
         fontSize: 13,
         bold: true,
         alignment: "center",

@@ -133,6 +133,7 @@ export const Reajustment = (index, type, signOnContract, value, name, date, text
 
   const docDefinition = {
     pageSize: "A4",
+    pageMargins: [40, 100, 40, 40],
     background: background
     ? {
         image: background,
@@ -143,7 +144,7 @@ export const Reajustment = (index, type, signOnContract, value, name, date, text
     : undefined,
     content: [
       {
-        text: `\n\n\n\n\n${tecSign.city}, ${new Date().getDate()} de ${Formats.ExtenseMonth(
+        text: `${tecSign.city}, ${new Date().getDate()} de ${Formats.ExtenseMonth(
           date
         )} de ${new Date().getFullYear()}.`,
         alignment: "right",
