@@ -35,6 +35,7 @@ export async function createForm(data) {
 }
 
 export async function getForms(formId = "", type) {
+  
     const form = await service.getForms( formId, type );
 
     return form.data.listForms;

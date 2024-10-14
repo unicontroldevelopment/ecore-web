@@ -50,7 +50,7 @@ import FormService from "../../../services/FormService";
             return role.role.name;
           }
           return role;
-        });
+        }); 
   
         const roles = ["Master"];
   
