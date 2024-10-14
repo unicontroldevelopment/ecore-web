@@ -47,88 +47,84 @@ export const Reajustment = (index, type, signOnContract, value, name, date, text
 
   let background;
 
-  if (tecSign.socialReason === "UNICONTROL CONTROLE DE PRAGAS LTDA") {
+  if (tecSign.id === 1) {
     background = canoas;
   } else if (
-    tecSign.socialReason ===
-    "FRANPRAG BACIA DO JACUI RS 06 - CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 2
   ) {
     background = baciaDoJacui;
-  } else if (tecSign.socialReason === "EVERTON LISANDRO DE OLIVEIRA MESQUITA") {
+  } else if (tecSign.id === 3) {
     background = poaZN;
   } else if (
-    tecSign.socialReason === "FRANPRAG VACARIA RS 01 - CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 4
   ) {
     background = vacaria;
   } else if (
-    tecSign.socialReason ===
-    "FRANPRAG SAO LOURENCO DO OESTE SC 05 - CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 5
   ) {
     background = saoLourenco;
   } else if (
-    tecSign.socialReason ===
-    "FRANPRAG VALE DOS SINOS RS 03 CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 6
   ) {
     background = valeDosSinos;
   } else if (
-    tecSign.socialReason === "FRANPRAG MASTER SPA 11 CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 7
   ) {
     background = master;
   } else if (
-    tecSign.socialReason === "FRANPRAG ERECHIM RS 04 CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 8
   ) {
     background = erechim;
   } else if (
-    tecSign.socialReason ===
-    "FRANPRAG CANAA DOS CARAJAS PA 22 - CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 9
   ) {
     background = canaa;
-  } else if (tecSign.socialReason === "QUALITY CONTROLE DE PRAGAS LTDA") {
+  } else if (
+    tecSign.id === 10
+  ) {
     background = floresDaCunha;
   } else if (
-    tecSign.socialReason ===
-    "FRANPRAG PRESIDENTE LUCENA RS 30 - CONTROLE DE PRAGAS"
+    tecSign.id === 11
   ) {
     background = lucena;
   } else if (
-    tecSign.socialReason ===
-    "FRANPRAG CANOAS CENTRO RS 27 - CONTROLE DE PRAGAS "
+    tecSign.id === 12
   ) {
     background = canoas;
   } else if (
-    tecSign.socialReason === "UNICONTROL PASTEUR CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 13
   ) {
     background = orizona;
   } else if (
-    tecSign.socialReason === "FRANPRAG ESTEIO RS 28 - CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 14
   ) {
     background = esteio;
   } else if (
-    tecSign.socialReason ===
-    "FRANPRAG POA CENTRO RS 25 - CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 15
   ) {
     background = poaCentro;
   } else if (
-    tecSign.socialReason === "UNICONTROL BARDEEN CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 16
   ) {
     background = recife;
   } else if (
-    tecSign.socialReason === "FRANPRAG BAURU SP 17 CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 17
   ) {
     background = bauru;
   } else if (
-    tecSign.socialReason === "FRANPRAG BAURU SP 17 CONTROLE DE PRAGAS LTDA"
+    tecSign.id === 18
   ) {
     background = limao;
-  } else if (tecSign.socialReason === "FRANPRAG SAO LEOPOLDO RS 07 - CONTROLE DE PRAGAS LTDA") { 
+  } else if (tecSign.id === 19) { 
     background = saoLeopoldo;
-  } else if (tecSign.socialReason === "FRANPRAG ARARAS SP 34 CONTROLE DE PRAGAS LTDA") { 
+  } else if (tecSignid === 20) { 
     background = araras;
-  } else if (tecSign.socialReason === "UNICONTROL CARSON CONTROLE DE PRAGAS LTDA") { 
+  } else if (tecSign.id === 21) { 
     background = rioGrande;
   } else {
     background= undefined
   }
+  
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
   const docDefinition = {
