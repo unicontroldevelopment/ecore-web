@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const navigate = useNavigate();
-  const context = React.useContext(UserTypeContext);
+  const { setUserType, updateUserData, clearUserData } = React.useContext(UserTypeContext);
 
   React.useEffect(() => {
     const handle = async () => {
@@ -25,21 +25,17 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("token");
       if (recoveredUser && token) {
         setUser(recoveredUser);
-        await context.setUserType(
-          recoveredUser.role.map((role) => role.role.name)
-        );
+        await setUserType(recoveredUser.role.map((role) => role.role.name));
         api.defaults.headers.Authorization = `Bearer ${token}`;
       }
       setLoading(false);
     };
     handle();
-  }, []);
+  }, [setUserType]);
 
   const logoutAuth = () => {
-    localStorage.removeItem("user");
     localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    context.setUserType(null);
+    clearUserData();
     api.defaults.headers.Authorization = null;
     setUser(null);
     Toast.Info("Logue-se para acessar o sistema!");
@@ -52,20 +48,16 @@ export const AuthProvider = ({ children }) => {
 
       if (response.response?.status === 422) {
         Toast.Error(response.response.data.message);
-        console.log("Aqui");
       } else if (response.response?.status === 500) {
         Toast.Error("E-mail incorreto ou não cadastrado!");
       } else {
         const loggedUser = response.data.user;
         const token = response.data.token;
   
-        context.setUserType(loggedUser.role);
-        localStorage.setItem("user", JSON.stringify(loggedUser));
+        setUserType(loggedUser.role.map(role => role.role.name));
+        updateUserData(loggedUser);
         localStorage.setItem("token", token);
-        localStorage.setItem("userId", loggedUser.id);
-        console.log("Logado", loggedUser.id);
         
-  
         api.defaults.headers.Authorization = `Bearer ${token}`;
         setUser(loggedUser);
         navigate("/dashboard");
