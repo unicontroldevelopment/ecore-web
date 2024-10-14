@@ -117,14 +117,14 @@ export const Reajustment = (index, type, signOnContract, value, name, date, text
     background = limao;
   } else if (tecSign.id === 19) { 
     background = saoLeopoldo;
-  } else if (tecSignid === 20) { 
+  } else if (tecSign.id === 20) { 
     background = araras;
   } else if (tecSign.id === 21) { 
     background = rioGrande;
   } else {
     background= undefined
   }
-  
+
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
   const docDefinition = {

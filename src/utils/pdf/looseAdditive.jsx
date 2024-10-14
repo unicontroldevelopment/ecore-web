@@ -133,7 +133,7 @@ export const LooseAdditivePDF = (
     background = limao;
   } else if (tecSign.id === 19) { 
     background = saoLeopoldo;
-  } else if (tecSignid === 20) { 
+  } else if (tecSign.id === 20) { 
     background = araras;
   } else if (tecSign.id === 21) { 
     background = rioGrande;
