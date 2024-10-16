@@ -1,23 +1,21 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
 
 import logo_slogan from "../../assets/logo_slogan.png";
-import { AuthContext } from "../../contexts/Auth";
 import Loading from "../../components/animations/Loading";
+import { AuthContext } from "../../contexts/Auth";
 
-import TextField from "@mui/material/TextField";
-import InputAdornment from "@mui/material/InputAdornment";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
-import { Row, Col, Button } from "antd";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
+import { Button, Col, Row } from "antd";
 
-import { Subtitle, Title, CenteredDiv, LeftDiv, RightDiv } from "./styles";
+import { Toast } from "../../components/toasts";
+import { CenteredDiv, LeftDiv, RightDiv, Subtitle, Title } from "./styles";
 
 const Login = () => {
   const { loginAuth, logoutAuth } = React.useContext(AuthContext);
-
-  const navigate = useNavigate();
 
   const [loading, setLoading] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(false);
@@ -30,7 +28,7 @@ const Login = () => {
   }, []);
 
   const forgetPassword = () => {
-    navigate("/forget-password");
+    Toast.Info("E-mail enviado com as informações da sua senha")
   };
 
   const handleSubmit = async (event) => {

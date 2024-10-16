@@ -25,6 +25,7 @@ const propertiesSchema = z.object({
   helperText: z.string().max(200),
   required: z.boolean().default(false),
   placeHolder: z.string().max(50),
+  disabled: z.boolean().default(false),
 });
 
 export const TextFieldFormElement = {
@@ -82,7 +83,11 @@ const DesignerComponent = ({ elementInstance }) => {
         {label}
         {required && "*"}
       </Label>
-      <Input readOnly disabled placeholder={placeHolder}/>
+      <Input
+        readOnly
+        disabled={elementInstance.extraAtribbutes.disabled}
+        placeholder={placeHolder}
+      />
       {helperText && (
         <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>
       )}
@@ -130,6 +135,7 @@ const FormComponent = ({
           submitValue(elementInstance.id, e.target.value);
         }}
         value={value}
+        disabled={elementInstance.extraAtribbutes.disabled}
       />
       {helperText && (
         <p
@@ -171,6 +177,7 @@ const PropertiesComponent = ({ elementInstance }) => {
         helperText: values.helperText,
         required: values.required,
         placeHolder: values.placeHolder,
+        disabled: values.disabled,
       },
     });
   }
@@ -250,6 +257,27 @@ const PropertiesComponent = ({ elementInstance }) => {
                 <FormLabel>Requer?</FormLabel>
                 <FormDescription>
                   O Titulo do campo <br /> Irá aparecer acima do campo
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="disabled"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+              <div className="space-y0.5">
+                <FormLabel>Desabilitar Campo?</FormLabel>
+                <FormDescription>
+                  Marque se deseja desabilitar o campo de entrada
                 </FormDescription>
               </div>
               <FormControl>

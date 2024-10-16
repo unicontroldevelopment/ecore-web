@@ -11,6 +11,7 @@ import { Table } from "antd";
         title: column.title,
         dataIndex: column.dataIndex,
         key: column.key || 1 + index,
+        sorter: column.sorter,
         render: column.render,
       })),
     ];

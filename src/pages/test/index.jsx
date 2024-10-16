@@ -1,16 +1,11 @@
 import { formatDistance } from "date-fns";
 import { pt } from "date-fns/locale";
-import {
-  Suspense,
-  useContext,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
+import React, { Suspense, useCallback, useContext, useEffect, useState } from "react";
 import { BiRightArrowAlt } from "react-icons/bi";
 import { FaEdit, FaTrashAlt, FaWpforms } from "react-icons/fa";
 import { LuView } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
+
 import Loading from "../../components/animations/Loading";
 import CreateFormBtn from "../../components/formController/CreateFormBtn";
 import { getForms } from "../../components/formController/Form";
@@ -39,45 +34,39 @@ import {
 import { Separator } from "../../components/ui/separator";
 import { Skeleton } from "../../components/ui/skeleton";
 import { UserTypeContext } from "../../contexts/UserTypeContext";
-import FormService from "../../services/FormService";
+import { useDeleteForm } from "../../hooks/useDeleteForm";
 
+const MASTER_ROLE = "Master";
 function Teste() {
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isMaster, setIsMaster] = useState(false);
   const { userId, userType } = useContext(UserTypeContext);
 
-  const fetchForms = async () => {
+  const fetchForms = useCallback(async () => {
     setLoading(true);
     try {
       if (!Array.isArray(userType) || !userType.length) return;
 
-      const userRoles = userType.map((role) => {
-        if (typeof role === "object" && role.role) {
-          return role.role.name;
-        }
-        return role;
-      });
+      const userRoles = userType.map((role) => 
+        typeof role === "object" && role.role ? role.role.name : role
+      );
 
-      const roles = ["Master"];
+      const hasRole = userRoles.includes(MASTER_ROLE);
 
-      const hasRole = userRoles.some((userRole) => roles.includes(userRole));
-
-      setIsMaster(hasRole);
       const data = await getForms(hasRole ? null : userId, "Public");
 
       setForms(data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       Toast.Error("Erro ao carregar formulários");
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, userType]);
 
   useEffect(() => {
     fetchForms();
-  }, [userId, userType]);
+  }, [fetchForms]);
 
   if (loading) {
     return <Loading />;
@@ -113,24 +102,13 @@ function FormCardsSkeleton() {
   );
 }
 
-function FormCard({ form, onDelete }) {
-  const [loading, startTransition] = useTransition();
-  const service = new FormService();
+const FormCard = React.memo(function FormCard({ form, onDelete }) {
   const navigate = useNavigate();
+  const { deleteForm, loading } = useDeleteForm(form.id, onDelete);
 
   if (!form || !form.name) {
     return <div>Sem informações do formulário</div>;
   }
-
-  const handleDelete = async () => {
-    try {
-      await service.delete(form.id);
-      Toast.Success("Formulário deletado!");
-      onDelete();
-    } catch (error) {
-      Toast.Error("Erro ao deletar formulário!");
-    }
-  };
 
   return (
     <Card>
@@ -165,7 +143,7 @@ function FormCard({ form, onDelete }) {
                     disabled={loading}
                     onClick={(e) => {
                       e.preventDefault();
-                      startTransition(handleDelete);
+                      deleteForm();
                     }}
                   >
                     Excluir {loading && <Loading />}
@@ -209,6 +187,7 @@ function FormCard({ form, onDelete }) {
       </CardFooter>
     </Card>
   );
-}
+});
 
 export default Teste;
+

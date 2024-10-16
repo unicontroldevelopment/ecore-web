@@ -192,8 +192,6 @@ export default function ListEmployee() {
   };
 
   const handleUpdate = (user) => {
-    console.log("User", user);
-
     setSelectUser(user);
     setIsModalVisibleUpdate(true);
   };
@@ -213,11 +211,13 @@ export default function ListEmployee() {
       title: "Nome",
       dataIndex: "name",
       key: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: "Cargo",
       dataIndex: "office",
       key: "office",
+      sorter: (a, b) => a.office.localeCompare(b.office),
     },
   ];
 

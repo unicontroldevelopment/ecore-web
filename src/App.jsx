@@ -31,6 +31,7 @@ import ManageEmployeeInfo from "./pages/employees/manageEmployeeInfo";
 import WorkingHours from "./pages/employees/workingHours";
 import Login from "./pages/login/Login";
 import PPA from "./pages/PPA-PPO/PPA";
+import PPC from "./pages/PPA-PPO/PPC";
 import PPO from "./pages/PPA-PPO/PPO";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
@@ -160,7 +161,7 @@ const App = () => {
                   }
                 />
                 <Route
-                  path="/PPA-PPO/PPA"
+                  path="/PPA-PPO-PPC/PPA"
                   element={
                     <PrivatePage>
                       <Template>
@@ -170,7 +171,17 @@ const App = () => {
                   }
                 />
                 <Route
-                  path="/PPA-PPO/PPO"
+                  path="/PPA-PPO-PPC/PPC"
+                  element={
+                    <PrivatePage>
+                      <Template>
+                        <PPC />
+                      </Template>
+                    </PrivatePage>
+                  }
+                />
+                <Route
+                  path="/PPA-PPO-PPC/PPO"
                   element={
                     <PrivatePage>
                       <Template>
@@ -178,7 +189,7 @@ const App = () => {
                       </Template>
                     </PrivatePage>
                   }
-                />                
+                />
                 <Route
                   path="/emails/create"
                   element={

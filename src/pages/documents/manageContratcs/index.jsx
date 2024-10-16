@@ -68,6 +68,7 @@ export default function ManageContracts() {
   const [filter, setFilter] = React.useState({
     name: "",
     d4sign: "",
+    franchise: "",
     type: "Contrato",
   });
   const [file, setFile] = React.useState();
@@ -181,6 +182,29 @@ export default function ManageContracts() {
 
     setContracts(filteredContracts);
   }, [filter.name]);
+
+  React.useEffect(() => {
+    const filteredContracts = allContracts.filter((contract) => {
+      // Verifique se há assinaturas no contrato
+      if (!contract.signOnContract || contract.signOnContract.length === 0) {
+        return false;
+      }
+  
+      // Procure por uma assinatura que corresponda ao filtro de franquia
+      const matchingSignature = contract.signOnContract.find((signature) => {
+        if (signature.Contract_Signature && signature.Contract_Signature.socialReason) {
+          return signature.Contract_Signature.socialReason
+            .toLowerCase()
+            .includes(filter.franchise.toLowerCase());
+        }
+        return false;
+      });
+  
+      return !!matchingSignature;
+    });
+  
+    setContracts(filteredContracts);
+  }, [filter.franchise, allContracts]);
 
   React.useEffect(() => {
     const filteredContracts = allContracts.filter((contract) => {
@@ -992,11 +1016,13 @@ export default function ManageContracts() {
       title: "Cliente",
       dataIndex: "name",
       key: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: "Nº Contrato",
       dataIndex: "contractNumber",
       key: "contractNumber",
+      sorter: (a, b) => a.contractNumber - b.contractNumber,
     },
     {
       title: "D4Sign",
@@ -1076,12 +1102,21 @@ export default function ManageContracts() {
       {loading && <Loading />}
       <Table.Root title="Lista de Contratos">
         <Filter.Fragment section="Filtro">
-          <CustomInput.Root columnSize={18}>
+          <CustomInput.Root columnSize={12}>
             <Filter.FilterInput
               label="Nome do Cliente"
               name="name"
               onChange={handleChangeFilter}
               value={filter.name}
+            />
+          </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+            <Filter.Select
+              label="Franquia"
+              name="franchise"
+              onChange={handleChangeFilter}
+              value={filter.franchise}
+              options={signs.map((sign) => sign.socialReason)}
             />
           </CustomInput.Root>
           <CustomInput.Root columnSize={6}>

@@ -213,11 +213,15 @@ const Template = (props) => {
       items: [
         {
           key: "6-1",
-          label: <Link to="/PPA-PPO/PPA">PPA</Link>,
+          label: <Link to="/PPA-PPO-PPC/PPA">PPA</Link>,
         },
         {
           key: "6-2",
-          label: <Link to="/PPA-PPO/PPO">PPO</Link>,
+          label: <Link to="/PPA-PPO-PPC/PPO">PPO</Link>,
+        },
+        {
+          key: "6-3",
+          label: <Link to="/PPA-PPO-PPC/PPC">PPC</Link>,
         },
       ],
     },

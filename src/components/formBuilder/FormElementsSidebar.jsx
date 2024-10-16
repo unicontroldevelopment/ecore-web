@@ -23,6 +23,7 @@ function FormElementsSidebar() {
         <SiderBarBtnElement formElement={FormElements.CheckboxField} />
         <SiderBarBtnElement formElement={FormElements.EmojiField} />
         <SiderBarBtnElement formElement={FormElements.ImagesField} />
+        <SiderBarBtnElement formElement={FormElements.CalculatorField} />
       </div>
     </div>
   );

@@ -78,11 +78,19 @@ export default function WorkingHours() {
       title: "Laudo",
       dataIndex: "cod_lau",
       key: "cod_lau",
+      sorter: (a, b) => a.cod_lau - b.cod_lau,
     },
     {
       title: "Início",
       key: "ini_lau",
       dataIndex: "ini_lau",
+      sorter: (a, b) => {
+        const dateA = dayjs(a.ini_lau, ["DD/MM/YYYY HH:mm", "YYYY-MM-DD HH:mm:ss"]);
+        const dateB = dayjs(b.ini_lau, ["DD/MM/YYYY HH:mm", "YYYY-MM-DD HH:mm:ss"]);
+        return dateA.isValid() && dateB.isValid()
+          ? dateA.valueOf() - dateB.valueOf()
+          : 0;  // Se a data não for válida, não faz nada
+      },
       render: (text) => {
         const parsedDate = dayjs(text, [
           "DD/MM/YYYY HH:mm",
@@ -97,6 +105,13 @@ export default function WorkingHours() {
       title: "Fim",
       key: "fim_lau",
       dataIndex: "fim_lau",
+      sorter: (a, b) => {
+        const dateA = dayjs(a.fim_lau, ["DD/MM/YYYY HH:mm", "YYYY-MM-DD HH:mm:ss"]);
+        const dateB = dayjs(b.fim_lau, ["DD/MM/YYYY HH:mm", "YYYY-MM-DD HH:mm:ss"]);
+        return dateA.isValid() && dateB.isValid()
+          ? dateA.valueOf() - dateB.valueOf()
+          : 0;
+      },
       render: (text) => {
         const parsedDate = dayjs(text, [
           "DD/MM/YYYY HH:mm",
@@ -111,6 +126,17 @@ export default function WorkingHours() {
       title: "Duração",
       dataIndex: "duracao",
       key: "duracao",
+      sorter: (a, b) => {
+        const startA = dayjs(a.ini_lau, ["DD/MM/YYYY HH:mm", "YYYY-MM-DD HH:mm:ss"]);
+        const endA = dayjs(a.fim_lau, ["DD/MM/YYYY HH:mm", "YYYY-MM-DD HH:mm:ss"]);
+        const durationA = endA.isValid() && startA.isValid() ? endA.diff(startA) : 0;
+    
+        const startB = dayjs(b.ini_lau, ["DD/MM/YYYY HH:mm", "YYYY-MM-DD HH:mm:ss"]);
+        const endB = dayjs(b.fim_lau, ["DD/MM/YYYY HH:mm", "YYYY-MM-DD HH:mm:ss"]);
+        const durationB = endB.isValid() && startB.isValid() ? endB.diff(startB) : 0;
+    
+        return durationA - durationB;
+      },
       render: (_, record) => {
         const startDate = dayjs(record.ini_lau, [
           "DD/MM/YYYY HH:mm",
@@ -120,22 +146,22 @@ export default function WorkingHours() {
           "DD/MM/YYYY HH:mm",
           "YYYY-MM-DD HH:mm:ss",
         ]);
-
+    
         if (!startDate.isValid() || !endDate.isValid()) {
           return "Data inválida";
         }
-
+    
         const diff = dayjs.duration(endDate.diff(startDate));
-
+    
         const days = diff.days();
         const hours = diff.hours();
         const minutes = diff.minutes();
-
+    
         const parts = [];
         if (days > 0) parts.push(`${days}d`);
         if (hours > 0 || days > 0) parts.push(`${hours}h`);
         parts.push(`${minutes}m`);
-
+    
         return parts.join(" ");
       },
     },
@@ -143,11 +169,13 @@ export default function WorkingHours() {
       title: "Funcionário",
       dataIndex: "nom_adm",
       key: "nom_adm",
+      sorter: (a, b) => a.nom_adm.localeCompare(b.nom_adm),
     },
     {
       title: "Cliente",
       dataIndex: "razao_social",
       key: "razao_social",
+      sorter: (a, b) => a.razao_social.localeCompare(b.razao_social),
     },
   ];
 

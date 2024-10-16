@@ -21,6 +21,8 @@ import { Card, CardContent } from "../../../components/ui/card";
 import { Checkbox } from "../../../components/ui/checkbox";
 import { DataTable } from "../../../components/ui/data-table";
 import { formPdf } from "../../../utils/pdf/forms/formPdf";
+import { columnsDataPPC } from "./columns/columnPPC";
+import { columnsDataPPO } from "./columns/columnPPO";
 import { columnsData } from "./columns/columns";
 import { columnsDataPPA } from "./columns/columnsPPAPPO";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -214,20 +216,24 @@ function SubmissionsTable({ id }) {
         column.label === "Trimestre avaliado" && column.type === "SelectField"
     );
 
+    const mesAvaliadoField = columns.find(
+      (column) =>
+        column.label === "Mês avaliado" && column.type === "SelectField"
+    );
+
     const avaliadoComo = trimestreAvaliadoField
       ? content[trimestreAvaliadoField.id]
+      : mesAvaliadoField
+      ? content[mesAvaliadoField.id]
       : null;
-    const notaDada = valorRecebidoField
-      ? content[valorRecebidoField.id]
-      : null;
-
+    const notaDada = valorRecebidoField ? content[valorRecebidoField.id] : null;
 
     return {
       ...content,
       submittedAt: submission.createdAt,
       sendBy: submission.sendBy,
       avaliatedAt: avaliadoComo,
-      valueNote: notaDada
+      valueNote: notaDada,
     };
   });
 
@@ -239,9 +245,6 @@ function SubmissionsTable({ id }) {
     return;
   };
 
-  console.log("Tipo", form.type);
-  
-
   return (
     <div className="flex w-full h-screen bg-gray-100">
       {/* Sidebar de Envios */}
@@ -249,14 +252,31 @@ function SubmissionsTable({ id }) {
         <div className="py-6 px-4 bg-blue-600 text-white">
           <h2 className="text-2xl font-bold">Envios</h2>
         </div>
-        {(form.type === "PPA" || form.type === "PPO") ? (
+        {form.type === "PPA" && (
           <DataTable
             columns={columnsDataPPA}
             data={rows}
             onClick={handleClick}
             onRowSelect={handleRowSelect}
           />
-        ) : (
+        )}
+        {form.type === "PPO" && (
+          <DataTable
+            columns={columnsDataPPO}
+            data={rows}
+            onClick={handleClick}
+            onRowSelect={handleRowSelect}
+          />
+        )}
+        {form.type === "PPC" && (
+          <DataTable
+            columns={columnsDataPPC}
+            data={rows}
+            onClick={handleClick}
+            onRowSelect={handleRowSelect}
+          />
+        )}
+        {form.type === "Public" && (
           <DataTable
             columns={columnsData}
             data={rows}

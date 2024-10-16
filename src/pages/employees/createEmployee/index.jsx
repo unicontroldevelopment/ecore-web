@@ -153,25 +153,21 @@ export default function CreateEmployee() {
     } else if (name === "initialWage") {
       setValues((prevState) => ({
         ...prevState,
-        [name]: unmaskedValue,
+        [name]: Formats.Money(value),
       }));
+  } else if (name === "cep") {
+    setValues((prevState) => ({
+      ...prevState,
+      [name]: unmaskedValue,
+    }));
 
-      setValueMoney(Formats.Money(value));
-    } else if (name === "cep") {
-      setValues((prevState) => ({
-        ...prevState,
-        [name]: unmaskedValue,
-      }));
-
-      setFormatCep(Formats.Cep(value));
-    } else if (name === "currentWage") {
-      setValues((prevState) => ({
-        ...prevState,
-        [name]: unmaskedValue,
-      }));
-
-      setCurrentMoney(Formats.Money(value));
-    } 
+    setFormatCep(Formats.Cep(value));
+  } else if (name === "currentWage") {
+    setValues((prevState) => ({
+      ...prevState,
+      [name]: Formats.Money(value),
+    }));
+  } 
   };
 
   const handleSubmit = async (event) => {
@@ -439,7 +435,7 @@ export default function CreateEmployee() {
             label="Salário Inicial"
             type="text"
             name="initialWage"
-            value={valueMoney}
+            value={values.initialWage}
             onChange={handleFormatsChange}
           />
         </CustomInput.Root>
@@ -448,7 +444,7 @@ export default function CreateEmployee() {
             label="Salário Atual"
             type="text"
             name="currentWage"
-            value={currentMoney}
+            value={values.currentWage}
             onChange={handleFormatsChange}
           />
         </CustomInput.Root>
