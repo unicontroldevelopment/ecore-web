@@ -160,6 +160,37 @@ export default function ManageContracts() {
     }
   };
 
+  const applyFilters = (contracts, filters) => {
+    return contracts.filter((contract) => {
+      // Filtro por nome
+      const nameMatch = contract.name
+        .toLowerCase()
+        .includes(filters.name.toLowerCase());
+  
+      // Filtro por franquia
+      const franchiseMatch = contract.signOnContract &&
+        contract.signOnContract.some((signature) =>
+          signature.Contract_Signature &&
+          signature.Contract_Signature.socialReason &&
+          signature.Contract_Signature.socialReason
+            .toLowerCase()
+            .includes(filters.franchise.toLowerCase())
+        );
+  
+      // Filtro por status D4Sign
+      let d4signMatch = true;
+      if (filters.d4sign === "NÃO CADASTRADO") {
+        d4signMatch = !contract.d4SignData;
+      } else if (filters.d4sign) {
+        d4signMatch = contract.d4SignData &&
+          contract.d4SignData.statusName.toLowerCase() === filters.d4sign.toLowerCase();
+      }
+  
+      // Retorna true se todos os filtros aplicáveis forem satisfeitos
+      return nameMatch && (filters.franchise ? franchiseMatch : true) && d4signMatch;
+    });
+  };
+
   //Effect -------------------------------------------------------------------------------------------
   React.useEffect(() => {
     const fetchData = async () => {
@@ -173,61 +204,9 @@ export default function ManageContracts() {
   }, []);
 
   React.useEffect(() => {
-    const filteredContracts = allContracts.filter((contract) => {
-      const matchesName = contract.name
-        .toLowerCase()
-        .includes(filter.name.toLowerCase());
-      return matchesName;
-    });
-
+    const filteredContracts = applyFilters(allContracts, filter);
     setContracts(filteredContracts);
-  }, [filter.name]);
-
-  React.useEffect(() => {
-    const filteredContracts = allContracts.filter((contract) => {
-      // Verifique se há assinaturas no contrato
-      if (!contract.signOnContract || contract.signOnContract.length === 0) {
-        return false;
-      }
-  
-      // Procure por uma assinatura que corresponda ao filtro de franquia
-      const matchingSignature = contract.signOnContract.find((signature) => {
-        if (signature.Contract_Signature && signature.Contract_Signature.socialReason) {
-          return signature.Contract_Signature.socialReason
-            .toLowerCase()
-            .includes(filter.franchise.toLowerCase());
-        }
-        return false;
-      });
-  
-      return !!matchingSignature;
-    });
-  
-    setContracts(filteredContracts);
-  }, [filter.franchise, allContracts]);
-
-  React.useEffect(() => {
-    const filteredContracts = allContracts.filter((contract) => {
-      if (filter.d4sign === "NÃO CADASTRADO") {
-        return !contract.d4SignData;
-      }
-
-      if (filter.d4sign) {
-        if (contract.d4SignData) {
-          const matchesName =
-            contract.d4SignData.statusName.toLowerCase() ===
-            filter.d4sign.toLowerCase();
-          return matchesName;
-        } else {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    setContracts(filteredContracts);
-  }, [filter.d4sign]);
+  }, [filter, allContracts]);
 
   React.useEffect(() => {
     const fetchAddress = async () => {
