@@ -66,6 +66,7 @@ export default function LooseAdditive() {
   });
   const [filter, setFilter] = React.useState({
     name: "",
+    franchise: "",
     type: "Avulso",
   });
 
@@ -108,6 +109,28 @@ export default function LooseAdditive() {
     }
   };
 
+  const applyFilters = (contracts, filters) => {
+    return contracts.filter((contract) => {
+      // Filtro por nome
+      const nameMatch = contract.name
+        .toLowerCase()
+        .includes(filters.name.toLowerCase());
+  
+      // Filtro por franquia
+      const franchiseMatch = contract.signOnContract &&
+        contract.signOnContract.some((signature) =>
+          signature.Contract_Signature &&
+          signature.Contract_Signature.socialReason &&
+          signature.Contract_Signature.socialReason
+            .toLowerCase()
+            .includes(filters.franchise.toLowerCase())
+        );
+  
+      // Retorna true se todos os filtros aplicáveis forem satisfeitos
+      return nameMatch && (filters.franchise ? franchiseMatch : true);
+    });
+  };
+
   //Effect -------------------------------------------------------------------------------------------
   React.useEffect(() => {
     const fetchData = async () => {
@@ -117,13 +140,9 @@ export default function LooseAdditive() {
   }, []);
 
   React.useEffect(() => {
-    const filteredContracts = allContracts.filter((contract) => {
-      const matchesName = contract.name.toLowerCase().includes(filter.name.toLowerCase());
-      return matchesName;
-    });
-
+    const filteredContracts = applyFilters(allContracts, filter);
     setContracts(filteredContracts);
-  }, [filter.name]);
+  }, [filter, allContracts]);
 
   React.useEffect(() => {
     const fetchAddress = async () => {
@@ -554,12 +573,21 @@ export default function LooseAdditive() {
           Adicionar Cliente
         </Button>
         <Filter.Fragment section="Filtro">
-          <CustomInput.Root columnSize={24}>
+          <CustomInput.Root columnSize={18}>
             <Filter.FilterInput
               label="Nome do Cliente"
               name="name"
               onChange={handleChangeFilter}
               value={filter.name}
+            />
+          </CustomInput.Root>
+          <CustomInput.Root columnSize={6}>
+            <Filter.Select
+              label="Franquia"
+              name="franchise"
+              onChange={handleChangeFilter}
+              value={filter.franchise}
+              options={signs.map((sign) => sign.socialReason)}
             />
           </CustomInput.Root>
         </Filter.Fragment>
