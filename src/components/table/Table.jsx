@@ -16,11 +16,17 @@ export const CustomTable = ({
   cancel,
   columns,
 }) => {
+
+  const handleTableChange = (pagination, filters, sorter) => {
+    return;
+  };
+
   const columnsAndActions = [
     ...columns.map((column) => ({
       title: column.title,
       dataIndex: column.dataIndex,
       key: column.key,
+      sorter: column.sorter,
       render: column.render,
     })),
     {
@@ -76,6 +82,7 @@ export const CustomTable = ({
       dataSource={data}
       pagination={paginationConfig}
       rowKey="id"
+      onChange={handleTableChange}
     />
   );
 };

@@ -35,6 +35,17 @@ export const currentAccount = (employee, sign, date) => {
     return month.charAt(0).toUpperCase() + month.slice(1);
   };
 
+  const formatMoney = (value) => {
+    if (value === undefined || value === null) return "";
+
+    const formatter = new Intl.NumberFormat("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    return formatter.format(value);
+  };
+
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
   const content = [
     {
@@ -49,7 +60,9 @@ export const currentAccount = (employee, sign, date) => {
       lineHeight: 1.2,
     },
     {
-      text: `Canoas/RS,\n ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}\n\n\n\n`,
+      text: `Canoas/RS,\n ${date.getDate()} de ${ExtenseMonth(
+        date
+      )} de ${date.getFullYear()}\n\n\n\n`,
       alignment: "right",
       fontSize: 13,
       lineHeight: 1.2,
@@ -61,7 +74,17 @@ export const currentAccount = (employee, sign, date) => {
       lineHeight: 1.2,
     },
     {
-      text: `Solicitamos abertura de Conta Salário em nome de ${employee.name} RG ${employee.rg} no cargo de ${employee.office}, recebendo R$ ${employee.initialWage} mensais, sendo que a empresa aceita o comprovante de residência em anexo, sito em ${employee.road}, ${employee.number} - BAIRRO ${employee.neighborhood} - CEP ${employee.cep} ${employee.city}/${employee.state}.\n\n\n\n\n\n`,
+      text: `Solicitamos abertura de Conta Salário em nome de ${
+        employee.name
+      } RG ${employee.rg} no cargo de ${
+        employee.office
+      }, recebendo R$ ${
+        formatMoney(employee.initialWage)
+      } mensais, sendo que a empresa aceita o comprovante de residência em anexo, sito em ${
+        employee.road
+      }, ${employee.number} - BAIRRO ${employee.neighborhood} - CEP ${
+        employee.cep
+      } ${employee.city}/${employee.state}.\n\n\n\n\n\n`,
       alignment: "justify",
       fontSize: 13,
       lineHeight: 1.2,

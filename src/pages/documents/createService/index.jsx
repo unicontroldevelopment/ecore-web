@@ -2,9 +2,9 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-    DeleteOutlined,
-    EditOutlined,
-    QuestionCircleOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { Button, Modal, Popconfirm } from "antd";
 import Loading from "../../../components/animations/Loading";
@@ -192,11 +192,13 @@ export default function CreateService() {
       title: "Serviço",
       dataIndex: "description",
       key: "description",
+      sorter: (a, b) => a.description.localeCompare(b.description)
     },
     {
       title: "Codigo Newsis",
       dataIndex: "code",
       key: "code",
+      sorter: (a, b) => a.code - b.code,
     },
     {
       title: "Opções",

@@ -1,10 +1,8 @@
-/* eslint-disable react/prop-types */
 import {
+  Autocomplete,
   FormControl,
   FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
+  TextField
 } from "@mui/material";
 import * as React from "react";
 
@@ -16,38 +14,52 @@ export function CustomSelect({
   errorText,
   multiple,
   options,
+  noOptionsText,
 }) {
   const [error, setError] = React.useState(false);
 
   React.useEffect(() => {
-    if (errorText) {
-      setError(true);
-    } else {
-      setError(false);
-    }
+    setError(!!errorText);
   }, [errorText]);
 
-  const upperCaseString = (text) =>
-    text.charAt(0).toUpperCase() + text.slice(1);
+  const upperCaseString = (text) => {
+    if (typeof text !== "string") {
+      return String(text);
+    }
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
+
+  const handleOnChange = (event, newValue) => {
+    const simulatedEvent = {
+      target: {
+        name: name,
+        value: multiple ? newValue : newValue || null
+      }
+    };
+    onChange(simulatedEvent);
+  };
 
   return (
     <FormControl
-      sx={{
-        width: "100%",
-        minHeight: 64,
-      }}
-      size="small"
       fullWidth
       error={error}
     >
-      <InputLabel>{label}</InputLabel>
-      <Select name={name} value={value} onChange={onChange} label={label} multiple={multiple}>
-        {options.map((option, index) => (
-          <MenuItem key={index} value={option}>
-            {upperCaseString(option)}
-          </MenuItem>
-        ))}
-      </Select>
+      <Autocomplete
+      sx={{ width: "100%", minHeight: 64}}
+        disablePortal
+        fullWidth
+        size="small"
+        multiple={multiple}
+        options={options}
+        getOptionLabel={(option) => upperCaseString(option)}
+        value={multiple ? (value || []) : (value || null)}
+        onChange={handleOnChange}
+        renderInput={(params) => (
+          <TextField {...params} label={label} name={name}/>
+        )}
+        disableCloseOnSelect={multiple}
+        noOptionsText={noOptionsText ? noOptionsText : "Sem opções"}
+      />
       {error && <FormHelperText>{errorText}</FormHelperText>}
     </FormControl>
   );

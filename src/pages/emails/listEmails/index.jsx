@@ -1,4 +1,5 @@
 import { Button, Modal } from "antd";
+import debounce from "lodash/debounce";
 import * as React from "react";
 import { Filter } from "../../../components/filter";
 import { Form } from "../../../components/form";
@@ -12,28 +13,45 @@ import { Options } from "../../../utils/options";
 
 export default function ListEmails() {
   VerifyUserRole(["Master", "Administrador"]);
+
   const [users, setUsers] = React.useState([]);
+  const [filteredUsers, setFilteredUsers] = React.useState([]);
   const [selectUser, setSelectUser] = React.useState({
     email: "",
     password: "",
     type: "",
-    Redirects: []
+    Redirects: [],
   });
   const [isModalVisibleView, setIsModalVisibleView] = React.useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
   const [filter, setFilter] = React.useState({
     group: "",
+    email: "",
   });
 
   const service = new EmailService();
 
+  const fetchUsers = React.useCallback(async () => {
+    const request = await service.getEmails(filter.group);
+    setUsers(request.data.listUsers);
+    setFilteredUsers(request.data.listUsers);
+  }, [filter.group]);
+
   React.useEffect(() => {
-    const fetchUsers = async () => {
-      const request = await service.getEmails(filter.group);
-      setUsers(request.data.listUsers);
-    };
     fetchUsers();
-  }, [filter]);
+  }, [fetchUsers]);
+
+  const handleEmailFilterChange = debounce((value) => {
+    setFilter((prevState) => ({
+      ...prevState,
+      email: value,
+    }));
+
+    const filtered = users.filter((user) =>
+      user.email.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredUsers(filtered);
+  }, 300);
 
   const handleAddClick = () => {
     setSelectUser((prevValue) => ({
@@ -71,16 +89,12 @@ export default function ListEmails() {
 
       if (response.status === 200) {
         setUsers(users.filter((user) => user.id !== e.id));
-
         Toast.Success("E-mail deletado com sucesso!");
       }
       return response;
     } catch (error) {
       return error;
     }
-  };
-  const cancelDelete = () => {
-    return;
   };
 
   const confirmUpdate = async (updateData) => {
@@ -91,13 +105,11 @@ export default function ListEmails() {
         const updatedData = users.map((user) =>
           user.id === updateData.id ? { ...user, ...updateData } : user
         );
-
         setUsers(updatedData);
+        setFilteredUsers(updatedData);
         Toast.Success("E-mail atualizado com sucesso!");
-
         setIsModalVisibleUpdate(false);
       }
-
       return response;
     } catch (error) {
       return error;
@@ -121,16 +133,18 @@ export default function ListEmails() {
     setIsModalVisibleView(true);
   };
 
-  const options = [
+  const columns = [
     {
       title: "E-mail",
       dataIndex: "email",
       key: "email",
+      sorter: (a, b) => a.email.localeCompare(b.email),
     },
     {
       title: "Senha",
       key: "password",
       dataIndex: "password",
+      sorter: (a, b) => a.password - b.password,
       render: (text, record) => <span>{record.password ?? "-"}</span>,
     },
   ];
@@ -138,25 +152,33 @@ export default function ListEmails() {
   return (
     <Table.Root title="Lista de E-mails do Grupo" columnSize={6}>
       <Filter.Fragment section="Filtro">
-        <Filter.Select
-          label="Perfil"
-          name="group"
-          value={filter.group}
-          onChange={handleChangeFilter}
-          options={Options.EmailType()}
-        />
+        <CustomInput.Root columnSize={12}>
+          <Filter.FilterInput
+            label="Filtrar por E-mail"
+            name="emailFilter"
+            onChange={(e) => handleEmailFilterChange(e.target.value)}
+          />
+        </CustomInput.Root>
+        <CustomInput.Root columnSize={12}>
+          <Filter.Select
+            label="Perfil"
+            name="group"
+            value={filter.group}
+            onChange={handleChangeFilter}
+            options={Options.EmailType()}
+          />
+        </CustomInput.Root>
       </Filter.Fragment>
       <Table.Table
-        data={users}
-        columns={options}
+        data={filteredUsers}
+        columns={columns}
         onView={handleView}
         onUpdate={handleUpdate}
         confirm={confirmDelete}
-        cancel={cancelDelete}
       />
       {isModalVisibleView && (
         <Modal
-          title="Direcionametos do E-mail"
+          title="Direcionamentos do E-mail"
           open={isModalVisibleView}
           centered
           width={1000}

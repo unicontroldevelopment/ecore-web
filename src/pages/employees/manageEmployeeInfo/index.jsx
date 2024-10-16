@@ -149,11 +149,17 @@ export default function ManageEmployeeInfo() {
       title: "Nome",
       dataIndex: "name",
       key: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: "Perfil",
       key: "role",
       dataIndex: "role",
+      sorter: (a, b) => {
+        const roleA = a.role.map((roles) => roles.role.name).join(", ");
+        const roleB = b.role.map((roles) => roles.role.name).join(", ");
+        return roleA.localeCompare(roleB);
+      },
       render: (text, record) => (
         <span>
           {record.role.map((roles) => roles.role.name).join(", ") ?? "-"}
@@ -177,45 +183,6 @@ export default function ManageEmployeeInfo() {
           </CustomInput.Root>
           <CustomInput.Root columnSize={6}>
             <Filter.Button label="Novo Usuário" onClick={handleRegister} />
-          </CustomInput.Root>
-          <CustomInput.Root columnSize={6}>
-            <Filter.Select
-              label="Perfil"
-              name="role"
-              value={filter.role}
-              onChange={handleChangeFilter}
-              options={Options.Roles()}
-            />
-          </CustomInput.Root>
-
-          <CustomInput.Root columnSize={6}>
-            <Filter.Select
-              label="Setor"
-              name="department"
-              value={filter.department}
-              onChange={handleChangeFilter}
-              options={Options.Departments()}
-            />
-          </CustomInput.Root>
-
-          <CustomInput.Root columnSize={6}>
-            <Filter.Select
-              label="Empresas"
-              name="company"
-              value={filter.company}
-              onChange={handleChangeFilter}
-              options={Options.Companies()}
-            />
-          </CustomInput.Root>
-
-          <CustomInput.Root columnSize={6}>
-            <Filter.Select
-              label="Centro de Custo"
-              name="unit"
-              value={filter.unit}
-              onChange={handleChangeFilter}
-              options={Options.CostCenter()}
-            />
           </CustomInput.Root>
         </Filter.Fragment>
         <Table.Table

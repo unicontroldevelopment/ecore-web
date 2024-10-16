@@ -10,17 +10,17 @@ export function InputSelect({
   onChange,
   disabled,
 }) {
-  const [inputValue, setInputValue] = React.useState(""); // Estado para o valor do input
-  const [unit, setUnit] = React.useState("kg"); // Estado para o valor do select
+  const [inputValue, setInputValue] = React.useState("");
+  const [unit, setUnit] = React.useState("kg");
 
   const handleInputChange = (e) => {
-    setInputValue(e.target.value); // Atualiza o estado do input
-    onChange(e.target.value, unit); // Passa o valor atualizado do input e do select para o onChange
+    setInputValue(e.target.value);
+    onChange(e.target.value, unit);
   };
 
   const handleUnitChange = (e) => {
-    setUnit(e.target.value); // Atualiza o estado do select
-    onChange(inputValue, e.target.value); // Passa o valor atualizado do input e do select para o onChange
+    setUnit(e.target.value); 
+    onChange(inputValue, e.target.value);
   };
 
   return (
@@ -36,13 +36,13 @@ export function InputSelect({
               select
               variant="outlined"
               name="unitMedida"
-              value={unit} // Define o valor do select
-              onChange={handleUnitChange} // Captura a mudança do select
+              value={unit}
+              onChange={handleUnitChange}
               sx={{
                 width: 100,
-                backgroundColor: "#e0e0e0", // Cor de fundo do seletor
+                backgroundColor: "#e0e0e0",
                 "& .MuiSelect-select": {
-                  padding: "8px 14px", // Ajuste do padding
+                  padding: "8px 14px",
                 },
               }}
             >
@@ -62,8 +62,8 @@ export function InputSelect({
       name={name}
       autoComplete="on"
       size="small"
-      onChange={handleInputChange} // Captura a mudança do input
-      value={inputValue} // Usa o estado do input
+      onChange={handleInputChange}
+      value={inputValue} 
       disabled={disabled}
     />
   );

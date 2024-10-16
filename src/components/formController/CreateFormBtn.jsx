@@ -36,7 +36,7 @@ const formSchema = z.object({
     .string()
     .min(4, { message: "O nome deve ter pelo menos 4 caracteres." }),
   description: z.string().optional(),
-  type: z.enum(["PPA", "PPO", "Public"], {
+  type: z.enum(["PPA", "PPO", "PPC", "Public"], {
     message: "Selecione um tipo de formulário.",
   }),
   users: z.array(z.number()).optional(),
@@ -146,6 +146,7 @@ function CreateFormBtn({ onFormCreated }) {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="PPA">PPA</SelectItem>
+                      <SelectItem value="PPC">PPC</SelectItem>
                       <SelectItem value="PPO">PPO</SelectItem>
                       <SelectItem value="Public">Publico</SelectItem>
                     </SelectContent>
