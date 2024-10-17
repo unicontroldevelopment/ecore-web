@@ -2,45 +2,8 @@
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { logo, logoFitoLog, logoNewsis } from "../../../assets/logos/logo";
-import { Formats } from "../../formats";
 
-export const discountAuthorization = (employee) => {
-  const verificaDesconto = () => {
-    if (employee.company === "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA") {
-      return "10%";
-    } else if (employee.company === "UNICONTROL CONTROLE DE PRAGAS LTDA") {
-      return "19%";
-    } else if (employee.company === "FITOLOG LICENCIAMENTO DE FRANQUIAS LTDA") {
-      return "10%";
-    } else {
-      return "19%";
-    }
-  };
-
-  const verificaCNPJ = () => {
-    if (employee.company === "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA") {
-      return "28.008.830/0001-84";
-    } else if (employee.company === "UNICONTROL CONTROLE DE PRAGAS LTDA") {
-      return "11.486.771/0001-57";
-    } else if (employee.company === "FITOLOG LICENCIAMENTO DE FRANQUIAS LTDA") {
-      return "10.420.329/0001-65";
-    } else {
-      return "11.486.771/0001-57";
-    }
-  };
-
-  const verificaEndereco = () => {
-    if (employee.company === "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA") {
-      return "Rua Márcio Toboliski Fernandes, 41, Sala 4";
-    } else if (employee.company === "UNICONTROL CONTROLE DE PRAGAS LTDA") {
-      return "Rua Márcio Toboliski Fernandes, 41";
-    } else if (employee.company === "FITOLOG LICENCIAMENTO DE FRANQUIAS LTDA") {
-      return "Rua Márcio Toboliski Fernandes, 41, Sala 2";
-    } else {
-      return "Rua Márcio Toboliski Fernandes, 41";
-    }
-  };
-
+export const discountAuthorization = (employee, type, description, value, parcelas, employeeType, date, dateObj) => {
   const verificaImagemDoDocumento = () => {
     if (employee.company === "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA") {
       return logoNewsis;
@@ -53,6 +16,34 @@ export const discountAuthorization = (employee) => {
     }
   };
 
+  const ExtenseMonth = (date) => {
+    const months = [
+      "janeiro",
+      "fevereiro",
+      "março",
+      "abril",
+      "maio",
+      "junho",
+      "julho",
+      "agosto",
+      "setembro",
+      "outubro",
+      "novembro",
+      "dezembro",
+    ];
+    const month = months[date.getMonth()];
+    return month.charAt(0).toUpperCase() + month.slice(1);
+  };
+
+  const formatData = (date) => {
+    const dateObj = new Date(date);
+    const day = dateObj.getDate();
+    const month = dateObj.getMonth() + 1;
+    const year = dateObj.getFullYear();
+  
+    return `${day}/${month}/${year}`;
+  };
+
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
   const content = [
     {
@@ -61,57 +52,37 @@ export const discountAuthorization = (employee) => {
       alignment: "center",
     },
     {
-      text: `\n\n\nAUTORIZAÇÃO DE DESCONTO\nEmpregador: ${
-        employee.company
-      }\nCNPJ: ${verificaCNPJ()}\nSito à: ${verificaEndereco()}, Canoas/RS\n\n\n\n`,
-      alignment: "center",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
+        text: `\n\n\nTERMO DE AUTORIZAÇÃO DE DESCONTO EM ${employeeType === "CLT" ? "FOLHA" : "NOTA"}\n\n`,
+        alignment: "center",
+        fontSize: 13,
+      },
     {
-      text: `Autorizo descontarem mensalmente, e por tempo indeterminado, dos meus vencimentos, as importâncias relativas aos itens assinalados com "Sim".\n\n\n\n`,
+      text: `\n\nEu ${employee.name}, ${employeeType === "CLT" ? "funcionário(a)" : "contratado(a)"} da empresa ${employee.company}, autorizo o desconto na ${type === "CLT" ? "folha de pagamento mensal" : "nota de prestação de serviço mensal"}, no valor de RS ${value}, relacionado a compra ${type}, ${description ? description : "sem dscrição"} no dia ${formatData(date)}.\n\n`,
       alignment: "justify",
       fontSize: 13,
-      lineHeight: 1.2,
     },
     {
-      text: "De acordo                 Identificação do desconto\n\n",
-      alignment: "left",
+      text: `Desejo parcelar em ${parcelas} vezes, sendo assim descontadas nos meses seguintes.\n\n`,
+      alignment: "justify",
       fontSize: 13,
-      lineHeight: 1.2,
     },
     {
-      text: `(    ) SIM (    ) NÃO - Mensalidade de sócio do sindicato.\n(    ) SIM (    ) NÃO - Desconto de ${verificaDesconto()} do Vale Refeição fornecido pela empresa.\n(    ) SIM (    ) NÃO - Vale Transporte na forma prevista no D.L. 95.247/87.\n(    ) SIM (    ) NÃO - Ligações Telefônicas.\n(    ) SIM (    ) NÃO - Desconto de 50% do Convenio Médico fornecido pela Empresa.\n(    ) SIM (    ) NÃO - Desconto de 100% do Convenio Médico fornecido pela Empresa para dependentes.\n\n\n\n`,
-      alignment: "left",
+      text: `\n\n${employeeType === "CLT" ? "Em caso de demissão, o valor restante será descontado na minha recisão" : "Em caso de contrato de serviço rescindido. ficarei obrigado a pagar de uma só vez, todas as parcelas sendo o valor total descontado na nota de serviço"}.\n\n`,
+      alignment: "justify",
       fontSize: 13,
-      lineHeight: 1.2,
     },
     {
-      text: `Em ${new Date(employee.dateAdmission).getDate()} de ${Formats.ExtenseMonth(
-        new Date(employee.dateAdmission).getMonth() + 1
-      )} de ${new Date(employee.dateAdmission).getFullYear()}\n\n\n\n\n\n`,
+      text: `\n\nCanoas, ${dateObj.getDate()} de ${ExtenseMonth(dateObj)} de ${dateObj.getFullYear()}\n\n\n\n\n\n`,
       alignment: "center",
       fontSize: 13,
-      lineHeight: 1.2,
     },
     {
-      canvas: [
-        {
-          type: "line",
-          x1: 0,
-          y1: 5,
-          x2: 300 - 2 * 40,
-          y2: 5,
-          lineWidth: 0.6,
-        },
-      ],
+      text: "________________________________________\n",
       alignment: "center",
     },
     {
-      text: `${employee.name}`,
+      text: `\t\t\t\t${employee.name}\n\n\n\n\n\n\n`,
       alignment: "center",
-      fontSize: 13,
-      lineHeight: 1.2,
     },
   ];
   const docDefinition = {
