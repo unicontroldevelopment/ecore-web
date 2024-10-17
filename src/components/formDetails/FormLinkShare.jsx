@@ -20,18 +20,16 @@ function FormLinkShare({ shareUrl }) {
   const sharedLink = `${window.location.origin}/submit/${shareUrl}`;
 
   return (
-    <div className="flex flex-grow items-center w-[205px]">
       <Button
-        className="max-w-[205px] w-[205px] "
+        className="flex justify-start gap-2 text-xs font-semibold"
         onClick={() => {
           navigator.clipboard.writeText(sharedLink);
           Toast.Success("Link Copiado");
         }}
       >
-        <ImShare className="mr-2 h-4 w-4" />
+        <ImShare className="h-4 w-4" />
         Link
       </Button>
-    </div>
   );
 }
 
