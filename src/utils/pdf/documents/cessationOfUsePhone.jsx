@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
-import { logo } from "../../../assets/logos/logo";
+import { logo, logoFitoLog, logoNewsis } from "../../../assets/logos/logo";
 
 export const cessationOfUsePhone = (employee, phone, date) => {
   const verificaCNPJ = () => {
@@ -13,6 +13,26 @@ export const cessationOfUsePhone = (employee, phone, date) => {
       return "10.420.329/0001-65";
     } else {
       return "11.486.771/0001-57";
+    }
+  };
+
+  const verificaImagemDoDocumento = () => {
+    if (
+        employee.company ===
+      "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA"
+    ) {
+      return logoNewsis;
+    } else if (
+        employee.company === "UNICONTROL CONTROLE DE PRAGAS LTDA"
+    ) {
+      return logo;
+    } else if (
+        employee.company ===
+      "FITOLOG LICENCIAMENTO DE FRANQUIAS LTDA"
+    ) {
+      return logoFitoLog;
+    } else {
+      return logo;
     }
   };
 
@@ -38,7 +58,7 @@ export const cessationOfUsePhone = (employee, phone, date) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
   const content = [
     {
-      image: logo,
+      image: verificaImagemDoDocumento(),
       width: 150,
       alignment: "center",
     },
