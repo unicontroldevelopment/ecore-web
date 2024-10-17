@@ -111,7 +111,6 @@ export default function ManageContracts() {
 
       const d4SignRequest = await d4SignService.getAllContracts();
       const d4SignContracts = d4SignRequest.data;
-      
 
       const updatedContracts = await Promise.all(
         dataContracts.map(async (contract) => {
@@ -131,7 +130,6 @@ export default function ManageContracts() {
           };
         })
       );
-      
 
       setAllContracts(updatedContracts);
       setContracts(updatedContracts);
@@ -166,28 +164,34 @@ export default function ManageContracts() {
       const nameMatch = contract.name
         .toLowerCase()
         .includes(filters.name.toLowerCase());
-  
+
       // Filtro por franquia
-      const franchiseMatch = contract.signOnContract &&
-        contract.signOnContract.some((signature) =>
-          signature.Contract_Signature &&
-          signature.Contract_Signature.socialReason &&
-          signature.Contract_Signature.socialReason
-            .toLowerCase()
-            .includes(filters.franchise.toLowerCase())
+      const franchiseMatch =
+        contract.signOnContract &&
+        contract.signOnContract.some(
+          (signature) =>
+            signature.Contract_Signature &&
+            signature.Contract_Signature.socialReason &&
+            signature.Contract_Signature.socialReason
+              .toLowerCase()
+              .includes(filters.franchise.toLowerCase())
         );
-  
+
       // Filtro por status D4Sign
       let d4signMatch = true;
       if (filters.d4sign === "NÃO CADASTRADO") {
         d4signMatch = !contract.d4SignData;
       } else if (filters.d4sign) {
-        d4signMatch = contract.d4SignData &&
-          contract.d4SignData.statusName.toLowerCase() === filters.d4sign.toLowerCase();
+        d4signMatch =
+          contract.d4SignData &&
+          contract.d4SignData.statusName.toLowerCase() ===
+            filters.d4sign.toLowerCase();
       }
-  
+
       // Retorna true se todos os filtros aplicáveis forem satisfeitos
-      return nameMatch && (filters.franchise ? franchiseMatch : true) && d4signMatch;
+      return (
+        nameMatch && (filters.franchise ? franchiseMatch : true) && d4signMatch
+      );
     });
   };
 
@@ -293,10 +297,12 @@ export default function ManageContracts() {
 
   const handleServiceChange = (event) => {
     const { value } = event.target;
-
+  
     setSelectContract((prevState) => {
-      const updatedContractsService = prevState.contracts_Service
-        .filter((contractService) =>
+      // Filtra contratos de serviço existentes, garantindo que não sejam undefined
+      const updatedContractsService = (prevState.contracts_Service || [])
+        .filter((contractService) => 
+          contractService?.Services?.description && 
           value.includes(contractService.Services.description)
         )
         .map((contractService) => ({
@@ -304,16 +310,20 @@ export default function ManageContracts() {
           service_id: contractService.Services.id,
           contract_id: prevState.id,
         }));
-
+  
+      // Adiciona novos serviços que não estão no updatedContractsService
       value.forEach((description) => {
+        // Verifica se o serviço já existe no updatedContractsService
         if (
           !updatedContractsService.some(
-            (cs) => cs.Services.description === description
+            (cs) => cs.Services?.description === description
           )
         ) {
+          // Encontra o serviço correspondente na lista de serviços
           const serviceToAdd = services.find(
             (s) => s.description === description
           );
+          // Se o serviço existir, adiciona ao updatedContractsService
           if (serviceToAdd) {
             updatedContractsService.push({
               contract_id: prevState.id,
@@ -326,7 +336,7 @@ export default function ManageContracts() {
           }
         }
       });
-
+  
       return {
         ...prevState,
         contracts_Service: updatedContractsService,
@@ -711,7 +721,6 @@ export default function ManageContracts() {
       }
 
       if (response) {
-
         await fetchContracts();
         Toast.Success("Contrato atualizado com sucesso!");
         setIsModalVisibleUpdate(false);
@@ -1280,9 +1289,11 @@ export default function ManageContracts() {
               <CustomInput.Select
                 label="Serviços"
                 name="contracts_Service"
-                value={selectContract.contracts_Service.map(
-                  (service) => service.Services.description
-                )}
+                value={
+                  selectContract.contracts_Service?.map(
+                    (service) => service.Services?.description
+                  ) ?? []
+                }
                 onChange={handleServiceChange}
                 multiple={true}
                 options={services.map((service) => service.description)}
