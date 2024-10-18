@@ -33,26 +33,29 @@ export function CustomSelect({
     const simulatedEvent = {
       target: {
         name: name,
-        value: multiple ? newValue : (newValue && newValue.length > 0 ? newValue[0] : null)
+        value: multiple ? newValue : newValue || null
       }
     };
     onChange(simulatedEvent);
   };
 
   return (
-    <FormControl fullWidth error={error}>
+    <FormControl
+      fullWidth
+      error={error}
+    >
       <Autocomplete
-        sx={{ width: "100%", minHeight: 64 }}
+      sx={{ width: "100%", minHeight: 64}}
         disablePortal
         fullWidth
         size="small"
         multiple={multiple}
         options={options}
         getOptionLabel={(option) => upperCaseString(option)}
-        value={multiple ? (Array.isArray(value) ? value : []) : (value || null)}
+        value={multiple ? (value || []) : (value || null)}
         onChange={handleOnChange}
         renderInput={(params) => (
-          <TextField {...params} label={label} name={name} />
+          <TextField {...params} label={label} name={name}/>
         )}
         disableCloseOnSelect={multiple}
         noOptionsText={noOptionsText ? noOptionsText : "Sem opções"}
