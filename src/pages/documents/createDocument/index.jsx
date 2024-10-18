@@ -255,7 +255,7 @@ export default function CreateDocument() {
         warning,
         dateObj
       );
-    } else if (values.document === "Autorização Desconto") {
+    } else if (values.document === "Autorização Desconto em Folha/Nota") {
       document = await discountAuthorization(
         values.employeeDetails,
         desconto.type,
@@ -274,7 +274,7 @@ export default function CreateDocument() {
       );
     } else if (values.document === "Declaração de Renúncia VT") {
       document = await renouncesVT(values.employeeDetails);
-    } else if (values.document === "Termo Adesão PPO") {
+    } else if (values.document === "Termo de Adesão PPO") {
       if (
         values.employeeDetails.company ===
         "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA"
@@ -302,11 +302,11 @@ export default function CreateDocument() {
       document = await knowledgeOfMonitoring(values.employeeDetails);
     } else if (values.document === "Termo de Responsabilidade TEU") {
       document = await termOfCardTEU(values.employeeDetails, teu, dateObj);
-    } else if (values.document === "Contrato Expêriencia não vendedor") {
+    } else if (values.document === "Contrato de Trabalho Por Expêriencia Não Vendedor") {
       document = await experienceContract(values.employeeDetails);
-    } else if (values.document === "Termo de Prorrogação") {
+    } else if (values.document === "Termo de Prorrogação de Contrato") {
       document = await termOfProrrogation(values.employeeDetails);
-    } else if (values.document === "Termo de Adesão do Benefício") {
+    } else if (values.document === "Termo de Adesão do Benefício São João") {
       document = await termOfBenefit(
         values.employeeDetails,
         dateObj,
@@ -316,6 +316,23 @@ export default function CreateDocument() {
       Toast.Error("Documento não encontrado");
       return;
     }
+
+    const Documents = () => {
+      return [
+          "Abertura de Conta Corrente",
+          "Advertência Disciplinar",
+          "Autorização Desconto em Folha/Nota",
+          "Cessão de uso de Notebook",       
+          "Contrato de Trabalho Por Expêriencia Não Vendedor",
+          "Declaração de Renúncia VT",
+          "Termo de Adesão do Benefício São João",
+          "Termo de Adesão PPO",
+          "Termo de Ciência de Monitoramento",
+          "Termo de Responsabilidade TEU",
+          "Termo de Prorrogação de Contrato",
+          "Termo de Entrega de Celular",
+        ];
+    };
 
     const createdPDFDoc = await PDFDocument.load(document);
     const mergedPDF = await PDFDocument.create();
@@ -418,7 +435,7 @@ export default function CreateDocument() {
               </div>
             </div>
           )}
-          {values.document === "Autorização Desconto" && (
+          {values.document === "Autorização Desconto em Folha/Nota" && (
             <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-lg">
               <div className="px-4 py-5 sm:px-6">
                 <h2 className="text-lg leading-6 font-medium text-gray-900">
@@ -671,7 +688,7 @@ export default function CreateDocument() {
               </div>
             </div>
           )}
-          {values.document === "Termo de Adesão do Benefício" && (
+          {values.document === "Termo de Adesão do Benefício São João" && (
             <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-lg">
               <div className="px-4 py-5 sm:px-6">
                 <h2 className="text-lg leading-6 font-medium text-gray-900">
