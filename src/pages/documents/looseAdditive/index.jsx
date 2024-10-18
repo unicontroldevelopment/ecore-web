@@ -1,14 +1,11 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
-import { EllipsisOutlined } from "@ant-design/icons";
-import { Button, Modal } from "antd";
 import Loading from "../../../components/animations/Loading";
-import { Filter } from "../../../components/filter";
-import { Form } from "../../../components/form";
-import { CustomInput } from "../../../components/input";
-import { Table } from "../../../components/table";
-import { ActionsContainer } from "../../../components/table/styles";
+import ClientTable from "../../../components/manage-additives-reajustments/ClientTable";
+import CreateModalClient from "../../../components/manage-additives-reajustments/CreateModalClient";
+import EditModalClient from "../../../components/manage-additives-reajustments/EditModalClient";
+import FilterComponent from "../../../components/manage-additives-reajustments/FilterComponent";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import ContractSignService from "../../../services/ContractSignService";
@@ -115,17 +112,19 @@ export default function LooseAdditive() {
       const nameMatch = contract.name
         .toLowerCase()
         .includes(filters.name.toLowerCase());
-  
+
       // Filtro por franquia
-      const franchiseMatch = contract.signOnContract &&
-        contract.signOnContract.some((signature) =>
-          signature.Contract_Signature &&
-          signature.Contract_Signature.socialReason &&
-          signature.Contract_Signature.socialReason
-            .toLowerCase()
-            .includes(filters.franchise.toLowerCase())
+      const franchiseMatch =
+        contract.signOnContract &&
+        contract.signOnContract.some(
+          (signature) =>
+            signature.Contract_Signature &&
+            signature.Contract_Signature.socialReason &&
+            signature.Contract_Signature.socialReason
+              .toLowerCase()
+              .includes(filters.franchise.toLowerCase())
         );
-  
+
       // Retorna true se todos os filtros aplicáveis forem satisfeitos
       return nameMatch && (filters.franchise ? franchiseMatch : true);
     });
@@ -199,6 +198,10 @@ export default function LooseAdditive() {
       }));
     }
   }, [values.cep]);
+
+  const handleClearFilters = () => {
+    setFilter((prevFilter) => ({ ...prevFilter, name: "", franchise: "" }));
+  };
 
   const handleSignChange = (event) => {
     const { value } = event.target;
@@ -532,316 +535,51 @@ export default function LooseAdditive() {
     }
   };
 
-  const options = [
-    {
-      title: "Cliente",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "CPF/CNPJ",
-      dataIndex: "cpfcnpj",
-      key: "cpfcnpj",
-    },
-    {
-      title: "Aditivos e Reajustes",
-      key: "actions",
-      width: 150,
-      render: (text, record) => (
-        <ActionsContainer>
-          <Button
-            title="Aditivo/Reajuste"
-            style={{ backgroundColor: "#FF7F50", color: "#fff" }}
-            shape="circle"
-            onClick={() => handleButtonClick(record)}
-            icon={<EllipsisOutlined />}
-          />
-        </ActionsContainer>
-      ),
-    },
-  ];
-
   return (
     <>
-      {loading && <Loading />}
-      <Table.Root title="Lista de Clientes Sem Contrato">
-        <Button
-          type="primary"
-          onClick={() => setModalCreate(true)}
-          style={{ marginLeft: "88%" }}
-        >
-          Adicionar Cliente
-        </Button>
-        <Filter.Fragment section="Filtro">
-          <CustomInput.Root columnSize={18}>
-            <Filter.FilterInput
-              label="Nome do Cliente"
-              name="name"
-              onChange={handleChangeFilter}
-              value={filter.name}
-            />
-          </CustomInput.Root>
-          <CustomInput.Root columnSize={6}>
-            <Filter.Select
-              label="Franquia"
-              name="franchise"
-              onChange={handleChangeFilter}
-              value={filter.franchise}
-              options={signs.map((sign) => sign.socialReason)}
-            />
-          </CustomInput.Root>
-        </Filter.Fragment>
-        <Table.Table
-          data={contracts}
-          columns={options}
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">
+          Lista de Clientes Sem Contrato
+        </h1>
+        {loading && <Loading />}
+        <FilterComponent
+          filter={filter}
+          onFilterChange={handleChangeFilter}
+          onClearFilters={handleClearFilters}
+          onModalCreate={setModalCreate}
+          signs={signs}
+        />
+        <ClientTable
+          contracts={contracts}
           onView={handleView}
           onUpdate={handleUpdate}
           confirm={confirmDelete}
           cancel={cancelDelete}
+          handleButtonClick={handleButtonClick}
         />
-      </Table.Root>
-      {modalCreate && (
-        <Modal
-          title={`Adicionar novo Cliente`}
-          open={modalCreate}
-          centered
-          width={800}
-          onCancel={() => setModalCreate(false)}
-          footer={[
-            <Button key="back" onClick={() => setModalCreate(false)}>
-              Voltar
-            </Button>,
-            <Button key="submit" type="primary" onClick={handleCreate}>
-              Adicionar
-            </Button>,
-          ]}
-        >
-          <Form.Fragment section="Dados">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Nome"
-                type="text"
-                name="name"
-                value={values.name}
-                onChange={handleChange}
-                errorText={messageError.name}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="CPF ou CNPJ"
-                type="text"
-                name="cpfcnpj"
-                value={formatCpfOrCnpj}
-                onChange={handleFormatsChange}
-                errorText={messageError.cpfcnpj}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="CEP"
-                type="text"
-                name="cep"
-                value={formatCep}
-                onChange={handleFormatsChange}
-                errorText={messageError.cep}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Rua"
-                type="text"
-                name="road"
-                value={values.road}
-                onChange={handleChange}
-                errorText={messageError.road}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={3}>
-              <CustomInput.Input
-                label="Número"
-                type="text"
-                name="number"
-                value={values.number}
-                onChange={handleChange}
-                errorText={messageError.number}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={3}>
-              <CustomInput.Input
-                label="Complemento"
-                type="text"
-                name="neighborhood"
-                value={values.complement}
-                onChange={handleChange}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Bairro"
-                type="text"
-                name="neighborhood"
-                value={values.neighborhood}
-                onChange={handleChange}
-                errorText={messageError.neighborhood}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Cidade"
-                type="text"
-                name="city"
-                value={values.city}
-                onChange={handleChange}
-                errorText={messageError.city}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="UF"
-                type="text"
-                name="state"
-                value={values.state}
-                onChange={handleChange}
-                errorText={messageError.state}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Franquia">
-            <CustomInput.Select
-              label="Assinaturas"
-              name="signOnContract"
-              value={values.signOnContract[0]?.Contract_Signature.socialReason}
-              options={signs.map((sign) => sign.socialReason)}
-              onChange={handleSignChangeCreate}
-            />
-          </Form.Fragment>
-        </Modal>
-      )}
-      {isModalVisibleUpdate && (
-        <Modal
-          title="Editar Cliente"
-          open={isModalVisibleUpdate}
-          centered
-          style={{ top: 20 }}
-          onCancel={() => {
-            setIsModalVisibleUpdate(false);
-          }}
-          width={1200}
-          footer={[
-            <Button
-              key="submit"
-              type="primary"
-              onClick={() => confirmUpdate(selectContract)}
-            >
-              Atualizar
-            </Button>,
-            <Button
-              key="back"
-              onClick={() => {
-                setIsModalVisibleUpdate(false);
-              }}
-            >
-              Voltar
-            </Button>,
-          ]}
-        >
-          <Form.Fragment section="Contratante">
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Nome"
-                type="text"
-                name="name"
-                value={selectContract.name}
-                onChange={handleChangeUpdate}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="CPF ou CNPJ"
-                type="text"
-                name="cpfcnpj"
-                value={selectContract.cpfcnpj}
-                onChange={handleFormatsChangeUpdate}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="CEP"
-                type="text"
-                name="cep"
-                value={selectContract.cep}
-                onChange={handleFormatsChangeUpdate}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Rua"
-                type="text"
-                name="road"
-                value={selectContract.road}
-                onChange={handleChangeUpdate}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={3}>
-              <CustomInput.Input
-                label="Número"
-                type="text"
-                name="number"
-                value={selectContract.number}
-                onChange={handleChangeUpdate}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={3}>
-              <CustomInput.Input
-                label="Complemento"
-                type="text"
-                name="complement"
-                value={selectContract.complement}
-                onChange={handleChangeUpdate}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Bairro"
-                type="text"
-                name="neighborhood"
-                value={selectContract.neighborhood}
-                onChange={handleChangeUpdate}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="Cidade"
-                type="text"
-                name="city"
-                value={selectContract.city}
-                onChange={handleChangeUpdate}
-              />
-            </CustomInput.Root>
-            <CustomInput.Root columnSize={6}>
-              <CustomInput.Input
-                label="UF"
-                type="text"
-                name="state"
-                value={selectContract.state}
-                onChange={handleChangeUpdate}
-              />
-            </CustomInput.Root>
-          </Form.Fragment>
-          <Form.Fragment section="Franquia">
-            <CustomInput.Select
-              label="Assinaturas"
-              name="signOnContract"
-              value={
-                selectContract.signOnContract[0].Contract_Signature.socialReason
-              }
-              options={signs.map((sign) => sign.socialReason)}
-              onChange={handleSignChange}
-            />
-          </Form.Fragment>
-        </Modal>
-      )}
+        <CreateModalClient
+          isVisible={modalCreate}
+          onClose={setModalCreate}
+          onCreate={handleCreate}
+          contract={values}
+          handleChange={handleChange}
+          handleFormatChange={handleFormatsChange}
+          handleSignChange={handleSignChangeCreate}
+          signs={signs}
+          formatCpfOrCnpj={formatCpfOrCnpj}
+          formatCep={formatCep}
+        />
+        <EditModalClient 
+          isVisible={isModalVisibleUpdate}
+          onClose={setIsModalVisibleUpdate}
+          onUpdate={confirmUpdate}
+          contract={selectContract}
+          signs={signs}
+          handleChangeUpdate={handleChangeUpdate}
+          handleSignChange={handleSignChange}
+          handleFormatsChangeUpdate={handleFormatsChangeUpdate}
+        />
+      </div>
     </>
   );
 }

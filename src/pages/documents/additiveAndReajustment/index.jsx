@@ -85,49 +85,58 @@ export default function AdditiveAndReajustment() {
 
   const fetchContract = async () => {
     setLoading(true);
-    const response = await contractService.getByIdAllInfo(id);
 
-    const sortedData = response.data.user.additive.sort(
-      (a, b) => new Date(b.created) - new Date(a.created)
-    );
+    try {
+      const [contractResponse, d4SignResponse] = await Promise.all([
+        contractService.getByIdAllInfo(id),
+        d4SignService.getAllContracts(),
+      ]);
 
-    const sortedDataReajustment = response.data.user.reajustment.sort(
-      (a, b) => new Date(b.created) - new Date(a.created)
-    );
+      const { user } = contractResponse.data;
+      const d4SignContracts = d4SignResponse.data;
 
-    const d4SignRequest = await d4SignService.getAllContracts();
-    const d4SignContracts = d4SignRequest.data;
-
-    const updatedAdditives = sortedData.map((contract) => {
-      const d4SignDoc = d4SignContracts.find(
-        (doc) => doc.uuidDoc === contract.d4sign
+      const sortedAdditives = user.additive.sort(
+        (a, b) => new Date(b.created) - new Date(a.created)
       );
 
-      return {
-        ...contract,
-        d4SignData: d4SignDoc || null,
-        newValue: formatMoney(contract.newValue),
-        oldValue: formatMoney(contract.oldValue),
-        additive_Clauses: contract.additive_Clauses.map((clause) => ({
-          ...clause,
-          isExpanded: false,
-        })),
-      };
-    });
+      const sortedReajustments = user.reajustment.sort(
+        (a, b) => new Date(b.created) - new Date(a.created)
+      );
 
-    const updatedReajustments = sortedDataReajustment.map((contract) => {
-      return {
+      const d4SignDocsMap = new Map(
+        d4SignContracts.map((doc) => [doc.uuidDoc, doc])
+      );
+
+      const updatedAdditives = sortedAdditives.map((contract) => {
+        const d4SignDoc = d4SignDocsMap.get(contract.d4sign) || null;
+
+        return {
+          ...contract,
+          d4SignData: d4SignDoc,
+          newValue: formatMoney(contract.newValue),
+          oldValue: formatMoney(contract.oldValue),
+          additive_Clauses: contract.additive_Clauses.map((clause) => ({
+            ...clause,
+            isExpanded: false,
+          })),
+        };
+      });
+
+      const updatedReajustments = sortedReajustments.map((contract) => ({
         ...contract,
         value: formatMoney(contract.valueContract),
         index: contract.index,
         type: contract.type,
-      };
-    });
+      }));
 
-    setContract(response.data.user);
-    setAdditiveData(updatedAdditives);
-    setReajustmentData(updatedReajustments);
-    setLoading(false);
+      setContract(user);
+      setAdditiveData(updatedAdditives);
+      setReajustmentData(updatedReajustments);
+    } catch (error) {
+      console.error("Erro ao buscar contrato:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   React.useEffect(() => {
@@ -174,7 +183,6 @@ export default function AdditiveAndReajustment() {
     try {
       setSelectAdditive((prevContract) => ({ ...prevContract, ...contract }));
       setD4signController(true);
-
     } catch (error) {
       console.error("Erro ao buscar documento no D4Sign:", error);
     } finally {
@@ -222,7 +230,9 @@ export default function AdditiveAndReajustment() {
   const handleD4signInfo = async () => {
     setLoading(true);
     try {
-      const response = await d4SignService.getSignatures(selectAdditive.d4SignData.uuidDoc);
+      const response = await d4SignService.getSignatures(
+        selectAdditive.d4SignData.uuidDoc
+      );
       setSignatures(response.data.contract);
     } catch (error) {
       console.error(error);
@@ -236,7 +246,7 @@ export default function AdditiveAndReajustment() {
     return selectAdditive.d4SignData.statusName !== "Finalizado"
       ? (setLoading(true),
         await d4SignService
-          .cancelDocument({
+          .cancelDocumentAdditive({
             id_doc: selectAdditive.d4SignData.uuidDoc,
           })
           .then(() => {
@@ -310,7 +320,7 @@ export default function AdditiveAndReajustment() {
     );
 
     let mergedBlob;
-    let base64D4Sign;   
+    let base64D4Sign;
 
     if (selectAdditive.propouse?.file.data) {
       const arrayBuffer = selectAdditive.propouse?.file.data;
@@ -352,9 +362,7 @@ export default function AdditiveAndReajustment() {
     }
 
     const data = {
-      name: `Aditivo de ${contract.name} ${formatData(
-        new Date().getTime()
-      )}`,
+      name: `Aditivo de ${contract.name} ${formatData(new Date().getTime())}`,
       file: base64D4Sign,
       contractId: selectAdditive.id,
     };
@@ -398,9 +406,11 @@ export default function AdditiveAndReajustment() {
       setLoading(true);
       try {
         await d4SignService.registerSignOnDocument(documentData);
-  
-        const updatedD4SignData = await d4SignService.getDocument(selectAdditive.d4sign);
-  
+
+        const updatedD4SignData = await d4SignService.getDocument(
+          selectAdditive.d4sign
+        );
+
         setAdditiveData((prevContracts) =>
           prevContracts.map((contract) =>
             contract.d4sign === selectAdditive.d4sign
@@ -408,7 +418,7 @@ export default function AdditiveAndReajustment() {
               : contract
           )
         );
-  
+
         setEmail("");
         setD4SignRegisterSignature(false);
         Toast.Success("E-mail cadastrado com sucesso");
@@ -428,7 +438,7 @@ export default function AdditiveAndReajustment() {
 
   const cancelDelete = () => {
     return;
-  }
+  };
 
   const handleAddClick = () => {
     setAdditive((prevContract) => ({
@@ -817,9 +827,8 @@ export default function AdditiveAndReajustment() {
 
   const confirmDeleteAdditive = async (e) => {
     try {
-
-      if(e.d4sign) {
-        Toast.Info("Cancele o Aditivo no D4Sign antes!")
+      if (e.d4sign) {
+        Toast.Info("Cancele o Aditivo no D4Sign antes!");
         return;
       }
       const response = await service.deleteAdditive(e.id);
@@ -943,8 +952,12 @@ export default function AdditiveAndReajustment() {
   const d4SignOptions = [
     {
       key: "status",
-      contract: selectAdditive.d4sign ? selectAdditive.d4SignData : "Não cadastrado",
-      status: selectAdditive.d4sign ? selectAdditive.d4SignData : "Não cadastrado",
+      contract: selectAdditive.d4sign
+        ? selectAdditive.d4SignData
+        : "Não cadastrado",
+      status: selectAdditive.d4sign
+        ? selectAdditive.d4SignData
+        : "Não cadastrado",
       exists: !!selectAdditive.d4sign,
     },
   ];
