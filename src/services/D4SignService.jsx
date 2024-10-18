@@ -99,7 +99,7 @@ export default class {
       return error;
     }
   }
-  async cancelDocument(documentData) {
+  async cancelDocumentAdditive(documentData) {
     try {
       const response = await api.post("/cancelarAditivo", documentData);
       return response;

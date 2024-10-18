@@ -1,29 +1,16 @@
 /* eslint-disable no-unused-vars */
-import {
-  CloseOutlined,
-  ControlFilled,
-  DownloadOutlined,
-  EllipsisOutlined,
-  InfoCircleFilled,
-  QuestionCircleOutlined,
-  SendOutlined,
-} from "@ant-design/icons";
-import { Tooltip } from "@mui/material";
-import { Button, Modal, Popconfirm, Upload } from "antd";
 import dayjs from "dayjs";
 import { PDFDocument } from "pdf-lib";
 import * as React from "react";
-import { AiOutlineCheck } from "react-icons/ai";
-import { FaFileUpload } from "react-icons/fa";
-import { MdPersonRemoveAlt1 } from "react-icons/md";
-import { TiArrowForward } from "react-icons/ti";
+import { useCallback } from 'react';
 import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
-import { Filter } from "../../../components/filter";
-import { Form } from "../../../components/form";
-import { CustomInput } from "../../../components/input/index";
-import { Table } from "../../../components/table";
-import { ActionsContainer } from "../../../components/table/styles";
+import ContractTable from "../../../components/manage-contract/ContractTable";
+import D4SignControlModal from "../../../components/manage-contract/D4SignControlModal";
+import D4SignEmailModal from "../../../components/manage-contract/D4SignEmailModal";
+import D4SignInfoModal from "../../../components/manage-contract/D4SignInfoModal";
+import EditModalContract from "../../../components/manage-contract/EditModalContract";
+import FilterComponent from "../../../components/manage-contract/FilterComponent";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import ContractSignService from "../../../services/ContractSignService";
@@ -35,6 +22,42 @@ import formatData from "../../../utils/formats/formatData";
 import { Options } from "../../../utils/options";
 import { MyDocument } from "../../../utils/pdf/createContract";
 
+
+//Filtros ----------------------------------------------------------------
+const handleGenericChange = (setState, formatter = null) => (eventOrDate) => {
+  if (eventOrDate.target) {
+    const { name, value } = eventOrDate.target;
+    setState((prevState) => ({
+      ...prevState,
+      [name]: formatter ? formatter(name, value) : value,
+    }));
+  } else {
+    setState((prevState) => ({
+      ...prevState,
+      date: eventOrDate ? dayjs(eventOrDate) : null,
+    }));
+  }
+};
+const handleClauseAction = (setState, action) => (id, newText = '') => {
+  setState((prevContract) => ({
+    ...prevContract,
+    clauses: prevContract.clauses.map((clause) =>
+      clause.id === id
+        ? { ...clause, ...action(clause, newText) }
+        : clause
+    ),
+  }));
+};
+
+const handleFilterChange = (setState) => (event) => {
+  const { name, value } = event.target;
+  setState((prevState) => ({
+    ...prevState,
+    [name]: value,
+  }));
+};
+
+//Funçao ----------------------------------------------------------------
 export default function ManageContracts() {
   VerifyUserRole(["Master", "Administrador", "Comercial"]);
   const [allContracts, setAllContracts] = React.useState([]);
@@ -42,7 +65,6 @@ export default function ManageContracts() {
   const [loading, setLoading] = React.useState(false);
   const [services, setServices] = React.useState([]);
   const [signs, setSigns] = React.useState([]);
-  const [email, setEmail] = React.useState("");
   const [selectContract, setSelectContract] = React.useState({
     id: "",
     status: "Contrato",
@@ -72,10 +94,8 @@ export default function ManageContracts() {
     type: "Contrato",
   });
   const [file, setFile] = React.useState();
-  const [valueMoney, setValueMoney] = React.useState("");
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = React.useState(false);
   const [d4signController, setD4signController] = React.useState(false);
-  const [isModalVisibleCreate, setIsModalVisibleCreate] = React.useState(false);
   const [d4SignOpenInfo, setD4SignOpenInfo] = React.useState(false);
   const [d4SignRegisterSignature, setD4SignRegisterSignature] =
     React.useState(false);
@@ -100,42 +120,41 @@ export default function ManageContracts() {
   const utilsService = new Utils();
 
   //Fetchs -------------------------------------------------------------------------------------
-  const fetchContracts = async (
-    nameFilter = "",
-    isLoadingControlled = false
-  ) => {
+  const fetchContracts = async (nameFilter = "", isLoadingControlled = false) => {
     if (isLoadingControlled) setLoading(true);
     try {
-      const request = await service.getContracts(nameFilter, filter.type);
-      const dataContracts = request.data.listContracts;
-
-      const d4SignRequest = await d4SignService.getAllContracts();
-      const d4SignContracts = d4SignRequest.data;
-
-      const updatedContracts = await Promise.all(
-        dataContracts.map(async (contract) => {
-          const d4SignDoc = d4SignContracts.find(
-            (doc) => doc.uuidDoc === contract.d4sign
-          );
-
-          return {
-            ...contract,
-            value: formatMoney(contract.value),
-            d4SignData: d4SignDoc || null,
-            clauses: contract.clauses.map((clause, index) => ({
-              ...clause,
-              currentId: index,
-              isExpanded: false,
-            })),
-          };
-        })
+      const [contractsResponse, d4SignResponse] = await Promise.all([
+        service.getContracts(nameFilter, filter.type),
+        d4SignService.getAllContracts()
+      ]);
+  
+      const dataContracts = contractsResponse.data.listContracts;
+      const d4SignContracts = d4SignResponse.data;
+  
+      const d4SignDocsMap = new Map(
+        d4SignContracts.map(doc => [doc.uuidDoc, doc])
       );
-
+  
+      const updatedContracts = dataContracts.map(contract => {
+        const d4SignDoc = d4SignDocsMap.get(contract.d4sign) || null;
+  
+        return {
+          ...contract,
+          value: formatMoney(contract.value),
+          d4SignData: d4SignDoc,
+          clauses: contract.clauses.map((clause, index) => ({
+            ...clause,
+            currentId: index,
+            isExpanded: false,
+          })),
+        };
+      });
+  
       setAllContracts(updatedContracts);
       setContracts(updatedContracts);
-      if (isLoadingControlled) setLoading(false);
     } catch (error) {
       console.error("Erro ao buscar contratos:", error);
+    } finally {
       if (isLoadingControlled) setLoading(false);
     }
   };
@@ -160,12 +179,11 @@ export default function ManageContracts() {
 
   const applyFilters = (contracts, filters) => {
     return contracts.filter((contract) => {
-      // Filtro por nome
+
       const nameMatch = contract.name
         .toLowerCase()
         .includes(filters.name.toLowerCase());
 
-      // Filtro por franquia
       const franchiseMatch =
         contract.signOnContract &&
         contract.signOnContract.some(
@@ -177,7 +195,6 @@ export default function ManageContracts() {
               .includes(filters.franchise.toLowerCase())
         );
 
-      // Filtro por status D4Sign
       let d4signMatch = true;
       if (filters.d4sign === "NÃO CADASTRADO") {
         d4signMatch = !contract.d4SignData;
@@ -188,7 +205,6 @@ export default function ManageContracts() {
             filters.d4sign.toLowerCase();
       }
 
-      // Retorna true se todos os filtros aplicáveis forem satisfeitos
       return (
         nameMatch && (filters.franchise ? franchiseMatch : true) && d4signMatch
       );
@@ -247,14 +263,29 @@ export default function ManageContracts() {
   }, [selectContract.cep]);
 
   //Changes -----------------------------------------------------------------------------------------
-  const handleChangeFilter = (event) => {
-    setFilter((prevState) => ({
-      ...prevState,
-      [event.target.name]: event.target.value,
-    }));
-  };
+  const handleClearFilters = () => {
+    setFilter((prevFilter) => ({...prevFilter, name: "", d4sign: "", franchise: "" }));
+  }
 
-  const handleAddClick = () => {
+  const handleChange = useCallback(handleGenericChange(setSelectContract), []);
+
+  const handleFormatChange = useCallback(
+    handleGenericChange(setSelectContract, (name, value) => {
+      switch (name) {
+        case 'cpfcnpj':
+          return Formats.CpfCnpj(value);
+        case 'value':
+          return Formats.Money(value);
+        case 'cep':
+          return Formats.Cep(value);
+        default:
+          return value;
+      }
+    }),
+    []
+  );
+
+  const handleAddClick = useCallback(() => {
     setSelectContract((prevContract) => ({
       ...prevContract,
       clauses: [
@@ -262,68 +293,49 @@ export default function ManageContracts() {
         { currentId: Date.now(), description: "", isExpanded: false },
       ],
     }));
-  };
+  }, [setSelectContract]);
 
-  const handleDeleteClause = (id) => {
-    setSelectContract((prevContract) => ({
-      ...prevContract,
-      clauses: prevContract.clauses.filter((clause) => clause.id !== id),
-    }));
-  };
+  const handleDeleteClause = useCallback(
+    (id) => {
+      setSelectContract((prevContract) => ({
+        ...prevContract,
+        clauses: prevContract.clauses.filter((clause) => clause.id !== id),
+      }));
+    },
+    [setSelectContract]
+  );
 
-  const toggleExpand = (id) => {
-    setSelectContract((prevContract) => ({
-      ...prevContract,
-      clauses: prevContract.clauses.map((clause) =>
-        clause.id === id
-          ? { ...clause, isExpanded: !clause.isExpanded }
-          : clause
-      ),
-    }));
-  };
+  const toggleExpand = useCallback(handleClauseAction(setSelectContract, (clause) => ({
+    isExpanded: !clause.isExpanded,
+  })), [setSelectContract]);
 
-  const handleClauseChange = (id, newText) => {
-    setSelectContract((prevValues) => ({
-      ...prevValues,
-      clauses: prevValues.clauses.map((clause) =>
-        clause.id === id ? { ...clause, description: newText } : clause
-      ),
-    }));
-  };
+  const handleClauseChange = useCallback(handleClauseAction(setSelectContract, (clause, newText) => ({
+    description: newText,
+  })), [setSelectContract]);
 
-  const removeMask = (maskedValue) => {
-    return maskedValue.replace(/[.,]/g, "");
-  };
-
-  const handleServiceChange = (event) => {
+  const handleServiceChange = useCallback((event) => {
     const { value } = event.target;
-  
+
     setSelectContract((prevState) => {
-      // Filtra contratos de serviço existentes, garantindo que não sejam undefined
       const updatedContractsService = (prevState.contracts_Service || [])
-        .filter((contractService) => 
-          contractService?.Services?.description && 
-          value.includes(contractService.Services.description)
+        .filter(
+          (contractService) =>
+            contractService?.Services?.description &&
+            value.includes(contractService.Services.description)
         )
         .map((contractService) => ({
           ...contractService,
           service_id: contractService.Services.id,
           contract_id: prevState.id,
         }));
-  
-      // Adiciona novos serviços que não estão no updatedContractsService
+
       value.forEach((description) => {
-        // Verifica se o serviço já existe no updatedContractsService
-        if (
-          !updatedContractsService.some(
-            (cs) => cs.Services?.description === description
-          )
-        ) {
-          // Encontra o serviço correspondente na lista de serviços
+        if (!updatedContractsService.some(
+          (cs) => cs.Services?.description === description
+        )) {
           const serviceToAdd = services.find(
             (s) => s.description === description
           );
-          // Se o serviço existir, adiciona ao updatedContractsService
           if (serviceToAdd) {
             updatedContractsService.push({
               contract_id: prevState.id,
@@ -336,20 +348,20 @@ export default function ManageContracts() {
           }
         }
       });
-  
+
       return {
         ...prevState,
         contracts_Service: updatedContractsService,
       };
     });
-  };
+  }, [setSelectContract, services]);
 
-  const handleSignChange = (event) => {
+  const handleSignChange = useCallback((event) => {
     const { value } = event.target;
 
     setSelectContract((prevState) => {
       const currentTecSocialReason =
-        prevState.signOnContract[0].Contract_Signature.socialReason;
+        prevState.signOnContract[0]?.Contract_Signature?.socialReason;
 
       if (value !== currentTecSocialReason) {
         const selectedTec = signs.find((sign) => sign.socialReason === value);
@@ -366,47 +378,13 @@ export default function ManageContracts() {
       }
       return prevState;
     });
-  };
+  }, [setSelectContract, signs]);
 
-  const handleChange = (eventOrDate) => {
-    if (eventOrDate.target) {
-      const { name, value } = eventOrDate.target;
-
-      setSelectContract((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    } else {
-      setSelectContract((prevState) => ({
-        ...prevState,
-        date: eventOrDate ? dayjs(eventOrDate) : null,
-      }));
-    }
-  };
-
-  const handleFormatChange = (eventOrDate) => {
-    if (eventOrDate.target) {
-      const { name, value } = eventOrDate.target;
-
-      if (name === "cpfcnpj") {
-        setSelectContract((prevState) => ({
-          ...prevState,
-          [name]: Formats.CpfCnpj(value),
-        }));
-      } else if (name === "value") {
-        setSelectContract((prevState) => ({
-          ...prevState,
-          [name]: Formats.Money(value),
-        }));
-      } else if (name === "cep") {
-        setSelectContract((prevState) => ({
-          ...prevState,
-          [name]: Formats.Cep(value),
-        }));
-      }
-    }
-  };
-
+  const handleChangeFilter = useCallback(
+    handleFilterChange(setFilter),
+    []
+  );
+  
   //D4Sign -----------------------------------------------------------------------------------------
 
   const verificaCorDoStatus = (status) => {
@@ -644,7 +622,6 @@ export default function ManageContracts() {
           )
         );
 
-        setEmail("");
         setD4SignRegisterSignature(false);
         Toast.Success("E-mail cadastrado com sucesso");
       } catch (error) {
@@ -767,10 +744,6 @@ export default function ManageContracts() {
       clauses: updatedContractsService,
     });
 
-    if (contract.value) {
-      setValueMoney(Formats.Money(contract.value));
-    }
-
     setLoading(false);
     setIsModalVisibleUpdate(true);
   };
@@ -861,669 +834,91 @@ export default function ManageContracts() {
   };
 
   //Tabelas -----------------------------------------------------------------------------------------
-  const d4SignColumns = [
-    {
-      title: "Contrato",
-      dataIndex: "contract",
-      key: "contract",
-      render: (text, row) =>
-        row.contract.nameDoc && row.contract.nameDoc.length > 25 ? (
-          <Tooltip title={row.contract.nameDoc.toUpperCase()}>
-            <p
-              style={{
-                cursor: "pointer",
-                ...(window.innerWidth > 768 ? {} : { fontSize: "0.8rem" }),
-              }}
-            >
-              {row.contract.nameDoc.toUpperCase().substring(0, 25)}...
-            </p>
-          </Tooltip>
-        ) : (
-          <p style={{ cursor: "pointer" }}>
-            {row.contract.nameDoc ? row.contract.nameDoc.toUpperCase() : ""}
-          </p>
-        ),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (text, row) => {
-        return row.contract.statusName &&
-          row.contract.statusName.length > 10 ? (
-          <Tooltip title={row.contract.statusName.toUpperCase()}>
-            <p
-              style={{
-                cursor: "pointer",
-                backgroundColor: verificaCorDoStatus(row.contract.statusId),
-                color: "#ffffff",
-                borderRadius: "5px",
-                padding: "4px 15px",
-                margin: "15px",
-                display: "inline-block",
-              }}
-            >
-              {row.contract.statusName.toUpperCase().substring(0, 10)}...
-            </p>
-          </Tooltip>
-        ) : (
-          <p
-            style={{
-              cursor: "pointer",
-              backgroundColor: verificaCorDoStatus(row.contract.statusId),
-              color: "#ffffff",
-              borderRadius: "5px",
-              padding: "4px 15px",
-              margin: "15px",
-              display: "inline-block",
-            }}
-          >
-            {row.contract.statusName
-              ? row.contract.statusName.toUpperCase()
-              : ""}
-          </p>
-        );
-      },
-    },
-    {
-      title: "Ações",
-      key: "actions",
-      width: 100,
-      render: (text, record) => (
-        <ActionsContainer>
-          {record.exists && (
-            <Button
-              title="Controle de Assinatura"
-              style={{ backgroundColor: "#7B68EE", color: "#fff" }}
-              shape="circle"
-              icon={<ControlFilled />}
-              onClick={() => handleD4SignRegisterSign(record)}
-            />
-          )}
-          {record.exists && (
-            <Button
-              title="Enviar para Assinar"
-              style={{ backgroundColor: "#FF69B4", color: "#fff" }}
-              shape="circle"
-              icon={<SendOutlined />}
-              onClick={() => handleSendD4SignToSign(record)}
-            />
-          )}
-          {record.exists && (
-            <Button
-              title="Informações do Documento"
-              style={{ backgroundColor: "#808080", color: "#fff" }}
-              shape="circle"
-              icon={<InfoCircleFilled />}
-              onClick={() => handleD4signInfo(record)}
-            />
-          )}
-          {record.exists && (
-            <Button
-              title="Donwload do Documento"
-              style={{ backgroundColor: "#26D0F0", color: "#fff" }}
-              shape="circle"
-              icon={<DownloadOutlined />}
-              onClick={() => handleD4SignViewDocument(record)}
-            />
-          )}
-          {record.exists && (
-            <Popconfirm
-              title="Tem certeza?"
-              description="Você quer cancelar este contrato?"
-              onConfirm={() => deleteDocumentOnD4Sign(record)}
-              onCancel={() => cancelDelete(record)}
-              okText="Sim"
-              cancelText="Não"
-              icon={<QuestionCircleOutlined style={{ color: "red" }} />}
-            >
-              <Button
-                title="Cancelar Documento"
-                style={{ backgroundColor: "#c72424", color: "#fff" }}
-                shape="circle"
-                icon={<CloseOutlined />}
-              />
-            </Popconfirm>
-          )}
-          {!record.exists && (
-            <Button
-              title="Cadastrar Documento"
-              style={{ backgroundColor: "#9400D3", color: "#fff" }}
-              shape="circle"
-              icon={<FaFileUpload />}
-              onClick={() => handleD4SignRegister(record)}
-            />
-          )}
-        </ActionsContainer>
-      ),
-    },
-  ];
-
-  const options = [
-    {
-      title: "Cliente",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
-    },
-    {
-      title: "Nº Contrato",
-      dataIndex: "contractNumber",
-      key: "contractNumber",
-      sorter: (a, b) => a.contractNumber - b.contractNumber,
-    },
-    {
-      title: "D4Sign",
-      key: "d4sign",
-      dataIndex: "d4sign",
-      render: (text, row) => {
-        const hasD4Sign = row.d4SignData;
-
-        const backgroundColor = hasD4Sign
-          ? verificaCorDoStatus(row.d4SignData.statusId)
-          : "#836FFF";
-        const statusText = hasD4Sign
-          ? row.d4SignData.statusName.toUpperCase()
-          : "NÃO CADASTRADO";
-
-        return (
-          <Tooltip title={statusText}>
-            <p
-              style={{
-                cursor: "pointer",
-                backgroundColor: backgroundColor,
-                color: "#ffffff",
-                borderRadius: "5px",
-                padding: "4px 15px",
-                margin: "15px",
-                display: "inline-block",
-              }}
-            >
-              {statusText === "NÃO CADASTRADO" || statusText.length <= 10
-                ? statusText
-                : `${statusText.substring(0, 10)}...`}
-            </p>
-          </Tooltip>
-        );
-      },
-    },
-    {
-      title: "D4Sign/Opções",
-      key: "actions",
-      width: 150,
-      render: (text, record) => (
-        <ActionsContainer>
-          <Button
-            title="Controle D4Sign"
-            style={{ backgroundColor: "#836FFF", color: "#fff" }}
-            shape="circle"
-            icon={<ControlFilled />}
-            onClick={() => handleD4Sign(record)}
-          />
-          <Button
-            title="Aditivo/Reajuste"
-            style={{ backgroundColor: "#FF7F50", color: "#fff" }}
-            shape="circle"
-            onClick={() => handleButtonClick(record)}
-            icon={<EllipsisOutlined />}
-          />
-        </ActionsContainer>
-      ),
-    },
-  ];
-
-  const d4SignOptions = [
-    {
-      key: "status",
-      contract: selectContract.d4sign
-        ? selectContract.d4SignData
-        : "Não cadastrado",
-      status: selectContract.d4sign
-        ? selectContract.d4SignData
-        : "Não cadastrado",
-      exists: !!selectContract.d4sign,
-    },
-  ];
 
   return (
-    <>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">
+        Gerenciar Contratos
+      </h1>
       {loading && <Loading />}
-      <Table.Root title="Lista de Contratos">
-        <Filter.Fragment section="Filtro">
-          <CustomInput.Root columnSize={12}>
-            <Filter.FilterInput
-              label="Nome do Cliente"
-              name="name"
-              onChange={handleChangeFilter}
-              value={filter.name}
-            />
-          </CustomInput.Root>
-          <CustomInput.Root columnSize={6}>
-            <Filter.Select
-              label="Franquia"
-              name="franchise"
-              onChange={handleChangeFilter}
-              value={filter.franchise}
-              options={signs.map((sign) => sign.socialReason)}
-            />
-          </CustomInput.Root>
-          <CustomInput.Root columnSize={6}>
-            <Filter.Select
-              label="Status D4Sign"
-              name="d4sign"
-              onChange={handleChangeFilter}
-              value={filter.d4sign}
-              options={Options.D4SignStatus()}
-            />
-          </CustomInput.Root>
-        </Filter.Fragment>
-        <Table.Table
-          data={contracts}
-          columns={options}
-          onView={handleView}
-          onUpdate={handleUpdate}
-          confirm={confirmDelete}
-          cancel={cancelDelete}
-        />
-        {isModalVisibleUpdate && (
-          <Modal
-            title="Editar Contrato"
-            open={isModalVisibleUpdate}
-            centered
-            style={{ top: 20 }}
-            onCancel={() => {
-              setIsModalVisibleUpdate(false);
-              setFile(null);
-            }}
-            width={1200}
-            footer={[
-              <Button
-                key="submit"
-                type="primary"
-                onClick={() => confirmUpdate(selectContract)}
-              >
-                Atualizar
-              </Button>,
-              <Button
-                key="back"
-                onClick={() => {
-                  setIsModalVisibleUpdate(false);
-                  setFile(null);
-                }}
-              >
-                Voltar
-              </Button>,
-            ]}
-          >
-            <Form.Fragment section="Contratante">
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
-                  label="Nome"
-                  type="text"
-                  name="name"
-                  value={selectContract.name}
-                  onChange={handleChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
-                  label="CPF ou CNPJ"
-                  type="text"
-                  name="cpfcnpj"
-                  value={selectContract.cpfcnpj}
-                  onChange={handleFormatChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
-                  label="CEP"
-                  type="text"
-                  name="cep"
-                  value={selectContract.cep}
-                  onChange={handleFormatChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
-                  label="Rua"
-                  type="text"
-                  name="road"
-                  value={selectContract.road}
-                  onChange={handleChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={3}>
-                <CustomInput.Input
-                  label="Número"
-                  type="text"
-                  name="number"
-                  value={selectContract.number}
-                  onChange={handleChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={3}>
-                <CustomInput.Input
-                  label="Complemento"
-                  type="text"
-                  name="complement"
-                  value={selectContract.complement}
-                  onChange={handleChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
-                  label="Bairro"
-                  type="text"
-                  name="neighborhood"
-                  value={selectContract.neighborhood}
-                  onChange={handleChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
-                  label="Cidade"
-                  type="text"
-                  name="city"
-                  value={selectContract.city}
-                  onChange={handleChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
-                  label="UF"
-                  type="text"
-                  name="state"
-                  value={selectContract.state}
-                  onChange={handleChange}
-                />
-              </CustomInput.Root>
-            </Form.Fragment>
-            <Form.Fragment section="Contratado">
-              <CustomInput.Select
-                label="Assinaturas"
-                name="signOnContract"
-                value={
-                  selectContract.signOnContract[0].Contract_Signature
-                    .socialReason
-                }
-                options={signs.map((sign) => sign.socialReason)}
-                onChange={handleSignChange}
-              />
-            </Form.Fragment>
-            <Form.Fragment section="Contrato">
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
-                  label="Número"
-                  type="text"
-                  name="contractNumber"
-                  value={selectContract.contractNumber}
-                  onChange={handleChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.DateInput
-                  label="Data de Início"
-                  value={selectContract.date}
-                  onChange={handleChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Input
-                  label="Valor"
-                  type="text"
-                  name="value"
-                  value={selectContract.value}
-                  onChange={handleFormatChange}
-                />
-              </CustomInput.Root>
-              <CustomInput.Root columnSize={6}>
-                <CustomInput.Select
-                  label="Índice"
-                  type="text"
-                  name="index"
-                  value={selectContract.index}
-                  onChange={handleChange}
-                  options={Options.IndexContract()}
-                />
-              </CustomInput.Root>
-              <CustomInput.Select
-                label="Serviços"
-                name="contracts_Service"
-                value={
-                  selectContract.contracts_Service?.map(
-                    (service) => service.Services?.description
-                  ) ?? []
-                }
-                onChange={handleServiceChange}
-                multiple={true}
-                options={services.map((service) => service.description)}
-              />
-            </Form.Fragment>
-            <Form.Fragment section="Clausulas">
-              <div style={{ width: "100%" }}>
-                <Button
-                  variant="contained"
-                  style={{ marginBottom: "20px" }}
-                  color="primary"
-                  onClick={handleAddClick}
-                >
-                  Adicionar Cláusula
-                </Button>
-                {selectContract.clauses.map((clause, index) => (
-                  <CustomInput.LongText
-                    key={clause.id}
-                    label={`Cláusula Nº${index + 1}`}
-                    value={clause.description}
-                    isExpanded={clause.isExpanded}
-                    onChange={(e) =>
-                      handleClauseChange(clause.id, e.target.value)
-                    }
-                    onExpandToggle={() => toggleExpand(clause.id)}
-                    onDelete={() => handleDeleteClause(clause.id)}
-                  />
-                ))}
-              </div>
-              <Upload
-                beforeUpload={(file) => {
-                  handleFileChange({ target: { files: [file] } });
-                  return false;
-                }}
-                accept=".pdf"
-                maxCount={1}
-                showUploadList={false}
-              >
-                <Button
-                  title="Anexar Proposta"
-                  style={{ backgroundColor: "#ed9121", color: "#fff" }}
-                  shape="default"
-                >
-                  Anexar Proposta
-                </Button>
-              </Upload>
-            </Form.Fragment>
-          </Modal>
-        )}
-        {d4signController && (
-          <>
-            {loading && <Loading />}
-            <Modal
-              title="Controle de assinaturas"
-              open={d4signController}
-              centered
-              width={"90%"}
-              onCancel={() => setD4signController(false)}
-              footer={[
-                <Button key="back" onClick={() => setD4signController(false)}>
-                  Voltar
-                </Button>,
-              ]}
-            >
-              <Table.TableClean columns={d4SignColumns} data={d4SignOptions} />
-            </Modal>
-          </>
-        )}
-        {d4SignOpenInfo && (
-          <Modal
-            title="Informações do Documento"
-            open={d4SignOpenInfo}
-            centered
-            width={"45%"}
-            onCancel={() => setD4SignOpenInfo(false)}
-            footer={[
-              <Button key="back" onClick={() => setD4SignOpenInfo(false)}>
-                Voltar
-              </Button>,
-            ]}
-          >
-            <h1>E-mails cadastrados</h1>
-            {signatures.map((signatarios, index) =>
-              signatarios.list !== null ? (
-                signatarios.list.map((signatario, index) => {
-                  const verificaCor = () => {
-                    if (signatario.signed === "0") {
-                      return "#c72424";
-                    } else if (signatario.signed === "1") {
-                      return "#1eb300";
-                    }
-                  };
-                  const verificaSeJaAssinou = () => {
-                    if (signatario.signed === "0") {
-                      return (
-                        <div>
-                          <TiArrowForward
-                            style={{
-                              marginLeft: "10px",
-                            }}
-                            cursor={"pointer"}
-                            size={20}
-                            color={"#05628F"}
-                            onClick={async () => {
-                              const data = {
-                                id_doc: signatarios.uuidDoc,
-                                email: signatario.email,
-                              };
-                              await d4SignService
-                                .resendSignature(data)
-                                .then(() => {
-                                  Toast.Success("E-mail reenviado com sucesso");
-                                });
-                            }}
-                          />
-                          <MdPersonRemoveAlt1
-                            style={{
-                              marginLeft: "10px",
-                            }}
-                            cursor={"pointer"}
-                            size={20}
-                            color={"#c72424"}
-                            onClick={async () => {
-                              setLoading(true);
-                              const data = {
-                                id_doc: signatarios.uuidDoc,
-                                id_assinatura: signatario.key_signer,
-                                email_assinatura: signatario.email,
-                              };
-                              await d4SignService
-                                .cancelSignature(data)
-                                .then(() => {
-                                  setSignatures([]);
-                                  Toast.Success("E-mail removido com sucesso");
-                                  setLoading(false);
-                                });
-                            }}
-                          />
-                        </div>
-                      );
-                    } else if (signatario.signed === "1") {
-                      return (
-                        <AiOutlineCheck
-                          style={{
-                            marginLeft: "10px",
-                          }}
-                          size={20}
-                          color={"#1eb300"}
-                        />
-                      );
-                    }
-                  };
-
-                  return (
-                    <div
-                      key={index}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        marginBottom: "10px",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      {signatario.email.length > 20 ? (
-                        <Tooltip title={signatario.email}>
-                          <p
-                            style={{
-                              color: verificaCor(),
-                              cursor: "pointer",
-                            }}
-                          >
-                            {signatario.email.substring(0, 20)}...
-                          </p>
-                        </Tooltip>
-                      ) : (
-                        <p
-                          style={{
-                            color: verificaCor(),
-                            cursor: "pointer",
-                          }}
-                        >
-                          {signatario.email}
-                        </p>
-                      )}
-                      {verificaSeJaAssinou()}
-                    </div>
-                  );
-                })
-              ) : (
-                <p key={index}>Nenhum e-mail cadastrado</p>
-              )
-            )}
-          </Modal>
-        )}
-        {d4SignRegisterSignature && (
-          <Modal
-            title="Cadastrar E-mail das assinaturas"
-            open={d4SignRegisterSignature}
-            centered
-            width={500}
-            onCancel={() => setD4SignRegisterSignature(false)}
-            footer={[
-              <Button
-                key="register"
-                style={{
-                  backgroundColor: "#4168b0",
-                  color: "white",
-                }}
-                onClick={() => handleInsertSign(email)}
-              >
-                Cadastrar
-              </Button>,
-              <Button
-                key="back"
-                onClick={() => setD4SignRegisterSignature(false)}
-              >
-                Voltar
-              </Button>,
-            ]}
-          >
-            <CustomInput.Input
-              label="E-mail"
-              type="text"
-              name="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </Modal>
-        )}
-      </Table.Root>
-    </>
+      <FilterComponent
+        filter={filter}
+        onFilterChange={handleChangeFilter}
+        onClearFilters={handleClearFilters}
+        signs={signs}
+      />
+      <ContractTable
+        contracts={contracts}
+        onView={handleView}
+        onUpdate={handleUpdate}
+        confirm={confirmDelete}
+        cancel={cancelDelete}
+        handleD4Sign={handleD4Sign}
+        handleButtonClick={handleButtonClick}
+        verifycolor={verificaCorDoStatus}
+      />
+      <EditModalContract
+        isVisible={isModalVisibleUpdate}
+        onClose={() => {
+          setIsModalVisibleUpdate(false);
+          setFile(null);
+        }}
+        onUpdate={confirmUpdate}
+        contract={selectContract}
+        handleChange={handleChange}
+        handleFormatChange={handleFormatChange}
+        handleSignChange={handleSignChange}
+        handleServiceChange={handleServiceChange}
+        handleAddClick={handleAddClick}
+        handleClauseChange={handleClauseChange}
+        toggleExpand={toggleExpand}
+        handleDeleteClause={handleDeleteClause}
+        handleFileChange={handleFileChange}
+        signs={signs}
+        services={services}
+        Options={Options}
+      />
+      <D4SignControlModal
+        isVisible={d4signController}
+        onClose={() => setD4signController(false)}
+        contract={selectContract}
+        verifyColor={verificaCorDoStatus}
+        handleD4SignRegisterSign={handleD4SignRegisterSign}
+        handleSendD4SignToSign={handleSendD4SignToSign}
+        handleD4signInfo={handleD4signInfo}
+        handleD4SignViewDocument={handleD4SignViewDocument}
+        deleteDocumentOnD4Sign={deleteDocumentOnD4Sign}
+        cancelDelete={cancelDelete}
+        handleD4SignRegister={handleD4SignRegister}
+      />
+      <D4SignInfoModal
+        isVisible={d4SignOpenInfo}
+        onClose={() => setD4SignOpenInfo(false)}
+        signatures={signatures}
+        resendSignature={async (uuidDoc, email) => {
+          const data = { id_doc: uuidDoc, email };
+          await d4SignService.resendSignature(data);
+          Toast.Success("E-mail reenviado com sucesso");
+        }}
+        cancelSignature={async (uuidDoc, key_signer, email) => {
+          setLoading(true);
+          const data = {
+            id_doc: uuidDoc,
+            id_assinatura: key_signer,
+            email_assinatura: email,
+          };
+          await d4SignService.cancelSignature(data);
+          setSignatures([]);
+          Toast.Success("E-mail removido com sucesso");
+          setLoading(false);
+        }}
+      />
+      <D4SignEmailModal
+        isVisible={d4SignRegisterSignature}
+        onClose={() => setD4SignRegisterSignature(false)}
+        onRegister={handleInsertSign}
+        loading={loading}
+      />
+    </div>
   );
 }

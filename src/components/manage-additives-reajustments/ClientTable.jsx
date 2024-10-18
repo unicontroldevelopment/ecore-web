@@ -1,36 +1,53 @@
-/* eslint-disable react/prop-types */
 import {
   DeleteOutlined,
   EditOutlined,
+  EllipsisOutlined,
   EyeOutlined,
-  QuestionCircleOutlined,
+  QuestionCircleOutlined
 } from "@ant-design/icons";
 import { Button, Popconfirm, Table } from "antd";
 import React from "react";
 import { ActionsContainer } from "./styles";
 
-const TableComponent = ({
-  data,
+const ClientTable = ({
+  contracts,
+  loading,
   onView,
   onUpdate,
   confirm,
   cancel,
-  columns,
-  loading
+  handleD4Sign,
+  handleButtonClick,
+  verifycolor,
 }) => {
-
-  const handleTableChange = (pagination, filters, sorter) => {
-    return;
-  };
-
-  const columnsAndActions = [
-    ...columns.map((column) => ({
-      title: column.title,
-      dataIndex: column.dataIndex,
-      key: column.key,
-      sorter: column.sorter,
-      render: column.render,
-    })),
+  const columns = [
+    {
+      title: "Cliente",
+      dataIndex: "name",
+      key: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name),
+    },
+    {
+      title: "CPF/CNPJ",
+      dataIndex: "cpfcnpj",
+      key: "cpfcnpj",
+      sorter: (a, b) => a.cpfcnpj - b.cpfcnpj,
+    },
+    {
+      title: "Aditivos e Reajustes",
+      key: "actions",
+      render: (text, record) => (
+        <ActionsContainer>
+          <Button
+            title="Aditivo/Reajuste"
+            style={{ backgroundColor: "#FF7F50", color: "#fff" }}
+            shape="circle"
+            onClick={() => handleButtonClick(record)}
+            icon={<EllipsisOutlined />}
+          />
+        </ActionsContainer>
+      ),
+    },
     {
       title: "Ações",
       key: "actions",
@@ -72,6 +89,10 @@ const TableComponent = ({
     },
   ];
 
+  const handleTableChange = (pagination, filters, sorter) => {
+    return;
+  };
+
   const paginationConfig = {
     defaultPageSize: 10,
     showSizeChanger: true,
@@ -79,15 +100,17 @@ const TableComponent = ({
   };
 
   return (
-    <Table
-    loading={loading}
-      columns={columnsAndActions}
-      dataSource={data}
-      pagination={paginationConfig}
-      rowKey="id"
-      onChange={handleTableChange}
-    />
+    <div className="overflow-x-auto shadow-md sm:rounded-lg">
+      <Table
+        columns={columns}
+        dataSource={contracts}
+        pagination={paginationConfig}
+        rowKey="id"
+        loading={loading}
+        className="min-w-full"
+      />
+    </div>
   );
 };
 
-export const CustomTable = React.memo(TableComponent);
+export default React.memo(ClientTable);
