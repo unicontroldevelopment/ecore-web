@@ -57,7 +57,7 @@ export const discountAuthorization = (employee, type, description, value, parcel
         fontSize: 13,
       },
     {
-      text: `\n\nEu ${employee.name}, ${employeeType === "CLT" ? "funcionário(a)" : "contratado(a)"} da empresa ${employee.company}, autorizo o desconto na ${type === "CLT" ? "folha de pagamento mensal" : "nota de prestação de serviço mensal"}, no valor de RS ${value}, relacionado a compra ${type}, ${description ? description : "sem dscrição"} no dia ${formatData(date)}.\n\n`,
+      text: `\n\nEu ${employee.name}, ${employeeType === "CLT" ? "funcionário(a)" : "contratado(a)"} da empresa ${employee.company}, autorizo o desconto na ${employeeType === "CLT" ? "folha de pagamento mensal" : "nota de prestação de serviço mensal"}, no valor de RS ${value}, relacionado a compra ${type}, ${description ? description : "sem dscrição"} no dia ${formatData(date)}.\n\n`,
       alignment: "justify",
       fontSize: 13,
     },
