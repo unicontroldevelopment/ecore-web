@@ -7,17 +7,23 @@ import { MdCalculate } from "react-icons/md";
 import { z } from "zod";
 import { cn } from "../../../lib/utils";
 import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "../../ui/form";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
 import { Switch } from "../../ui/switch";
 import useDesigner from "../hooks/useDesigner";
 
@@ -25,7 +31,16 @@ const propertiesSchema = z.object({
   label: z.string().min(2).max(50),
   helperText: z.string().max(200),
   required: z.boolean().default(false),
-  calculationType: z.enum(["add", "subtract", "multiply", "divide", "percentage"]),
+  calculationType: z.enum([
+    "add",
+    "subtract",
+    "multiply",
+    "divide",
+    "percentage",
+  ]),
+  firstInputLabel: z.string().min(1).max(50),
+  secondInputLabel: z.string().min(1).max(50),
+  resultLabel: z.string().min(1).max(50),
 });
 
 const calculationTypes = {
@@ -41,11 +56,14 @@ export const CalculatorFieldFormElement = {
   construct: (id) => ({
     id,
     type: "CalculatorField",
-    extraAttributes: {
+    extraAtribbutes: {
       label: "Calculadora",
       helperText: "Entre dois números para fazer um calculo",
       required: false,
       calculationType: "add",
+      firstInputLabel: "Primeiro Valor",
+      secondInputLabel: "Segundo Valor",
+      resultLabel: "Resultado",
     },
   }),
   designerBtnElement: {
@@ -57,7 +75,7 @@ export const CalculatorFieldFormElement = {
   propertiesComponent: PropertiesComponent,
   validate: (formElement, currentValue) => {
     const element = formElement;
-    if (element.extraAttributes.required) {
+    if (element.extraAtribbutes.required) {
       return currentValue.input1 !== "" && currentValue.input2 !== "";
     }
     return true;
@@ -65,27 +83,49 @@ export const CalculatorFieldFormElement = {
 };
 
 function DesignerComponent({ elementInstance }) {
-  const { label, helperText, calculationType } = elementInstance.extraAttributes;
+  const {
+    label,
+    helperText,
+    calculationType,
+    firstInputLabel,
+    secondInputLabel,
+    resultLabel,
+  } = elementInstance.extraAtribbutes;
   return (
     <div className="flex flex-col gap-2 w-full">
       <Label>{label}</Label>
       <div className="flex gap-2">
-        <Input readOnly placeholder="Primeiro Valor" />
-        <Input readOnly placeholder="Segundo Valor" />
+        <Input readOnly placeholder={firstInputLabel} />
+        <Input readOnly placeholder={secondInputLabel} />
       </div>
-      <Input readOnly placeholder="Resultado" />
-      {helperText && <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>}
+      <Input readOnly placeholder={resultLabel} />
+      {helperText && (
+        <p className="text-muted-foreground text-[0.8rem]">{helperText}</p>
+      )}
     </div>
   );
 }
 
-function FormComponent({ elementInstance, submitValue, isInvalid, defaultValue }) {
+function FormComponent({
+  elementInstance,
+  submitValue,
+  isInvalid,
+  defaultValue,
+}) {
   const [value1, setValue1] = useState(defaultValue?.input1 || "");
   const [value2, setValue2] = useState(defaultValue?.input2 || "");
   const [result, setResult] = useState("");
   const [error, setError] = useState(false);
 
-  const { label, required, helperText, calculationType } = elementInstance.extraAttributes;
+  const {
+    label,
+    required,
+    helperText,
+    calculationType,
+    firstInputLabel,
+    secondInputLabel,
+    resultLabel,
+  } = elementInstance.extraAtribbutes;
 
   useEffect(() => {
     setError(isInvalid);
@@ -104,10 +144,10 @@ function FormComponent({ elementInstance, submitValue, isInvalid, defaultValue }
 
   const handleBlur = () => {
     if (!submitValue) return;
-    const valid = CalculatorFieldFormElement.validate(
-      elementInstance,
-      { input1: value1, input2: value2 }
-    );
+    const valid = CalculatorFieldFormElement.validate(elementInstance, {
+      input1: value1,
+      input2: value2,
+    });
     setError(!valid);
     if (!valid) return;
     submitValue(elementInstance.id, { input1: value1, input2: value2, result });
@@ -122,7 +162,7 @@ function FormComponent({ elementInstance, submitValue, isInvalid, defaultValue }
       <div className="flex gap-2">
         <Input
           className={cn(error && "border-red-500")}
-          placeholder="Primeiro Valor"
+          placeholder={firstInputLabel}
           type="number"
           value={value1}
           onChange={(e) => setValue1(e.target.value)}
@@ -130,16 +170,21 @@ function FormComponent({ elementInstance, submitValue, isInvalid, defaultValue }
         />
         <Input
           className={cn(error && "border-red-500")}
-          placeholder={calculationType === "percentage" ? "Porcentagem" : "Segundo Valor"}
+          placeholder={secondInputLabel}
           type="number"
           value={value2}
           onChange={(e) => setValue2(e.target.value)}
           onBlur={handleBlur}
         />
       </div>
-      <Input readOnly value={result} placeholder="Result" />
+      <Input readOnly value={result} placeholder={resultLabel || "Resultado"} />
       {helperText && (
-        <p className={cn("text-muted-foreground text-[0.8rem]", error && "text-red-500")}>
+        <p
+          className={cn(
+            "text-muted-foreground text-[0.8rem]",
+            error && "text-red-500"
+          )}
+        >
           {helperText}
         </p>
       )}
@@ -153,21 +198,24 @@ function PropertiesComponent({ elementInstance }) {
     resolver: zodResolver(propertiesSchema),
     mode: "onBlur",
     defaultValues: {
-      label: elementInstance.extraAttributes.label,
-      helperText: elementInstance.extraAttributes.helperText,
-      required: elementInstance.extraAttributes.required,
-      calculationType: elementInstance.extraAttributes.calculationType,
+      label: elementInstance.extraAtribbutes.label,
+      helperText: elementInstance.extraAtribbutes.helperText,
+      required: elementInstance.extraAtribbutes.required,
+      calculationType: elementInstance.extraAtribbutes.calculationType,
+      firstInputLabel: elementInstance.extraAtribbutes.firstInputLabel,
+      secondInputLabel: elementInstance.extraAtribbutes.secondInputLabel,
+      resultLabel: elementInstance.extraAtribbutes.resultLabel,
     },
   });
 
   useEffect(() => {
-    form.reset(elementInstance.extraAttributes);
+    form.reset(elementInstance.extraAtribbutes);
   }, [elementInstance, form]);
 
   function applyChanges(values) {
     updateElement(elementInstance.id, {
       ...elementInstance,
-      extraAttributes: values,
+      extraAtribbutes: values,
     });
   }
 
@@ -181,9 +229,12 @@ function PropertiesComponent({ elementInstance }) {
             <FormItem>
               <FormLabel>Titulo do campo</FormLabel>
               <FormControl>
-                <Input {...field} onKeyDown={(e) => {
-                  if (e.key === "Enter") e.currentTarget.blur();
-                }} />
+                <Input
+                  {...field}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                />
               </FormControl>
               <FormDescription>O titulo do campo</FormDescription>
               <FormMessage />
@@ -197,9 +248,12 @@ function PropertiesComponent({ elementInstance }) {
             <FormItem>
               <FormLabel>Texto de ajuda</FormLabel>
               <FormControl>
-                <Input {...field} onKeyDown={(e) => {
-                  if (e.key === "Enter") e.currentTarget.blur();
-                }} />
+                <Input
+                  {...field}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                />
               </FormControl>
               <FormDescription>Texto de ajuda</FormDescription>
               <FormMessage />
@@ -213,9 +267,7 @@ function PropertiesComponent({ elementInstance }) {
             <FormItem className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
               <div className="space-y-0.5">
                 <FormLabel>Requer?</FormLabel>
-                <FormDescription>
-                  Esse campo é obrigatório?
-                </FormDescription>
+                <FormDescription>Esse campo é obrigatório?</FormDescription>
               </div>
               <FormControl>
                 <Switch
@@ -223,6 +275,71 @@ function PropertiesComponent({ elementInstance }) {
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="firstInputLabel"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Rótulo do Primeiro Campo</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                />
+              </FormControl>
+              <FormDescription>
+                Rótulo para o primeiro campo de entrada
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="secondInputLabel"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Rótulo do Segundo Campo</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                />
+              </FormControl>
+              <FormDescription>
+                Rótulo para o segundo campo de entrada
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="resultLabel"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Rótulo do Resultado</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                />
+              </FormControl>
+              <FormDescription>
+                Rótulo para o campo de resultado
+              </FormDescription>
+              <FormMessage />
             </FormItem>
           )}
         />

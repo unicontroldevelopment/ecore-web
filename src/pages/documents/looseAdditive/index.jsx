@@ -2,10 +2,10 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 
 import Loading from "../../../components/animations/Loading";
-import ClientTable from "../../../components/manage-additives-reajustments/ClientTable";
-import CreateModalClient from "../../../components/manage-additives-reajustments/CreateModalClient";
-import EditModalClient from "../../../components/manage-additives-reajustments/EditModalClient";
-import FilterComponent from "../../../components/manage-additives-reajustments/FilterComponent";
+import ClientTable from "../../../components/manage-clients/ClientTable";
+import CreateModalClient from "../../../components/manage-clients/CreateModalClient";
+import EditModalClient from "../../../components/manage-clients/EditModalClient";
+import FilterComponent from "../../../components/manage-clients/FilterComponent";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import ContractSignService from "../../../services/ContractSignService";
@@ -108,12 +108,10 @@ export default function LooseAdditive() {
 
   const applyFilters = (contracts, filters) => {
     return contracts.filter((contract) => {
-      // Filtro por nome
       const nameMatch = contract.name
         .toLowerCase()
         .includes(filters.name.toLowerCase());
 
-      // Filtro por franquia
       const franchiseMatch =
         contract.signOnContract &&
         contract.signOnContract.some(
@@ -125,7 +123,6 @@ export default function LooseAdditive() {
               .includes(filters.franchise.toLowerCase())
         );
 
-      // Retorna true se todos os filtros aplicáveis forem satisfeitos
       return nameMatch && (filters.franchise ? franchiseMatch : true);
     });
   };

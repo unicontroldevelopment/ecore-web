@@ -6,6 +6,7 @@ import { Documents } from "./Documents";
 import { EPIs } from "./EPI";
 import { Education } from "./Education";
 import { EmailType } from "./EmailType";
+import { Franchises } from "./Franchises";
 import { IndexContract } from "./IndexContract";
 import { Level } from "./Level";
 import { MaritalStatus } from "./MaritalStatus";
@@ -39,5 +40,6 @@ export const Options = {
   CostCenter,
   IndexContract,
   SignDocument,
-  D4SignStatus
+  D4SignStatus,
+  Franchises
 };

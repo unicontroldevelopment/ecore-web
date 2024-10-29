@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-vars */
 import dayjs from "dayjs";
+import { debounce } from "lodash";
 import { PDFDocument } from "pdf-lib";
 import * as React from "react";
-import { useCallback } from 'react';
+import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
 import ContractTable from "../../../components/manage-contract/ContractTable";
@@ -22,32 +23,33 @@ import formatData from "../../../utils/formats/formatData";
 import { Options } from "../../../utils/options";
 import { MyDocument } from "../../../utils/pdf/createContract";
 
-
 //Filtros ----------------------------------------------------------------
-const handleGenericChange = (setState, formatter = null) => (eventOrDate) => {
-  if (eventOrDate.target) {
-    const { name, value } = eventOrDate.target;
-    setState((prevState) => ({
-      ...prevState,
-      [name]: formatter ? formatter(name, value) : value,
+const handleGenericChange =
+  (setState, formatter = null) =>
+  (eventOrDate) => {
+    if (eventOrDate.target) {
+      const { name, value } = eventOrDate.target;
+      setState((prevState) => ({
+        ...prevState,
+        [name]: formatter ? formatter(name, value) : value,
+      }));
+    } else {
+      setState((prevState) => ({
+        ...prevState,
+        date: eventOrDate ? dayjs(eventOrDate) : null,
+      }));
+    }
+  };
+const handleClauseAction =
+  (setState, action) =>
+  (id, newText = "") => {
+    setState((prevContract) => ({
+      ...prevContract,
+      clauses: prevContract.clauses.map((clause) =>
+        clause.id === id ? { ...clause, ...action(clause, newText) } : clause
+      ),
     }));
-  } else {
-    setState((prevState) => ({
-      ...prevState,
-      date: eventOrDate ? dayjs(eventOrDate) : null,
-    }));
-  }
-};
-const handleClauseAction = (setState, action) => (id, newText = '') => {
-  setState((prevContract) => ({
-    ...prevContract,
-    clauses: prevContract.clauses.map((clause) =>
-      clause.id === id
-        ? { ...clause, ...action(clause, newText) }
-        : clause
-    ),
-  }));
-};
+  };
 
 const handleFilterChange = (setState) => (event) => {
   const { name, value } = event.target;
@@ -102,114 +104,129 @@ export default function ManageContracts() {
   const [signatures, setSignatures] = React.useState([]);
   const navigate = useNavigate();
 
-  const formatMoney = (value) => {
+  const formatMoney = useCallback((value) => {
     if (value === undefined || value === null) return "";
-
-    const formatter = new Intl.NumberFormat("pt-BR", {
+    return new Intl.NumberFormat("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    });
-
-    return formatter.format(value);
-  };
+    }).format(value);
+  }, []);
 
   //Services API
-  const contractService = new ContractSignService();
-  const d4SignService = new D4SignService();
-  const service = new DocumentsService();
-  const utilsService = new Utils();
+  const contractService = useMemo(() => new ContractSignService(), []);
+  const d4SignService = useMemo(() => new D4SignService(), []);
+  const service = useMemo(() => new DocumentsService(), []);
+  const utilsService = useMemo(() => new Utils(), []);
 
   //Fetchs -------------------------------------------------------------------------------------
-  const fetchContracts = async (nameFilter = "", isLoadingControlled = false) => {
-    if (isLoadingControlled) setLoading(true);
-    try {
-      const [contractsResponse, d4SignResponse] = await Promise.all([
-        service.getContracts(nameFilter, filter.type),
-        d4SignService.getAllContracts()
-      ]);
-  
-      const dataContracts = contractsResponse.data.listContracts;
-      const d4SignContracts = d4SignResponse.data;
-  
-      const d4SignDocsMap = new Map(
-        d4SignContracts.map(doc => [doc.uuidDoc, doc])
-      );
-  
-      const updatedContracts = dataContracts.map(contract => {
-        const d4SignDoc = d4SignDocsMap.get(contract.d4sign) || null;
-  
-        return {
-          ...contract,
-          value: formatMoney(contract.value),
-          d4SignData: d4SignDoc,
-          clauses: contract.clauses.map((clause, index) => ({
-            ...clause,
-            currentId: index,
-            isExpanded: false,
-          })),
-        };
-      });
-  
-      setAllContracts(updatedContracts);
-      setContracts(updatedContracts);
-    } catch (error) {
-      console.error("Erro ao buscar contratos:", error);
-    } finally {
-      if (isLoadingControlled) setLoading(false);
-    }
-  };
+  const fetchContracts = useCallback(
+    async (nameFilter = "", isLoadingControlled = false) => {
+      if (isLoadingControlled) setLoading(true);
+      try {
+        const [contractsResponse, d4SignResponse] = await Promise.all([
+          service.getContracts(nameFilter, filter.type),
+          d4SignService.getAllContracts(),
+        ]);
 
-  const fetchServices = async () => {
+        const dataContracts = contractsResponse.data.listContracts;
+        const d4SignContracts = d4SignResponse.data;
+
+        const d4SignDocsMap = new Map(
+          d4SignContracts.map((doc) => [doc.uuidDoc, doc])
+        );
+
+        const updatedContracts = dataContracts.map((contract) => {
+          const d4SignDoc = d4SignDocsMap.get(contract.d4sign) || null;
+
+          return {
+            ...contract,
+            value: formatMoney(contract.value),
+            d4SignData: d4SignDoc,
+            clauses: contract.clauses.map((clause, index) => ({
+              ...clause,
+              currentId: index,
+              isExpanded: false,
+            })),
+          };
+        });
+
+        setAllContracts(updatedContracts);
+        setContracts(updatedContracts);
+      } catch (error) {
+        console.error("Erro ao buscar contratos:", error);
+      } finally {
+        if (isLoadingControlled) setLoading(false);
+      }
+    },
+    [filter.type, formatMoney]
+  );
+
+  const fetchServices = useCallback(async () => {
     try {
       const dataServices = await service.getServices();
       setServices(dataServices.data.listServices);
     } catch (error) {
-      console.error("Erro ao buscar serviços:", error);
+      console.error("Error fetching services:", error);
     }
-  };
+  }, []);
 
-  const fetchSigns = async () => {
+  const fetchSigns = useCallback(async () => {
     try {
       const signService = await contractService.getcontractSigns();
       setSigns(signService.data.listUsers);
     } catch (error) {
-      console.error("Erro ao buscar assinaturas:", error);
+      console.error("Error fetching signatures:", error);
     }
-  };
+  }, []);
 
-  const applyFilters = (contracts, filters) => {
+  const applyFilters = useCallback((contracts, filters) => {
     return contracts.filter((contract) => {
-
       const nameMatch = contract.name
         .toLowerCase()
         .includes(filters.name.toLowerCase());
-
       const franchiseMatch =
-        contract.signOnContract &&
-        contract.signOnContract.some(
-          (signature) =>
-            signature.Contract_Signature &&
-            signature.Contract_Signature.socialReason &&
-            signature.Contract_Signature.socialReason
-              .toLowerCase()
-              .includes(filters.franchise.toLowerCase())
+        !filters.franchise ||
+        contract.signOnContract?.some((signature) =>
+          signature.Contract_Signature?.socialReason
+            ?.toLowerCase()
+            .includes(filters.franchise.toLowerCase())
         );
-
       let d4signMatch = true;
       if (filters.d4sign === "NÃO CADASTRADO") {
         d4signMatch = !contract.d4SignData;
       } else if (filters.d4sign) {
         d4signMatch =
-          contract.d4SignData &&
-          contract.d4SignData.statusName.toLowerCase() ===
-            filters.d4sign.toLowerCase();
+          contract.d4SignData?.statusName.toLowerCase() ===
+          filters.d4sign.toLowerCase();
       }
-
-      return (
-        nameMatch && (filters.franchise ? franchiseMatch : true) && d4signMatch
-      );
+      return nameMatch && franchiseMatch && d4signMatch;
     });
-  };
+  }, []);
+
+  const fetchAddress = useCallback(async (cep) => {
+    if (cep.length === 9) {
+      try {
+        const response = await utilsService.findCep(cep);
+        if (response) {
+          setSelectContract((prevValues) => ({
+            ...prevValues,
+            road: response.data.logradouro,
+            neighborhood: response.data.bairro,
+            city: response.data.localidade,
+            state: response.data.uf,
+          }));
+        }
+      } catch (error) {
+        console.Error("Error fetching address:", error);
+        Toast.Error("Erro ao buscar endereço");
+      }
+    }
+  }, [utilsService]);
+
+  const debouncedFetchAddress = useMemo(
+    () => debounce(fetchAddress, 300),
+    [fetchAddress]
+  );
 
   //Effect -------------------------------------------------------------------------------------------
   React.useEffect(() => {
@@ -229,26 +246,9 @@ export default function ManageContracts() {
   }, [filter, allContracts]);
 
   React.useEffect(() => {
-    const fetchAddress = async () => {
-      if (selectContract.cep.length === 9) {
-        try {
-          const response = await utilsService.findCep(selectContract.cep);
-          if (response) {
-            setSelectContract((prevValues) => ({
-              ...prevValues,
-              road: response.data.logradouro,
-              neighborhood: response.data.bairro,
-              city: response.data.localidade,
-              state: response.data.uf,
-            }));
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    };
-    fetchAddress();
-  }, [selectContract.cep]);
+    debouncedFetchAddress(selectContract.cep);
+    return () => debouncedFetchAddress.cancel();
+  }, [selectContract.cep, debouncedFetchAddress]);
 
   React.useEffect(() => {
     if (selectContract.cep.length !== 9) {
@@ -264,19 +264,24 @@ export default function ManageContracts() {
 
   //Changes -----------------------------------------------------------------------------------------
   const handleClearFilters = () => {
-    setFilter((prevFilter) => ({...prevFilter, name: "", d4sign: "", franchise: "" }));
-  }
+    setFilter((prevFilter) => ({
+      ...prevFilter,
+      name: "",
+      d4sign: "",
+      franchise: "",
+    }));
+  };
 
   const handleChange = useCallback(handleGenericChange(setSelectContract), []);
 
   const handleFormatChange = useCallback(
     handleGenericChange(setSelectContract, (name, value) => {
       switch (name) {
-        case 'cpfcnpj':
+        case "cpfcnpj":
           return Formats.CpfCnpj(value);
-        case 'value':
+        case "value":
           return Formats.Money(value);
-        case 'cep':
+        case "cep":
           return Formats.Cep(value);
         default:
           return value;
@@ -305,112 +310,123 @@ export default function ManageContracts() {
     [setSelectContract]
   );
 
-  const toggleExpand = useCallback(handleClauseAction(setSelectContract, (clause) => ({
-    isExpanded: !clause.isExpanded,
-  })), [setSelectContract]);
+  const toggleExpand = useCallback(
+    handleClauseAction(setSelectContract, (clause) => ({
+      isExpanded: !clause.isExpanded,
+    })),
+    [setSelectContract]
+  );
 
-  const handleClauseChange = useCallback(handleClauseAction(setSelectContract, (clause, newText) => ({
-    description: newText,
-  })), [setSelectContract]);
+  const handleClauseChange = useCallback(
+    handleClauseAction(setSelectContract, (clause, newText) => ({
+      description: newText,
+    })),
+    [setSelectContract]
+  );
 
-  const handleServiceChange = useCallback((event) => {
-    const { value } = event.target;
+  const handleServiceChange = useCallback(
+    (event) => {
+      const { value } = event.target;
 
-    setSelectContract((prevState) => {
-      const updatedContractsService = (prevState.contracts_Service || [])
-        .filter(
-          (contractService) =>
-            contractService?.Services?.description &&
-            value.includes(contractService.Services.description)
-        )
-        .map((contractService) => ({
-          ...contractService,
-          service_id: contractService.Services.id,
-          contract_id: prevState.id,
-        }));
+      setSelectContract((prevState) => {
+        const updatedContractsService = (prevState.contracts_Service || [])
+          .filter(
+            (contractService) =>
+              contractService?.Services?.description &&
+              value.includes(contractService.Services.description)
+          )
+          .map((contractService) => ({
+            ...contractService,
+            service_id: contractService.Services.id,
+            contract_id: prevState.id,
+          }));
 
-      value.forEach((description) => {
-        if (!updatedContractsService.some(
-          (cs) => cs.Services?.description === description
-        )) {
-          const serviceToAdd = services.find(
-            (s) => s.description === description
-          );
-          if (serviceToAdd) {
-            updatedContractsService.push({
-              contract_id: prevState.id,
-              service_id: serviceToAdd.id,
-              Services: {
-                ...serviceToAdd,
-                description: serviceToAdd.description,
-              },
-            });
+        value.forEach((description) => {
+          if (
+            !updatedContractsService.some(
+              (cs) => cs.Services?.description === description
+            )
+          ) {
+            const serviceToAdd = services.find(
+              (s) => s.description === description
+            );
+            if (serviceToAdd) {
+              updatedContractsService.push({
+                contract_id: prevState.id,
+                service_id: serviceToAdd.id,
+                Services: {
+                  ...serviceToAdd,
+                  description: serviceToAdd.description,
+                },
+              });
+            }
           }
-        }
-      });
+        });
 
-      return {
-        ...prevState,
-        contracts_Service: updatedContractsService,
-      };
-    });
-  }, [setSelectContract, services]);
-
-  const handleSignChange = useCallback((event) => {
-    const { value } = event.target;
-
-    setSelectContract((prevState) => {
-      const currentTecSocialReason =
-        prevState.signOnContract[0]?.Contract_Signature?.socialReason;
-
-      if (value !== currentTecSocialReason) {
-        const selectedTec = signs.find((sign) => sign.socialReason === value);
         return {
           ...prevState,
-          signOnContract: [
-            {
-              contract_id: prevState.id,
-              sign_id: selectedTec.id,
-              Contract_Signature: { ...selectedTec },
-            },
-          ],
+          contracts_Service: updatedContractsService,
         };
-      }
-      return prevState;
-    });
-  }, [setSelectContract, signs]);
-
-  const handleChangeFilter = useCallback(
-    handleFilterChange(setFilter),
-    []
+      });
+    },
+    [setSelectContract, services]
   );
-  
+
+  const handleSignChange = useCallback(
+    (event) => {
+      const { value } = event.target;
+
+      setSelectContract((prevState) => {
+        const currentTecSocialReason =
+          prevState.signOnContract[0]?.Contract_Signature?.socialReason;
+
+        if (value !== currentTecSocialReason) {
+          const selectedTec = signs.find((sign) => sign.socialReason === value);
+          return {
+            ...prevState,
+            signOnContract: [
+              {
+                contract_id: prevState.id,
+                sign_id: selectedTec.id,
+                Contract_Signature: { ...selectedTec },
+              },
+            ],
+          };
+        }
+        return prevState;
+      });
+    },
+    [setSelectContract, signs]
+  );
+
+  const handleChangeFilter = useCallback(handleFilterChange(setFilter), []);
+
   //D4Sign -----------------------------------------------------------------------------------------
 
   const verificaCorDoStatus = (status) => {
-    if (status === "1") {
-      return "#8cff00";
-    } else if (status === "2") {
-      return "#f6dd00";
-    } else if (status === "3") {
-      return "#3992ff";
-    } else if (status === "4") {
-      return "#1eb300";
+    const statusColors = {
+      1: "#8cff00",
+      2: "#f6dd00",
+      3: "#3992ff",
+      4: "#1eb300",
+    };
+    return statusColors[status] || "#000000";
+  };
+
+  const withLoading = async (callback) => {
+    setLoading(true);
+    try {
+      await callback();
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleD4Sign = async (contract) => {
-    setLoading(true);
-
-    try {
+    await withLoading(async () => {
       setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
-
       setD4signController(true);
-    } catch (error) {
-      console.error("Erro ao buscar documento no D4Sign:", error);
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const downloadWithUrl = async (url) => {
@@ -418,6 +434,7 @@ export default function ManageContracts() {
     link.href = url;
     link.download = "";
     link.click();
+    return Promise.resolve();
   };
 
   const handleD4SignViewDocument = async (contract) => {
@@ -502,16 +519,13 @@ export default function ManageContracts() {
     setLoading(false);
   };
 
-  const blobToBase64 = (blob) => {
-    return new Promise((resolve, reject) => {
+  const blobToBase64 = (blob) =>
+    new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        resolve(reader.result);
-      };
+      reader.onloadend = () => resolve(reader.result);
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-  };
 
   const handleD4SignRegister = async () => {
     setLoading(true);
@@ -589,51 +603,46 @@ export default function ManageContracts() {
     setD4SignRegisterSignature(true);
   };
 
+  const registerSign = async (documentData) => {
+    await d4SignService.registerSignOnDocument(documentData);
+    const updatedD4SignData = await d4SignService.getDocument(
+      selectContract.d4sign
+    );
+    setContracts((prevContracts) =>
+      prevContracts.map((contract) =>
+        contract.d4sign === selectContract.d4sign
+          ? { ...contract, d4SignData: updatedD4SignData.data.contract[0] }
+          : contract
+      )
+    );
+    setD4SignRegisterSignature(false);
+    Toast.Success("E-mail cadastrado com sucesso");
+  };
+
   const handleInsertSign = async (email) => {
-    if (email.length > 0) {
-      const documentData = {
-        id_document: selectContract.d4sign,
-        email: email,
-        act: "1",
-        foreign: "1",
-        certificadoicpbr: "0",
-        assinatura_presencial: "0",
-        docauth: "0",
-        docauthandselfie: "0",
-        embed_methodauth: "email",
-        embed_smsnumber: "",
-        upload_allow: "0",
-        upload_obs: "0",
-      };
-      setLoading(true);
-
-      try {
-        await d4SignService.registerSignOnDocument(documentData);
-
-        const updatedD4SignData = await d4SignService.getDocument(
-          selectContract.d4sign
-        );
-
-        setContracts((prevContracts) =>
-          prevContracts.map((contract) =>
-            contract.d4sign === selectContract.d4sign
-              ? { ...contract, d4SignData: updatedD4SignData.data.contract[0] }
-              : contract
-          )
-        );
-
-        setD4SignRegisterSignature(false);
-        Toast.Success("E-mail cadastrado com sucesso");
-      } catch (error) {
-        console.error("Erro ao registrar assinatura no D4Sign:", error);
-        Toast.Error("Erro ao cadastrar o e-mail");
-      } finally {
-        setLoading(false);
-      }
-    } else {
+    if (email.length === 0) {
       Toast.Error("Preencha o campo E-mail");
-      setLoading(false);
+      return;
     }
+
+    const documentData = {
+      id_document: selectContract.d4sign,
+      email,
+      act: "1",
+      foreign: "1",
+      certificadoicpbr: "0",
+      assinatura_presencial: "0",
+      docauth: "0",
+      docauthandselfie: "0",
+      embed_methodauth: "email",
+      embed_smsnumber: "",
+      upload_allow: "0",
+      upload_obs: "0",
+    };
+
+    await withLoading(async () => {
+      await registerSign(documentData);
+    });
   };
 
   const cancelDelete = () => {
@@ -657,21 +666,14 @@ export default function ManageContracts() {
       "contracts_Service",
       "signOnContract",
     ];
-    let isAllFieldsFilled = true;
 
-    for (const field of requiredFields) {
-      if (!selectContract[field]) {
-        isAllFieldsFilled = false;
-      }
-    }
-
-    return isAllFieldsFilled;
+    return requiredFields.every((field) => !!selectContract[field]);
   };
 
   //Contract -----------------------------------------------------------------------------------------
   const confirmUpdate = async (updateData) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const emptyField = areRequiredFieldsFilled();
 
       if (!emptyField) {
@@ -682,7 +684,7 @@ export default function ManageContracts() {
       }
 
       const formData = new FormData();
-      formData.append("file", file);
+      if (file) formData.append("file", file);
 
       const { d4SignData, propouse, ...contractData } = updateData;
 
@@ -691,7 +693,7 @@ export default function ManageContracts() {
         contractData
       );
 
-      if (file && response) {
+      if (response && file) {
         formData.append("id", updateData.id);
         await utilsService.updatePDF(formData);
         setFile(null);
@@ -702,12 +704,12 @@ export default function ManageContracts() {
         Toast.Success("Contrato atualizado com sucesso!");
         setIsModalVisibleUpdate(false);
       }
-      setLoading(false);
+
       return response;
     } catch (error) {
-      Toast.Error(error);
+      Toast.Error(error.message || "Erro ao atualizar contrato");
+    } finally {
       setLoading(false);
-      return error;
     }
   };
 
@@ -720,39 +722,62 @@ export default function ManageContracts() {
 
       const response = await service.deleteContract(e.id);
 
-      if (response.status === 200) {
-        setContracts(contracts.filter((contract) => contract.id !== e.id));
-
+      if (response?.status === 200) {
+        setContracts((prev) => prev.filter((contract) => contract.id !== e.id));
         Toast.Success("Contrato deletado com sucesso!");
       }
+
       return response;
     } catch (error) {
       Toast.Error("Erro ao deletar contrato");
-      return error;
     }
   };
 
   const handleUpdate = (contract) => {
     setLoading(true);
-    const updatedContractsService = contract.clauses.map((service) => ({
+
+    const updatedClauses = contract.clauses.map(({ id, ...service }) => ({
       ...service,
-      currentId: service.id,
+      currentId: id,
     }));
 
-    setSelectContract({
-      ...contract,
-      clauses: updatedContractsService,
-    });
-
+    setSelectContract({ ...contract, clauses: updatedClauses });
     setLoading(false);
     setIsModalVisibleUpdate(true);
   };
 
+  const handleModalClose = useCallback((e) => {
+    e.preventDefault();
+    setIsModalVisibleUpdate(false);
+    setFile(null);
+  }, []);
+
   //PDFs -----------------------------------------------------------------------------------------
   const handleFileChange = (e) => {
     const fileEvent = e.target.files[0];
-    if (fileEvent) {
-      setFile(fileEvent);
+    if (!fileEvent) return;
+
+    const allowedTypes = ["application/pdf"];
+    const maxSizeMB = 100;
+
+    if (!allowedTypes.includes(fileEvent.type)) {
+      Toast.Error("Formato de arquivo inválido! Apenas PDFs são aceitos.");
+      return;
+    }
+
+    if (fileEvent.size > maxSizeMB * 1024 * 1024) {
+      Toast.Error(`O tamanho máximo permitido é ${maxSizeMB}MB.`);
+      return;
+    }
+
+    setFile(fileEvent);
+  };
+
+  const addPagesToPDF = async (sourceDoc, targetPDF) => {
+    const pageIndices = sourceDoc.getPageIndices();
+    for (const pageNum of pageIndices) {
+      const [page] = await targetPDF.copyPages(sourceDoc, [pageNum]);
+      targetPDF.addPage(page);
     }
   };
 
@@ -760,16 +785,10 @@ export default function ManageContracts() {
     const mergedPDF = await PDFDocument.create();
     mergedPDF.setTitle(`${type} - ${contract.name} ${contract.contractNumber}`);
 
-    for (const pageNum of createdPDFDoc.getPageIndices()) {
-      const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-      mergedPDF.addPage(page);
-    }
+    await addPagesToPDF(createdPDFDoc, mergedPDF);
 
     if (uploadedPDFDoc) {
-      for (const pageNum of uploadedPDFDoc.getPageIndices()) {
-        const [page] = await mergedPDF.copyPages(uploadedPDFDoc, [pageNum]);
-        mergedPDF.addPage(page);
-      }
+      await addPagesToPDF(uploadedPDFDoc, mergedPDF);
     }
 
     const mergedPdfBytes = await mergedPDF.save();
@@ -777,22 +796,18 @@ export default function ManageContracts() {
   };
 
   const handleView = async (contract) => {
-    const pdfByte = await MyDocument(contract);
+    try {
+      const pdfByte = await MyDocument(contract);
+      if (!pdfByte) throw new Error("Falha ao gerar PDF.");
 
-    if (!pdfByte) {
-      console.error("PDF byte array is null or undefined");
-      return;
-    }
+      const contractFile = await service.getById(contract.id);
+      const propouseData = contractFile.data.user.propouse?.file.data;
 
-    const contractFile = await service.getById(contract.id);
-
-    let mergedBlob;
-    if (contractFile.data.user.propouse?.file.data) {
-      const arrayBuffer = contractFile.data.user.propouse.file.data;
-      const propouseData = new Uint8Array(arrayBuffer);
-
-      try {
-        const uploadedPDFDoc = await PDFDocument.load(propouseData);
+      let mergedBlob;
+      if (propouseData) {
+        const uploadedPDFDoc = await PDFDocument.load(
+          new Uint8Array(propouseData)
+        );
         const createdPDFDoc = await PDFDocument.load(pdfByte);
         mergedBlob = await mergePDFs(
           uploadedPDFDoc,
@@ -800,36 +815,26 @@ export default function ManageContracts() {
           contract,
           "Contrato"
         );
-      } catch (error) {
-        console.error("Error loading PDFs: ", error);
-        return;
-      }
-    } else {
-      try {
-        const createdPDFDoc = await PDFDocument.load(pdfByte);
-        const mergedPDF = await PDFDocument.create();
-        mergedPDF.setTitle(
-          `Contrato - ${contract.name} ${contract.contractNumber}`
-        );
-        for (const pageNum of createdPDFDoc.getPageIndices()) {
-          const [page] = await mergedPDF.copyPages(createdPDFDoc, [pageNum]);
-          mergedPDF.addPage(page);
-        }
-        const mergedPdfBytes = await mergedPDF.save();
-        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
-      } catch (error) {
-        console.error("Error creating PDF: ", error);
-        return;
-      }
-    }
+      } else {
+        console.log("Entrou");
 
-    const pdfUrl = URL.createObjectURL(mergedBlob);
-    window.open(pdfUrl, "_blank");
+        const createdPDFDoc = await PDFDocument.load(pdfByte);
+        const mergedPdfBytes = await createdPDFDoc.save(); // Converte para bytes
+        mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+      }
+
+      const pdfUrl = URL.createObjectURL(mergedBlob);
+      window.open(pdfUrl, "_blank");
+    } catch (error) {
+      console.error("Erro ao visualizar PDF: ", error.message);
+    }
   };
 
   //Reajuste/Aditivo -----------------------------------------------------------------------------------------
   const handleButtonClick = (contract) => {
-    setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
+    setSelectContract((prevContract) =>
+      prevContract.id !== contract.id ? { ...contract } : prevContract
+    );
     navigate(`/documents/${contract.id}/additive-reajustments`);
   };
 
@@ -859,10 +864,7 @@ export default function ManageContracts() {
       />
       <EditModalContract
         isVisible={isModalVisibleUpdate}
-        onClose={() => {
-          setIsModalVisibleUpdate(false);
-          setFile(null);
-        }}
+        onClose={(e) => handleModalClose(e)}
         onUpdate={confirmUpdate}
         contract={selectContract}
         handleChange={handleChange}

@@ -67,7 +67,10 @@ export default class {
   }
   async searchDate(initialDate, endDate) {
     try {
-      const response = await api.post("/buscaHorasTrabalhadasRH", { date_ini: initialDate, date_fim: endDate});
+      const response = await api.post("/buscaHorasTrabalhadasRH", {
+        date_ini: initialDate,
+        date_fim: endDate,
+      });
       return response;
     } catch (error) {
       return error;
@@ -76,7 +79,10 @@ export default class {
 
   async searchDate(initialDate, endDate) {
     try {
-      const response = await api.post("/buscaHorasTrabalhadasRH", { date_ini: initialDate, date_fim: endDate});
+      const response = await api.post("/buscaHorasTrabalhadasRH", {
+        date_ini: initialDate,
+        date_fim: endDate,
+      });
       return response;
     } catch (error) {
       return error;
@@ -86,6 +92,56 @@ export default class {
   async buscaInsumos() {
     try {
       const response = await api.get("/buscaInsumos");
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async buscaPedidos() {
+    try {
+      const response = await api.get("/pedidos");
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async buscaProdutosPedidos(id_pedido) {
+    try {
+      const response = await api.post("/buscar-produtos-pedido", {
+        id_pedido: id_pedido,
+      });
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async finalizarPedido(id_pedido, numero_nf) {
+    try {
+      const response = await api.put("/finalizar", {
+        id_pedido: id_pedido,
+        numero_nf: numero_nf,
+      });
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async compradoPedido(id_pedido, data_nf) {
+    try {
+      const response = await api.post("/alterarStatusComprado", {
+        id_pedido: id_pedido,
+        data_nf: data_nf,
+      });
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+  async canceladoPedido(id_pedido) {
+    try {
+      const response = await api.post("/alterarStatusCancelado", {
+        id_pedido: id_pedido,
+      });
       return response;
     } catch (error) {
       return error;

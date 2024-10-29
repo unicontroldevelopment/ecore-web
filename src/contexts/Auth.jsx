@@ -1,10 +1,7 @@
-/* eslint-disable react/prop-types */
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-
-import { Toast } from "../components/toasts";
-
 import Loading from "../components/animations/Loading";
+import { Toast } from "../components/toasts";
 import { api } from "../services/api";
 import EmployeeService from "../services/EmployeeService";
 import { UserTypeContext } from "./UserTypeContext";
@@ -20,21 +17,29 @@ export const AuthProvider = ({ children }) => {
   const { setUserType, updateUserData, clearUserData } = React.useContext(UserTypeContext);
 
   React.useEffect(() => {
-    const handle = async () => {
-      const recoveredUser = await JSON.parse(localStorage.getItem("user"));
-      const token = localStorage.getItem("token");
-      if (recoveredUser && token) {
-        setUser(recoveredUser);
-        await setUserType(recoveredUser.role.map((role) => role.role.name));
-        api.defaults.headers.Authorization = `Bearer ${token}`;
+    const recoverUser = async () => {
+      try {
+        const recoveredUser = JSON.parse(localStorage.getItem("user"));
+        const token = localStorage.getItem("token");
+        if (recoveredUser && token) {
+          setUser(recoveredUser);
+          await setUserType(recoveredUser.role.map((role) => role.role.name));
+          api.defaults.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (error) {
+        console.error("Error recovering user:", error);
+        Toast.Error("Erro ao recuperar dados do usuário");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-    handle();
+
+    recoverUser();
   }, [setUserType]);
 
   const logoutAuth = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     clearUserData();
     api.defaults.headers.Authorization = null;
     setUser(null);
@@ -51,32 +56,33 @@ export const AuthProvider = ({ children }) => {
       } else if (response.response?.status === 500) {
         Toast.Error("E-mail incorreto ou não cadastrado!");
       } else {
-        const loggedUser = response.data.user;
-        const token = response.data.token;
-  
+        const { user: loggedUser, token } = response.data;
+
         setUserType(loggedUser.role.map(role => role.role.name));
         updateUserData(loggedUser);
         localStorage.setItem("token", token);
-        
+        localStorage.setItem("user", JSON.stringify(loggedUser));
+
         api.defaults.headers.Authorization = `Bearer ${token}`;
         setUser(loggedUser);
         navigate("/dashboard");
         Toast.Success("Login realizado com sucesso!");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Login error:", error);
+      Toast.Error("Erro ao realizar login. Tente novamente.");
     }
   };
 
   if (loading) {
     return <Loading />;
-  } else {
-    return (
-      <AuthContext.Provider
-        value={{ authenticated: !!user, user, loginAuth, loading, logoutAuth }}
-      >
-        {children}
-      </AuthContext.Provider>
-    );
   }
+
+  return (
+    <AuthContext.Provider
+      value={{ authenticated: !!user, user, loginAuth, logoutAuth }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
