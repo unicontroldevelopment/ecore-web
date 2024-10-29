@@ -568,7 +568,7 @@ export default function CreateContract() {
             </div>
           </div>
 
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="bg-white shadow-md rounded-lg">
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800">
                 Contratado
@@ -585,7 +585,7 @@ export default function CreateContract() {
             </div>
           </div>
 
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="bg-white shadow-md rounded-lg">
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-800">Contrato</h2>
             </div>

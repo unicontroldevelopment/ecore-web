@@ -1,3 +1,4 @@
+import { Modal } from "antd";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { PDFDocument } from "pdf-lib";
@@ -60,7 +61,7 @@ export default function FormDetails() {
   return (
     <div className="h-screen flex flex-col bg-gray-100">
       <header className="p-6 flex bg-white shadow-lg border-b-2 border-gray-300 gap-4">
-      <AiOutlineForm className="text-blue-500" size={32} />
+        <AiOutlineForm className="text-blue-500" size={32} />
         <h1 className="text-3xl font-semibold text-gray-800">{form.name}</h1>
       </header>
       <div className="flex flex-1 gap-4 p-4">
@@ -129,6 +130,7 @@ function SubmissionsTable({ id, onSubmissionSelect, selectedSubmission }) {
       case "CheckboxField":
       case "ImagesField":
       case "EmojiField":
+      case "CalculatorField":
         columns.push({
           id: element.id,
           label: element.extraAtribbutes?.label,
@@ -156,6 +158,12 @@ function SubmissionsTable({ id, onSubmissionSelect, selectedSubmission }) {
       (column) =>
         column.label === "Valor recebido" && column.type === "TextField"
     );
+    const valorComissaoField = columns.find(
+      (column) =>
+        column.label === "Valor final ganho" && column.type === "CalculatorField"
+    );
+    const valorComissao = content[valorComissaoField.id];
+
     const trimestreAvaliadoField = columns.find(
       (column) =>
         column.label === "Trimestre avaliado" && column.type === "SelectField"
@@ -170,7 +178,7 @@ function SubmissionsTable({ id, onSubmissionSelect, selectedSubmission }) {
       : mesAvaliadoField
       ? content[mesAvaliadoField.id]
       : null;
-    const notaDada = valorRecebidoField ? content[valorRecebidoField.id] : null;
+    const notaDada = valorRecebidoField ? content[valorRecebidoField.id] : valorComissao.result;
 
     return {
       ...content,
@@ -233,8 +241,6 @@ function SubmissionsTable({ id, onSubmissionSelect, selectedSubmission }) {
 }
 
 function SubmissionDetails({ selectedSubmission, form }) {
-  // Implemente a lógica para renderizar os detalhes do envio aqui
-  // Use o código que você já tem para exibir os detalhes
   if (!selectedSubmission) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-500">
@@ -290,6 +296,7 @@ function SubmissionDetails({ selectedSubmission, form }) {
 
   const FormElements =
     form && form.content ? JSON.parse(form.content || "[]") : [];
+
   const columns = FormElements.filter((element) =>
     [
       "TextField",
@@ -300,15 +307,15 @@ function SubmissionDetails({ selectedSubmission, form }) {
       "CheckboxField",
       "ImagesField",
       "EmojiField",
+      "CalculatorField",
     ].includes(element.type)
   ).map((element) => ({
     id: element.id,
     label: element.extraAtribbutes?.label,
     required: element.extraAtribbutes?.required,
     type: element.type,
-  }));
+  })); 
 
-  // Renderize os detalhes do envio aqui
   return (
     <div>
       <div className="w-full h-full bg-gray-100 p-8 overflow-y-auto">
@@ -365,6 +372,8 @@ function SubmissionDetails({ selectedSubmission, form }) {
 }
 
 function RowCell({ type, value }) {
+  console.log("Value: ", value, type);
+
   let node = value;
 
   switch (type) {
@@ -424,6 +433,19 @@ function RowCell({ type, value }) {
     case "ImagesField":
       node = <ImageGallery images={JSON.parse(value || "[]")} />;
       break;
+    case "CalculatorField":
+      if (typeof value === "object" && value !== null) {
+        node = (
+          <div>
+            <p>Comissão ganha: {value.input1}</p>
+            <p>Porcentagem ganha: {value.input2}</p>
+            <p>Valor final: {value.result}</p>
+          </div>
+        );
+      } else {
+        node = <span>Valor inválido</span>;
+      }
+      break;
     default:
       break;
   }
@@ -434,20 +456,46 @@ function RowCell({ type, value }) {
 }
 
 function ImageGallery({ images }) {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
   if (!images || images.length === 0) {
     return <span className="text-gray-500">Sem imagens</span>;
   }
 
+  const openModal = (img) => {
+    setSelectedImage(img);
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setSelectedImage(null);
+  };
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {images.map((img, index) => (
-        <img
-          key={index}
-          src={img.data}
-          alt={img.name}
-          className="w-20 h-20 object-cover rounded-md"
-        />
-      ))}
+    <div>
+      <div className="flex flex-wrap gap-2">
+        {images.map((img, index) => (
+          <img
+            key={index}
+            src={img.data}
+            alt={img.name}
+            className="w-20 h-20 object-cover rounded-md cursor-pointer"
+            onClick={() => openModal(img)}
+          />
+        ))}
+      </div>
+
+      <Modal open={isModalVisible} footer={null} onCancel={closeModal}>
+        {selectedImage && (
+          <img
+            src={selectedImage.data}
+            alt={selectedImage.name}
+            className="w-full h-auto object-contain"
+          />
+        )}
+      </Modal>
     </div>
   );
 }

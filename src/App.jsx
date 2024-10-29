@@ -33,9 +33,11 @@ import Login from "./pages/login/Login";
 import PPA from "./pages/PPA-PPO/PPA";
 import PPC from "./pages/PPA-PPO/PPC";
 import PPO from "./pages/PPA-PPO/PPO";
+import RoomReservation from "./pages/roomReservation";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
 import StockMovements from "./pages/stock/movements";
+import OrderList from "./pages/stock/orderList";
 import RegisterEPI from "./pages/stock/registerEPI";
 import RegisterProduct from "./pages/stock/registerProduct";
 import StockControl from "./pages/stock/stockControl";
@@ -301,6 +303,16 @@ const App = () => {
                   }
                 />
                 <Route
+                  path="/stock/orderList"
+                  element={
+                    <PrivatePage>
+                      <Template>
+                        <OrderList />
+                      </Template>
+                    </PrivatePage>
+                  }
+                />
+                <Route
                   path="/stock/movements"
                   element={
                     <PrivatePage>
@@ -351,6 +363,14 @@ const App = () => {
                       <Template>
                         <FormDetails />
                       </Template>
+                    </PrivatePage>
+                  }
+                />
+                <Route
+                  path="/reservation"
+                  element={
+                    <PrivatePage>
+                      <RoomReservation />
                     </PrivatePage>
                   }
                 />

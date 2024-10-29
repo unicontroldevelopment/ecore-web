@@ -101,5 +101,22 @@ export default class {
     } catch (error) {
       return error;
     }
+  } 
+  async getDashboardStats() {
+    try {
+      const response = await api.get('/dashboard/contract-stats');
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  async getMonthlyContracts() {
+    try {
+      const response = await api.get('/dashboard/monthly');
+      return response;
+    } catch (error) {
+      return error;
+    }
   }
 }

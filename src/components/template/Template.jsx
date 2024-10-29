@@ -1,6 +1,8 @@
 /* eslint-disable react/prop-types */
 import {
   ArrowLeftOutlined,
+  BellOutlined,
+  DownOutlined,
   EditOutlined,
   HeartFilled,
   MenuFoldOutlined,
@@ -9,8 +11,10 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import {
+  AutoComplete,
+  Avatar,
+  Badge,
   Button,
-  Card,
   Dropdown,
   Form,
   Input,
@@ -29,7 +33,7 @@ import {
   FaUsersCog,
 } from "react-icons/fa";
 import { MdOutgoingMail, MdStarRate } from "react-icons/md";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/Auth";
 import { UserTypeContext } from "../../contexts/UserTypeContext";
 import EmployeeService from "../../services/EmployeeService";
@@ -46,21 +50,12 @@ const Template = (props) => {
   const [collapsed, setCollapsed] = useState(false);
   const backToLastPage = useNavigate(-1);
   const { logoutAuth } = useContext(AuthContext);
+  const [searchValue, setSearchValue] = useState("");
+  const [searchOptions, setSearchOptions] = useState([]);
+  const location = useLocation();
+  const navigate = useNavigate();
   const { userType, userData } = useContext(UserTypeContext);
   const service = new EmployeeService();
-
-  const hasAccess = (roles) => {
-    if (!Array.isArray(userType) || !userType.length) return false;
-
-    const userRoles = userType.map((role) => {
-      if (typeof role === "object" && role.role) {
-        return role.role.name;
-      }
-      return role;
-    });
-
-    return roles.some((role) => userRoles.includes(role));
-  };
 
   const showChangePasswordModal = () => {
     setIsModalVisible(true);
@@ -86,11 +81,71 @@ const Template = (props) => {
       });
   };
 
-  const handleMenuClick = (e) => {
-    const selectedItem = items.find((item) => item.key === e.key);
-    if (selectedItem && selectedItem.onClick) {
-      selectedItem.onClick();
-    }
+  const getMenuItemsFlat = (items) => {
+    return items.reduce((acc, item) => {
+      if (item.items) {
+        return [...acc, ...getMenuItemsFlat(item.items)];
+      }
+      return [...acc, item];
+    }, []);
+  };
+
+  const handleSearch = (value) => {
+    setSearchValue(value);
+    const allMenuItems = getMenuItemsFlat(menuItems);
+    const matchingRoutes = allMenuItems.filter((item) =>
+      item.label.props.children.toLowerCase().includes(value.toLowerCase())
+    );
+
+    setSearchOptions(
+      matchingRoutes.map((item) => ({
+        value: item.label.props.children,
+        label: item.label.props.children,
+        key: item.key,
+        to: item.label.props.to,
+      }))
+    );
+  };
+
+  const onSelect = (value, option) => {
+    navigate(option.to);
+  };
+
+  const userMenu = {
+    items: [
+      {
+        key: "settings",
+        label: "Trocar senha",
+        icon: <EditOutlined />,
+        onClick: () => setIsModalVisible(true),
+      },
+      {
+        type: "divider",
+      },
+      {
+        key: "logout",
+        label: "Sair",
+        icon: <PoweroffOutlined />,
+        onClick: () => logoutAuth(),
+      },
+    ],
+  };
+
+  const notificationMenu = {
+    items: [
+      {
+        key: "1",
+        label: "Notificação 1",
+      },
+      {
+        key: "2",
+        label: "Notificação 2",
+      },
+      {
+        key: "3",
+        label: "Notificação 3",
+      },
+    ],
   };
 
   const items = [
@@ -248,10 +303,14 @@ const Template = (props) => {
         },
         {
           key: "7-5",
-          label: <Link to="/dashboard">Código de Barras</Link>,
+          label: <Link to="/stock/orderList">Solicitação de Pedidos</Link>,
         },
         {
           key: "7-6",
+          label: <Link to="/dashboard">Código de Barras</Link>,
+        },
+        {
+          key: "7-7",
           label: <Link to="/stock/movements">Movimentações</Link>,
         },
       ],
@@ -268,48 +327,6 @@ const Template = (props) => {
       ],
     },
   ];
-
-  const userMenu = (
-    <Card
-      style={{
-        width: 250,
-        borderRadius: 12,
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-        overflow: "hidden",
-      }}
-      bodyStyle={{ padding: 0 }}
-    >
-      <div
-        style={{
-          background: "#4f76be",
-          padding: "16px 20px",
-          color: "white",
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 500 }}>
-          Olá, <strong>{userData?.name || "Usuário"}</strong>
-        </h3>
-      </div>
-      <Menu
-        onClick={handleMenuClick}
-        selectable={false}
-        style={{ border: "none" }}
-      >
-        {items.map((item) => (
-          <Menu.Item
-            key={item.key}
-            icon={item.icon}
-            style={{
-              padding: "12px 20px",
-              fontSize: 14,
-            }}
-          >
-            {item.label}
-          </Menu.Item>
-        ))}
-      </Menu>
-    </Card>
-  );
 
   return (
     <Layout
@@ -358,6 +375,23 @@ const Template = (props) => {
             />
           </Space>
         )}
+        {!collapsed && (
+          <div style={{ padding: "0 16px 16px" }}>
+            <AutoComplete
+              style={{
+                width: "100%",
+              }}
+              options={searchOptions}
+              onSelect={onSelect}
+              onSearch={handleSearch}
+            >
+              <Input.Search
+                placeholder="Pesquisar página..."
+                style={{ verticalAlign: "middle" }}
+              />
+            </AutoComplete>
+          </div>
+        )}
         <div className="logo">{collapsed ? null : null}</div>
         <Menu
           theme="dark"
@@ -395,24 +429,45 @@ const Template = (props) => {
         </Menu>
       </Sider>
       <Layout className="site-layout">
-        <Header
-          style={{
-            padding: 0,
-            background: "#4f76be",
-          }}
-        >
-          <Space className="trigger">
-            <ArrowLeftOutlined
-              className="trigger"
-              style={{ color: "#fff", float: "left" }}
-              onClick={() => backToLastPage(-1)}
-            />
-          </Space>
-          <Dropdown overlay={userMenu} trigger={["click"]}>
-            <Space className="trigger" style={{ float: "right" }}>
-              <UserOutlined style={{ color: "#fff" }} />
+        <Header style={{ padding: 0, background: "#4f76be" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0 24px",
+            }}
+          >
+            <Space align="center" style={{ height: "32px" }}>
+              <ArrowLeftOutlined
+                className="trigger"
+                style={{ color: "#fff", fontSize: "16px" }}
+                onClick={() => backToLastPage(-1)}
+              />
             </Space>
-          </Dropdown>
+            <Space>
+              <Dropdown menu={notificationMenu} trigger={["click"]}>
+                <Badge count={3} style={{ marginRight: "20px" }}>
+                  <BellOutlined
+                    style={{
+                      fontSize: "18px",
+                      color: "#fff",
+                      marginRight: "20px",
+                    }}
+                  />
+                </Badge>
+              </Dropdown>
+              <Dropdown menu={userMenu} trigger={["click"]}>
+                <a onClick={(e) => e.preventDefault()}>
+                  <Space>
+                    <Avatar icon={<UserOutlined />} />
+                    <span style={{ color: "#fff" }}>{userData.name.split(' ')[0]}</span>
+                    <DownOutlined style={{ color: "#fff" }} />
+                  </Space>
+                </a>
+              </Dropdown>
+            </Space>
+          </div>
         </Header>
 
         <Content

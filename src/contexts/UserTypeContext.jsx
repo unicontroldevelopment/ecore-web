@@ -8,22 +8,33 @@ const UserTypeProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
 
   const updateUserData = useCallback((data) => {
-    setUserData(data);
-    localStorage.setItem("user", JSON.stringify(data));
-    if (data && data.id) {
-      setUserId(data.id);
-      localStorage.setItem("userId", data.id);
+    if (data) {
+      setUserData(data);
+      localStorage.setItem("user", JSON.stringify(data));
+      if (data.id) {
+        setUserId(data.id);
+        localStorage.setItem("userId", data.id);
+      }
+      if (data.role && Array.isArray(data.role)) {
+        const roles = data.role.map(role => role.role.name);
+        setUserType(roles);
+        localStorage.setItem("userType", JSON.stringify(roles));
+      }
     }
   }, []);
 
   const updateUserType = useCallback((type) => {
-    setUserType(type);
-    localStorage.setItem("userType", JSON.stringify(type));
+    if (type) {
+      setUserType(type);
+      localStorage.setItem("userType", JSON.stringify(type));
+    }
   }, []);
 
   const updateUserId = useCallback((id) => {
-    setUserId(id);
-    localStorage.setItem("userId", id);
+    if (id) {
+      setUserId(id);
+      localStorage.setItem("userId", id);
+    }
   }, []);
 
   const clearUserData = useCallback(() => {
@@ -36,31 +47,43 @@ const UserTypeProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const storedUserType = localStorage.getItem("userType");
-    const storedUserId = localStorage.getItem("userId");
-    const storedUserData = localStorage.getItem("user");
+    const loadStoredData = () => {
+      const storedUserType = localStorage.getItem("userType");
+      const storedUserId = localStorage.getItem("userId");
+      const storedUserData = localStorage.getItem("user");
 
-    if (storedUserType) setUserType(JSON.parse(storedUserType));
-    if (storedUserId) setUserId(storedUserId);
-    if (storedUserData) {
-      const parsedUserData = JSON.parse(storedUserData);
-      setUserData(parsedUserData);
-      if (parsedUserData && parsedUserData.id) {
-        setUserId(parsedUserData.id);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === "userId") setUserId(e.newValue);
-      if (e.key === "userType") setUserType(JSON.parse(e.newValue));
-      if (e.key === "user") {
-        const parsedUserData = JSON.parse(e.newValue);
+      if (storedUserType) setUserType(JSON.parse(storedUserType));
+      if (storedUserId) setUserId(storedUserId);
+      if (storedUserData) {
+        const parsedUserData = JSON.parse(storedUserData);
         setUserData(parsedUserData);
         if (parsedUserData && parsedUserData.id) {
           setUserId(parsedUserData.id);
         }
+      }
+    };
+
+    loadStoredData();
+  }, []);
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      switch (e.key) {
+        case "userId":
+          setUserId(e.newValue);
+          break;
+        case "userType":
+          setUserType(JSON.parse(e.newValue));
+          break;
+        case "user":
+          const parsedUserData = JSON.parse(e.newValue);
+          setUserData(parsedUserData);
+          if (parsedUserData && parsedUserData.id) {
+            setUserId(parsedUserData.id);
+          }
+          break;
+        default:
+          break;
       }
     };
 

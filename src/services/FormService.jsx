@@ -60,7 +60,11 @@ export default class {
   }
   async submitForm(formUrl, contentData, name) {
     try {
-      const response = await api.put(`/submitForm/${formUrl}`, {contentData, name});
+      const response = await api.put(`/submitForm/${formUrl}`, {contentData, name}, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       return response;
     } catch (error) {
       return error;
