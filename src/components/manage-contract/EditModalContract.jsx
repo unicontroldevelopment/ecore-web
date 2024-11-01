@@ -203,7 +203,7 @@ const EditContractModal = ({
                 <CustomInput.LongText
                   key={clause.id}
                   label={`Cláusula Nº${index + 1}`}
-                  value={clause.description}
+                  value={clause.description || ""} // Garante que o valor nunca seja undefined
                   isExpanded={clause.isExpanded}
                   onChange={(e) =>
                     handleClauseChange(clause.id, e.target.value)

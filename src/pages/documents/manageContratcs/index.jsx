@@ -40,16 +40,6 @@ const handleGenericChange =
       }));
     }
   };
-const handleClauseAction =
-  (setState, action) =>
-  (id, newText = "") => {
-    setState((prevContract) => ({
-      ...prevContract,
-      clauses: prevContract.clauses.map((clause) =>
-        clause.id === id ? { ...clause, ...action(clause, newText) } : clause
-      ),
-    }));
-  };
 
 const handleFilterChange = (setState) => (event) => {
   const { name, value } = event.target;
@@ -149,6 +139,7 @@ export default function ManageContracts() {
             })),
           };
         });
+        
 
         setAllContracts(updatedContracts);
         setContracts(updatedContracts);
@@ -290,39 +281,51 @@ export default function ManageContracts() {
     []
   );
 
-  const handleAddClick = useCallback(() => {
+  const handleAddClick = () => {
     setSelectContract((prevContract) => ({
       ...prevContract,
       clauses: [
         ...prevContract.clauses,
-        { currentId: Date.now(), description: "", isExpanded: false },
+        { id: Date.now(), description: "", isExpanded: false },
       ],
     }));
-  }, [setSelectContract]);
+  };
 
-  const handleDeleteClause = useCallback(
-    (id) => {
-      setSelectContract((prevContract) => ({
-        ...prevContract,
-        clauses: prevContract.clauses.filter((clause) => clause.id !== id),
-      }));
-    },
-    [setSelectContract]
-  );
+  const handleDeleteClause = (id) => {
+    setSelectContract((prevContract) => ({
+      ...prevContract,
+      clauses: prevContract.clauses.filter((clause) => clause.id !== id),
+    }));
+  };
 
-  const toggleExpand = useCallback(
-    handleClauseAction(setSelectContract, (clause) => ({
-      isExpanded: !clause.isExpanded,
-    })),
-    [setSelectContract]
-  );
+  const toggleExpand = (id) => {
+    setSelectContract((prevContract) => ({
+      ...prevContract,
+      clauses: prevContract.clauses.map((clause) =>
+        clause.id === id
+          ? { ...clause, isExpanded: !clause.isExpanded }
+          : clause
+      ),
+    }));
+  };
 
-  const handleClauseChange = useCallback(
-    handleClauseAction(setSelectContract, (clause, newText) => ({
-      description: newText,
-    })),
-    [setSelectContract]
-  );
+  const handleClauseChange = (id, newText) => {
+    
+    setSelectContract((prevValues) => {
+      
+      const updatedClauses = prevValues.clauses.map((clause) => {
+        if (clause.id === id) {
+          return { ...clause, description: newText };
+        }
+        return clause;
+      });
+      
+      return {
+        ...prevValues,
+        clauses: updatedClauses,
+      };
+    });
+  };
 
   const handleServiceChange = useCallback(
     (event) => {
@@ -736,12 +739,7 @@ export default function ManageContracts() {
   const handleUpdate = (contract) => {
     setLoading(true);
 
-    const updatedClauses = contract.clauses.map(({ id, ...service }) => ({
-      ...service,
-      currentId: id,
-    }));
-
-    setSelectContract({ ...contract, clauses: updatedClauses });
+    setSelectContract(contract);
     setLoading(false);
     setIsModalVisibleUpdate(true);
   };
@@ -816,7 +814,6 @@ export default function ManageContracts() {
           "Contrato"
         );
       } else {
-        console.log("Entrou");
 
         const createdPDFDoc = await PDFDocument.load(pdfByte);
         const mergedPdfBytes = await createdPDFDoc.save(); // Converte para bytes
