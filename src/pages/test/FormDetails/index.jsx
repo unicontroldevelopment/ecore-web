@@ -146,14 +146,14 @@ function SubmissionsTable({ id, onSubmissionSelect, selectedSubmission }) {
   const rows = form.FormSubmissions.map((submission) => {
     const content = JSON.parse(submission.content);
     const rowData = {};
-
+  
     columns.forEach((column) => {
       const fieldValue = content[column.id];
       if (fieldValue !== undefined) {
         rowData[column.id] = fieldValue;
       }
     });
-
+  
     const valorRecebidoField = columns.find(
       (column) =>
         column.label === "Valor recebido" && column.type === "TextField"
@@ -162,8 +162,7 @@ function SubmissionsTable({ id, onSubmissionSelect, selectedSubmission }) {
       (column) =>
         column.label === "Valor final ganho" && column.type === "CalculatorField"
     );
-    const valorComissao = content[valorComissaoField.id];
-
+  
     const trimestreAvaliadoField = columns.find(
       (column) =>
         column.label === "Trimestre avaliado" && column.type === "SelectField"
@@ -172,14 +171,21 @@ function SubmissionsTable({ id, onSubmissionSelect, selectedSubmission }) {
       (column) =>
         column.label === "Mês avaliado" && column.type === "SelectField"
     );
-
+  
     const avaliadoComo = trimestreAvaliadoField
       ? content[trimestreAvaliadoField.id]
       : mesAvaliadoField
       ? content[mesAvaliadoField.id]
       : null;
-    const notaDada = valorRecebidoField ? content[valorRecebidoField.id] : valorComissao.result;
-
+  
+    let notaDada;
+    if (form.type === "PPC") {
+      const valorComissao = valorComissaoField ? content[valorComissaoField.id] : null;
+      notaDada = valorComissao ? valorComissao.result : null;
+    } else {
+      notaDada = valorRecebidoField ? content[valorRecebidoField.id] : null;
+    }
+  
     return {
       ...content,
       submittedAt: submission.createdAt,
