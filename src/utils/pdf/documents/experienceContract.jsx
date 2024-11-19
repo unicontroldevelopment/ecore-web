@@ -50,9 +50,9 @@ export const experienceContract = (employee) => {
 
   const verificaCargo = () => {
     if(employee.office === "Controlador de Pragas") {
-      return `Segunda-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nTerça-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nQuarta-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nQuinta-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nSexta-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nSábado: das 8:00 às 12:00\n\n`
+      return `Segunda-feira: das 8:00 às 12:00 e das 13:00 às 17:30\nTerça-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nQuarta-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nQuinta-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nSexta-feira: das 8:00 às 12:00 e das 13:30 às 17:30\nSábado: das 8:00 às 12:00\n\n`
     } else {
-      return `Segunda-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nTerça-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nQuarta-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nQuinta-feira: das 8:00 às 12:00 e das 13:12 às 18:00\nSexta-feira: das 8:00 às 12:00 e das 13:12 às 18:00\n\n`
+      return `Segunda-feira: das 8:00 às 12:00 e das 13:00 às 18:00\nTerça-feira: das 8:00 às 12:00 e das 13:00 às 18:00\nQuarta-feira: das 8:00 às 12:00 e das 13:00 às 18:00\nQuinta-feira: das 8:00 às 12:00 e das 13:00 às 18:00\nSexta-feira: das 8:00 às 12:00 e das 13:00 às 17:00\n\n`
     }
   }
 
