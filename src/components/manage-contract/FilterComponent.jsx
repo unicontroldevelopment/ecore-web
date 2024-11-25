@@ -49,7 +49,7 @@ const FilterComponent = ({ filter, onFilterChange, signs, onClearFilters }) => {
         <div className="flex flex-wrap gap-5">
           <CustomInput.Root columnSize={11}>
             <Filter.FilterInput
-              label="Nome do Cliente"
+              label="Nome do Cliente/Nº do Contrato"
               name="name"
               value={filter.name}
               onChange={onFilterChange}

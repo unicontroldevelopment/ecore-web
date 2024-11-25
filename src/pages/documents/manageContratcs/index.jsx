@@ -172,9 +172,10 @@ export default function ManageContracts() {
 
   const applyFilters = useCallback((contracts, filters) => {
     return contracts.filter((contract) => {
-      const nameMatch = contract.name
-        .toLowerCase()
-        .includes(filters.name.toLowerCase());
+      const searchTerm = filters.name.toLowerCase();
+      const nameMatch = contract.name.toLowerCase().includes(searchTerm);
+      const contractNumberMatch = contract.contractNumber.toLowerCase().includes(searchTerm);
+      
       const franchiseMatch =
         !filters.franchise ||
         contract.signOnContract?.some((signature) =>
@@ -182,6 +183,7 @@ export default function ManageContracts() {
             ?.toLowerCase()
             .includes(filters.franchise.toLowerCase())
         );
+      
       let d4signMatch = true;
       if (filters.d4sign === "NÃO CADASTRADO") {
         d4signMatch = !contract.d4SignData;
@@ -190,7 +192,8 @@ export default function ManageContracts() {
           contract.d4SignData?.statusName.toLowerCase() ===
           filters.d4sign.toLowerCase();
       }
-      return nameMatch && franchiseMatch && d4signMatch;
+      
+      return (nameMatch || contractNumberMatch) && franchiseMatch && d4signMatch;
     });
   }, []);
 
