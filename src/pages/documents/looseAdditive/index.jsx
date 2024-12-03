@@ -470,9 +470,14 @@ export default function LooseAdditive() {
     }
   };
 
-  const handleButtonClick = (contract) => {
+  const handleButtonClick = (contract, type) => {
     setSelectContract((prevContract) => ({ ...prevContract, ...contract }));
-    navigate(`/documents/${contract.id}/additive-reajustments`);
+    
+    if (type === 'aditivo') {
+      navigate(`/documents/${contract.id}/additive-reajustments`);
+    } else if (type === 'minuta') {
+      navigate(`/documents/${contract.id}/drafts`);
+    }
   };
 
   const handleView = () => {

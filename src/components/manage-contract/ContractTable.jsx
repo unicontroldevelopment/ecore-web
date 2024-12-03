@@ -1,10 +1,11 @@
 import {
-    ControlFilled,
-    DeleteOutlined,
-    EditOutlined,
-    EllipsisOutlined,
-    EyeOutlined,
-    QuestionCircleOutlined,
+  ControlFilled,
+  DeleteOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  EyeOutlined,
+  FileTextOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { Button, Popconfirm, Table, Tooltip } from "antd";
 import React from "react";
@@ -82,10 +83,17 @@ const ContractTable = ({
             onClick={() => handleD4Sign(record)}
           />
           <Button
+            title="Minutas"
+            style={{ backgroundColor: "#5F9EA0", color: "#fff" }}
+            shape="circle"
+            onClick={() => handleButtonClick(record, "minuta")}
+            icon={<FileTextOutlined />}
+          />
+          <Button
             title="Aditivo/Reajuste"
             style={{ backgroundColor: "#FF7F50", color: "#fff" }}
             shape="circle"
-            onClick={() => handleButtonClick(record)}
+            onClick={() => handleButtonClick(record, "aditivo")}
             icon={<EllipsisOutlined />}
           />
         </ActionsContainer>

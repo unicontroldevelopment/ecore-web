@@ -16,6 +16,7 @@ import { Office } from "./Office";
 import { OfficeVersions } from "./OfficeVersions";
 import { Roles } from "./Roles";
 import { SignDocument } from "./SignDocument";
+import { StockMovement } from "./StockMoviment";
 import { Type } from "./Type";
 import { Units } from "./Units";
 import { Users } from "./Users";
@@ -41,5 +42,6 @@ export const Options = {
   IndexContract,
   SignDocument,
   D4SignStatus,
-  Franchises
+  Franchises,
+  StockMovement
 };

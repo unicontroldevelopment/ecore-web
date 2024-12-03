@@ -13,7 +13,6 @@ const localizer = momentLocalizer(moment);
 
 function RoomReservation() {
   const service = new Utils();
-  const [pedidos, setPedidos] = useState([]);
   const [rooms] = useState([
     { id: 1, name: "Sala VIP" },
     { id: 2, name: "Aquário" },
@@ -24,16 +23,6 @@ function RoomReservation() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [currentView, setCurrentView] = useState("month");
   const [form] = Form.useForm();
-
-  useEffect(() => {
-    const fetchPedidos = async () => {
-      const response = await service.buscaPedidos();
-      console.log(response);
-      
-      setPedidos(response);
-    }
-    fetchPedidos();
-  }, [])
 
   useEffect(() => {
     // Simular busca de reservas existentes
@@ -116,10 +105,10 @@ function RoomReservation() {
       start: startTime,
       end: endTime,
       room: selectedRoom,
-      description: description, // Certifique-se de que isso está sendo incluído
+      description: description,
     };
 
-    console.log("New Event:", newEvent); // Adicione este log para verificar o novo evento
+    console.log("New Event:", newEvent);
 
     if (selectedEvent) {
       const updatedEvents = events.map((event) =>

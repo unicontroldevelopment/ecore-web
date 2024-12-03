@@ -3,7 +3,8 @@ import {
   EditOutlined,
   EllipsisOutlined,
   EyeOutlined,
-  QuestionCircleOutlined
+  FileTextOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { Button, Popconfirm, Table } from "antd";
 import React from "react";
@@ -34,15 +35,22 @@ const ClientTable = ({
       sorter: (a, b) => a.cpfcnpj - b.cpfcnpj,
     },
     {
-      title: "Aditivos e Reajustes",
+      title: "Complementos",
       key: "actions",
       render: (text, record) => (
         <ActionsContainer>
           <Button
+            title="Minutas"
+            style={{ backgroundColor: "#5F9EA0", color: "#fff" }}
+            shape="circle"
+            onClick={() => handleButtonClick(record, "minuta")}
+            icon={<FileTextOutlined />}
+          />
+          <Button
             title="Aditivo/Reajuste"
             style={{ backgroundColor: "#FF7F50", color: "#fff" }}
             shape="circle"
-            onClick={() => handleButtonClick(record)}
+            onClick={() => handleButtonClick(record, "aditivo")}
             icon={<EllipsisOutlined />}
           />
         </ActionsContainer>
