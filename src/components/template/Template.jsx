@@ -299,7 +299,7 @@ const Template = (props) => {
         },
         {
           key: "7-4",
-          label: <Link to="/stock/movements">Estoque Colaborador</Link>,
+          label: <Link to="/stock/employeeStock">Estoque Colaborador</Link>,
         },
         {
           key: "7-5",

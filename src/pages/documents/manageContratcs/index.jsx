@@ -139,7 +139,6 @@ export default function ManageContracts() {
             })),
           };
         });
-        
 
         setAllContracts(updatedContracts);
         setContracts(updatedContracts);
@@ -174,8 +173,10 @@ export default function ManageContracts() {
     return contracts.filter((contract) => {
       const searchTerm = filters.name.toLowerCase();
       const nameMatch = contract.name.toLowerCase().includes(searchTerm);
-      const contractNumberMatch = contract.contractNumber.toLowerCase().includes(searchTerm);
-      
+      const contractNumberMatch = contract.contractNumber
+        .toLowerCase()
+        .includes(searchTerm);
+
       const franchiseMatch =
         !filters.franchise ||
         contract.signOnContract?.some((signature) =>
@@ -183,7 +184,7 @@ export default function ManageContracts() {
             ?.toLowerCase()
             .includes(filters.franchise.toLowerCase())
         );
-      
+
       let d4signMatch = true;
       if (filters.d4sign === "NÃO CADASTRADO") {
         d4signMatch = !contract.d4SignData;
@@ -192,30 +193,35 @@ export default function ManageContracts() {
           contract.d4SignData?.statusName.toLowerCase() ===
           filters.d4sign.toLowerCase();
       }
-      
-      return (nameMatch || contractNumberMatch) && franchiseMatch && d4signMatch;
+
+      return (
+        (nameMatch || contractNumberMatch) && franchiseMatch && d4signMatch
+      );
     });
   }, []);
 
-  const fetchAddress = useCallback(async (cep) => {
-    if (cep.length === 9) {
-      try {
-        const response = await utilsService.findCep(cep);
-        if (response) {
-          setSelectContract((prevValues) => ({
-            ...prevValues,
-            road: response.data.logradouro,
-            neighborhood: response.data.bairro,
-            city: response.data.localidade,
-            state: response.data.uf,
-          }));
+  const fetchAddress = useCallback(
+    async (cep) => {
+      if (cep.length === 9) {
+        try {
+          const response = await utilsService.findCep(cep);
+          if (response) {
+            setSelectContract((prevValues) => ({
+              ...prevValues,
+              road: response.data.logradouro,
+              neighborhood: response.data.bairro,
+              city: response.data.localidade,
+              state: response.data.uf,
+            }));
+          }
+        } catch (error) {
+          console.Error("Error fetching address:", error);
+          Toast.Error("Erro ao buscar endereço");
         }
-      } catch (error) {
-        console.Error("Error fetching address:", error);
-        Toast.Error("Erro ao buscar endereço");
       }
-    }
-  }, [utilsService]);
+    },
+    [utilsService]
+  );
 
   const debouncedFetchAddress = useMemo(
     () => debounce(fetchAddress, 300),
@@ -313,16 +319,14 @@ export default function ManageContracts() {
   };
 
   const handleClauseChange = (id, newText) => {
-    
     setSelectContract((prevValues) => {
-      
       const updatedClauses = prevValues.clauses.map((clause) => {
         if (clause.id === id) {
           return { ...clause, description: newText };
         }
         return clause;
       });
-      
+
       return {
         ...prevValues,
         clauses: updatedClauses,
@@ -817,7 +821,6 @@ export default function ManageContracts() {
           "Contrato"
         );
       } else {
-
         const createdPDFDoc = await PDFDocument.load(pdfByte);
         const mergedPdfBytes = await createdPDFDoc.save(); // Converte para bytes
         mergedBlob = new Blob([mergedPdfBytes], { type: "application/pdf" });
@@ -835,7 +838,12 @@ export default function ManageContracts() {
     setSelectContract((prevContract) =>
       prevContract.id !== contract.id ? { ...contract } : prevContract
     );
-    navigate(`/documents/${contract.id}/additive-reajustments`);
+
+    if (type === "aditivo") {
+      navigate(`/documents/${contract.id}/additive-reajustments`);
+    } else if (type === "minuta") {
+      navigate(`/documents/${contract.id}/drafts`);
+    }
   };
 
   //Tabelas -----------------------------------------------------------------------------------------

@@ -20,6 +20,7 @@ import AdditiveAndReajustment from "./pages/documents/additiveAndReajustment";
 import CreateContract from "./pages/documents/createContract";
 import CreateDocument from "./pages/documents/createDocument";
 import CreateService from "./pages/documents/createService";
+import Drafts from "./pages/documents/drafts";
 import LooseAdditive from "./pages/documents/looseAdditive";
 import ManageContracts from "./pages/documents/manageContratcs";
 import CreateEmail from "./pages/emails/createEmail";
@@ -36,6 +37,7 @@ import PPO from "./pages/PPA-PPO/PPO";
 import RoomReservation from "./pages/roomReservation";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
+import EmployeeStock from "./pages/stock/employeeStock";
 import StockMovements from "./pages/stock/movements";
 import OrderList from "./pages/stock/orderList";
 import RegisterEPI from "./pages/stock/registerEPI";
@@ -263,6 +265,16 @@ const App = () => {
                   }
                 />
                 <Route
+                  path="/documents/:id/drafts"
+                  element={
+                    <PrivatePage>
+                      <Template>
+                        <Drafts />
+                      </Template>
+                    </PrivatePage>
+                  }
+                />
+                <Route
                   path="/documents/customers"
                   element={
                     <PrivatePage>
@@ -308,6 +320,16 @@ const App = () => {
                     <PrivatePage>
                       <Template>
                         <OrderList />
+                      </Template>
+                    </PrivatePage>
+                  }
+                />
+                <Route
+                  path="/stock/employeeStock"
+                  element={
+                    <PrivatePage>
+                      <Template>
+                        <EmployeeStock />
                       </Template>
                     </PrivatePage>
                   }

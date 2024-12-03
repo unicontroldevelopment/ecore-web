@@ -3,13 +3,33 @@ import { Filter } from "../../../components/filter";
 import { CustomInput } from "../../../components/input/index";
 import { Table } from "../../../components/table";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
+import AGCService from "../../../services/AGCService";
 import { Options } from "../../../utils/options";
 
 export default function StockMovements() {
   VerifyUserRole(["Master", "Administrador", "Operacional"]);
+  const [stockMovements, setStockMovements] = React.useState([]);
+  const [filteredStockMovements, setFilteredStockMovements] = React.useState([]);
   const [filter, setFilter] = React.useState({
-    name: "",
+    type: "",
   });
+  const service = new AGCService()
+
+  React.useEffect(() => {
+    const fetchStockMovements = async () => {
+      const response = await service.buscaInsumosMovimentacao();
+      setStockMovements(response.data);
+      setFilteredStockMovements(response.data);
+    };
+    fetchStockMovements();
+  }, []);
+
+  React.useEffect(() => {
+    const filteredMovements = stockMovements.filter(movement => 
+      filter.type === "" || movement.descricao_tipo === filter.type
+    );
+    setFilteredStockMovements(filteredMovements);
+  }, [filter, stockMovements]);
 
   const userOptions = Options.Users()
 
@@ -23,48 +43,28 @@ export default function StockMovements() {
   const options = [
     {
       title: "Nome",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "nome_insumo",
+      key: "nome_insumo",
     },
     {
-      title: "Medida",
-      dataIndex: "unitOfMeasurement",
-      key: "unitOfMeasurement",
+      title: "Operador",
+      dataIndex: "nome_operador",
+      key: "nome_operador",
     },
     {
       title: "Quantidade",
-      dataIndex: "quantity",
-      key: "quantity",
+      dataIndex: "quantidade",
+      key: "quantidade",
     },
     {
       title: "Tipo",
-      dataIndex: "type",
-      key: "type",
-    },
-    {
-      title: "Unidade",
-      dataIndex: "unit",
-      key: "unit",
-    },
-    {
-      title: "Placa",
-      dataIndex: "plate",
-      key: "plate",
-    },
-    {
-      title: "Valor",
-      dataIndex: "baseValue",
-      key: "baseValue",
-    },
-    {
-      title: "Número NF",
-      dataIndex: "numberNF",
-      key: "numberNF",
+      dataIndex: "descricao_tipo",
+      key: "descricao_tipo",
     },
     {
       title: "Data",
-      dataIndex: "updated",
-      key: "updated",
+      dataIndex: "data",
+      key: "data",
     },
   ];
 
@@ -74,14 +74,14 @@ export default function StockMovements() {
         <CustomInput.Root columnSize={24}>
         <Filter.Select
           label="Tipo"
-          name="role"
-          value={filter.role}
+          name="type"
+          value={filter.type}
           onChange={handleChangeFilter}
-          options={Options.Roles()}
+          options={Options.StockMovement()}
         />
       </CustomInput.Root>
       </Filter.Fragment>
-      <Table.TableClean data={userOptions} columns={options} />
+      <Table.TableClean data={filteredStockMovements} columns={options} />
     </Table.Root>
   );
 }
