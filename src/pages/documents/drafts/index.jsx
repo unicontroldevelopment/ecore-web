@@ -97,7 +97,7 @@ export default function Drafts() {
 
   const handleView = async (draft) => {
     try {
-      const fileData = draft.draft_file[0]?.file?.data;
+      const fileData = draft.DraftFile[0]?.file?.data;
       if (!fileData) {
         throw new Error("O arquivo não está disponível ou está mal formatado.");
       }
