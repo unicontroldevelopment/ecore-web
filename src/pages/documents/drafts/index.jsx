@@ -9,6 +9,7 @@ import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
 import DocumentsService from "../../../services/DocumentsService";
 import DraftsService from "../../../services/Drafts";
+import { Formats } from "../../../utils/formats";
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -66,12 +67,17 @@ export default function Drafts() {
     setIsModalVisible(true);
   };
 
-  const handleEdit = async (draft) => {
-    const {  draft_file, ...draftData } = draft;
-
-    setSelectedDraft(draftData);
-    setIsModalVisible(true)
-    return;
+  const handleEdit = (draft) => {
+    try {
+      console.log("Draft edit", draft);
+      
+      const { DraftFile, ...draftData } = draft;
+      setSelectedDraft(draftData);
+      setIsModalVisible(true);
+    } catch (error) {
+      console.error("Erro ao editar minuta:", error);
+      Toast.Error("Falha ao abrir edição de minuta");
+    }
   };
 
   const handleSubmit = async (formData) => {
@@ -96,6 +102,8 @@ export default function Drafts() {
   };
 
   const handleView = async (draft) => {
+    console.log("!Draft:", draft);
+    
     try {
       const fileData = draft.DraftFile[0]?.file?.data;
       if (!fileData) {
@@ -157,13 +165,7 @@ export default function Drafts() {
       dataIndex: "value",
       key: "value",
       render: (value) => {
-        const formatter = new Intl.NumberFormat("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-        return formatter.format(value / 100);
+        return Formats.Money(value);
       },
     },
     {
