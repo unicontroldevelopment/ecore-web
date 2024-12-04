@@ -86,34 +86,38 @@ const Dashboard = () => {
         )
       : 0;
 
-  const getMonths = () => {
-    const currentMonth = dayjs();
-    const months = [];
-    for (let i = 0; i < 12; i++) {
-      months.push(currentMonth.month(i).format("MMMM"));
-    }
-    return months;
-  };
-
-  const months = getMonths();
-
-  const data = {
-    labels: months,
-    datasets: [
-      {
-        label: "Contratos",
-        data: months.map((_, index) => {
-          const monthData = monthlyContracts.find(
-            (item) => item.month === index + 1
-          );
-          return monthData ? monthData.count : 0;
-        }),
-        fill: false,
-        backgroundColor: "rgba(75,192,192,0.4)",
-        borderColor: "rgba(75,192,192,1)",
-      },
-    ],
-  };
+      const getMonths = () => {
+        const currentMonth = dayjs().month();
+        const months = [];
+        const offset = 5;
+      
+        for (let i = 0; i < 12; i++) {
+          const monthIndex = (currentMonth + i - offset + 12) % 12;
+          months.push(dayjs().month(monthIndex).format("MMMM"));
+        }
+        return months;
+      };
+      
+      const months = getMonths();
+      const currentMonth = dayjs().month();
+      
+      const data = {
+        labels: months,
+        datasets: [
+          {
+            label: "Contratos",
+            data: months.map((_, index) => {
+              const monthData = monthlyContracts.find(
+                (item) => item.month === ((index + currentMonth - 5 + 12) % 12) + 1
+              );
+              return monthData ? monthData.count : 0;
+            }),
+            fill: false,
+            backgroundColor: "rgba(75,192,192,0.4)",
+            borderColor: "rgba(75,192,192,1)",
+          },
+        ],
+      };
 
   const options = {
     scales: {
@@ -125,7 +129,7 @@ const Dashboard = () => {
 
   return (
     <>
-    {isLoading && <Loading />}
+      {isLoading && <Loading />}
       <Container style={{ width: "100%", height: "100%" }}>
         <Space
           direction="vertical"

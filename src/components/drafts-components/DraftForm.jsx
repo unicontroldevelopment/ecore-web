@@ -2,8 +2,8 @@ import { Button, Upload } from "antd";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useEffect, useState } from "react";
-import { Formats } from "../utils/formats";
-import { CustomInput } from "./input";
+import { Formats } from "../../utils/formats";
+import { CustomInput } from "../input";
 
 dayjs.extend(customParseFormat);
 const formatMoney = (value) => {
@@ -25,8 +25,6 @@ const DraftForm = ({ draft, onSubmit, contractId }) => {
 
   useEffect(() => {
     if (draft) {
-      console.log(draft.date);
-
       setValues({
         title: draft.title || "",
         value: Formats.Money(draft.value) || "",

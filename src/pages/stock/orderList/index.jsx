@@ -44,6 +44,18 @@ export default function OrderList() {
     fetchOrders();
   }, []);
 
+  const refreshOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await service.buscaPedidos();
+      setOrders(response.data);
+    } catch (error) {
+      console.error("Error refreshing orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const handleFilterChange = useCallback((event) => {
     const { name, value } = event.target;
     setFilterState((prevState) => ({
@@ -116,9 +128,12 @@ export default function OrderList() {
     setData(formattedDate);
   };
 
-  const handleInputChange = useCallback((index, value) => {
-    setTextFields((prev) => ({ ...prev, [index]: value }));
-  }, []);
+  const handleInputChange = (index, value) => {
+    setTextFields((prev) => ({
+      ...prev,
+      [index]: value,
+    }));
+  };
 
   const addTextField = useCallback(() => {
     setTextFields((prev) => ({ ...prev, [Object.keys(prev).length]: "" }));
@@ -175,6 +190,7 @@ export default function OrderList() {
               }
 
               try {
+                setLoading(true);
                 const response = await service.compradoPedido(
                   selectedOrder.id,
                   data
@@ -186,14 +202,13 @@ export default function OrderList() {
                 setData(null);
                 setIsModalVisible(false);
 
-                const updatedOrders = orders.map((order) =>
-                  order.id === selectedOrder.id
-                    ? { ...order, nome_status: "Comprado" }
-                    : order
-                );
-                setOrders(updatedOrders);
+                // Refresh orders after status update
+                await refreshOrders();
               } catch (error) {
                 console.error("Erro ao alterar status do pedido:", error);
+                Toast.Error(
+                  "Erro ao alterar status do pedido: " + error.message
+                );
               } finally {
                 setLoading(false);
               }
@@ -215,10 +230,15 @@ export default function OrderList() {
                 setObject("");
                 setConcat("");
                 setData(null);
-                setOpenModalStatus(false);
+                setIsModalVisible(false);
 
+                // Refresh orders after status update
+                await refreshOrders();
               } catch (error) {
                 console.error("Erro ao alterar status do pedido:", error);
+                Toast.Error(
+                  "Erro ao alterar status do pedido: " + error.message
+                );
               } finally {
                 setLoading(false);
               }
@@ -276,25 +296,21 @@ export default function OrderList() {
               backgroundColor: "#1eb300",
             }}
             type="submit"
-            onClick={() => {
+            onClick={async () => {
               const notasFiscais = Object.values(textFields).join("/");
-              service
-                .finalizarPedido(selectedOrder.id, notasFiscais)
-                .then((response) => {
-                  Toast.Success("Pedido finalizado com sucesso");
-                  setIsModalVisible(false);
-                  setLoading(true);
-                  const updatedOrders = orders.map((order) =>
-                    order.id === selectedOrder.id
-                      ? { ...order, nome_status: "Finalizado" }
-                      : order
-                  );
-                  setOrders(updatedOrders);
-                  setLoading(false);
-                })
-                .catch((error) => {
-                  Toast.Error("Erro ao finalizar o pedido: " + error.message);
-                });
+              try {
+                setLoading(true);
+                await service.finalizarPedido(selectedOrder.id, notasFiscais);
+                Toast.Success("Pedido finalizado com sucesso");
+                setIsModalVisible(false);
+
+                // Refresh orders after status update
+                await refreshOrders();
+              } catch (error) {
+                Toast.Error("Erro ao finalizar o pedido: " + error.message);
+              } finally {
+                setLoading(false);
+              }
             }}
           >
             Finalizar Solicitação

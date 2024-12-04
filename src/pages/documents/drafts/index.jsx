@@ -3,7 +3,7 @@ import { PDFDocument } from "pdf-lib";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Loading from "../../../components/animations/Loading";
-import DraftForm from "../../../components/DraftForm";
+import DraftForm from "../../../components/drafts-components/DraftForm";
 import { Table } from "../../../components/table";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
@@ -69,8 +69,6 @@ export default function Drafts() {
 
   const handleEdit = (draft) => {
     try {
-      console.log("Draft edit", draft);
-      
       const { DraftFile, ...draftData } = draft;
       setSelectedDraft(draftData);
       setIsModalVisible(true);
@@ -102,8 +100,6 @@ export default function Drafts() {
   };
 
   const handleView = async (draft) => {
-    console.log("!Draft:", draft);
-    
     try {
       const fileData = draft.DraftFile[0]?.file?.data;
       if (!fileData) {
