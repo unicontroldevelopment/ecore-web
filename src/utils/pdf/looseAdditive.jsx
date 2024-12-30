@@ -9,6 +9,7 @@ import {
   canoas,
   erechim,
   esteio,
+  farroupilha,
   floresDaCunha,
   limao,
   lucena,
@@ -65,80 +66,50 @@ export const LooseAdditivePDF = (
 
   if (tecSign.id === 1) {
     background = canoas;
-  } else if (
-    tecSign.id === 2
-  ) {
+  } else if (tecSign.id === 2) {
     background = baciaDoJacui;
   } else if (tecSign.id === 3) {
     background = poaZN;
-  } else if (
-    tecSign.id === 4
-  ) {
+  } else if (tecSign.id === 4) {
     background = vacaria;
-  } else if (
-    tecSign.id === 5
-  ) {
+  } else if (tecSign.id === 5) {
     background = saoLourenco;
-  } else if (
-    tecSign.id === 6
-  ) {
+  } else if (tecSign.id === 6) {
     background = valeDosSinos;
-  } else if (
-    tecSign.id === 7
-  ) {
+  } else if (tecSign.id === 7) {
     background = master;
-  } else if (
-    tecSign.id === 8
-  ) {
+  } else if (tecSign.id === 8) {
     background = erechim;
-  } else if (
-    tecSign.id === 9
-  ) {
+  } else if (tecSign.id === 9) {
     background = canaa;
-  } else if (
-    tecSign.id === 10
-  ) {
+  } else if (tecSign.id === 10) {
     background = floresDaCunha;
-  } else if (
-    tecSign.id === 11
-  ) {
+  } else if (tecSign.id === 11) {
     background = lucena;
-  } else if (
-    tecSign.id === 12
-  ) {
+  } else if (tecSign.id === 12) {
     background = canoas;
-  } else if (
-    tecSign.id === 13
-  ) {
+  } else if (tecSign.id === 13) {
     background = orizona;
-  } else if (
-    tecSign.id === 14
-  ) {
+  } else if (tecSign.id === 14) {
     background = esteio;
-  } else if (
-    tecSign.id === 15
-  ) {
+  } else if (tecSign.id === 15) {
     background = poaCentro;
-  } else if (
-    tecSign.id === 16
-  ) {
+  } else if (tecSign.id === 16) {
     background = recife;
-  } else if (
-    tecSign.id === 17
-  ) {
+  } else if (tecSign.id === 17) {
     background = bauru;
-  } else if (
-    tecSign.id === 18
-  ) {
+  } else if (tecSign.id === 18) {
     background = limao;
-  } else if (tecSign.id === 19) { 
+  } else if (tecSign.id === 19) {
     background = saoLeopoldo;
-  } else if (tecSign.id === 20) { 
+  } else if (tecSign.id === 20) {
     background = araras;
-  } else if (tecSign.id === 21) { 
+  } else if (tecSign.id === 21) {
     background = rioGrande;
+  } else if (tecSign.id === 22) {
+    background = farroupilha;
   } else {
-    background= undefined
+    background = undefined;
   }
 
   const docDefinition = {

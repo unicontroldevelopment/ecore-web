@@ -9,6 +9,7 @@ import {
   canoas,
   erechim,
   esteio,
+  farroupilha,
   floresDaCunha,
   limao,
   lucena,
@@ -25,24 +26,31 @@ import {
 } from "../../assets/folhas/folhas";
 import { Formats } from "../formats";
 
-export const LooseReajustmentPDF = (index, type, signOnContract, value, name, date, text) => {
+export const LooseReajustmentPDF = (
+  index,
+  type,
+  signOnContract,
+  value,
+  name,
+  date,
+  text
+) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
   const newValue = (valorAtual, indiceReajuste) => {
     const valorFormatado = valorAtual.replace(/\./g, "").replace(",", ".");
     const newFloat = parseFloat(valorFormatado);
-  
+
     const reajustmentDecimal = indiceReajuste / 100;
-  
+
     const valueReajustment = newFloat * reajustmentDecimal;
 
     const novoValor = newFloat + valueReajustment;
 
     let valorFinal = novoValor.toFixed(2).replace(".", ",");
     valorFinal = valorFinal.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  
+
     return valorFinal;
-    
   };
 
   const tecSign = signOnContract[0];
@@ -51,80 +59,50 @@ export const LooseReajustmentPDF = (index, type, signOnContract, value, name, da
 
   if (tecSign.id === 1) {
     background = canoas;
-  } else if (
-    tecSign.id === 2
-  ) {
+  } else if (tecSign.id === 2) {
     background = baciaDoJacui;
   } else if (tecSign.id === 3) {
     background = poaZN;
-  } else if (
-    tecSign.id === 4
-  ) {
+  } else if (tecSign.id === 4) {
     background = vacaria;
-  } else if (
-    tecSign.id === 5
-  ) {
+  } else if (tecSign.id === 5) {
     background = saoLourenco;
-  } else if (
-    tecSign.id === 6
-  ) {
+  } else if (tecSign.id === 6) {
     background = valeDosSinos;
-  } else if (
-    tecSign.id === 7
-  ) {
+  } else if (tecSign.id === 7) {
     background = master;
-  } else if (
-    tecSign.id === 8
-  ) {
+  } else if (tecSign.id === 8) {
     background = erechim;
-  } else if (
-    tecSign.id === 9
-  ) {
+  } else if (tecSign.id === 9) {
     background = canaa;
-  } else if (
-    tecSign.id === 10
-  ) {
+  } else if (tecSign.id === 10) {
     background = floresDaCunha;
-  } else if (
-    tecSign.id === 11
-  ) {
+  } else if (tecSign.id === 11) {
     background = lucena;
-  } else if (
-    tecSign.id === 12
-  ) {
+  } else if (tecSign.id === 12) {
     background = canoas;
-  } else if (
-    tecSign.id === 13
-  ) {
+  } else if (tecSign.id === 13) {
     background = orizona;
-  } else if (
-    tecSign.id === 14
-  ) {
+  } else if (tecSign.id === 14) {
     background = esteio;
-  } else if (
-    tecSign.id === 15
-  ) {
+  } else if (tecSign.id === 15) {
     background = poaCentro;
-  } else if (
-    tecSign.id === 16
-  ) {
+  } else if (tecSign.id === 16) {
     background = recife;
-  } else if (
-    tecSign.id === 17
-  ) {
+  } else if (tecSign.id === 17) {
     background = bauru;
-  } else if (
-    tecSign.id === 18
-  ) {
+  } else if (tecSign.id === 18) {
     background = limao;
-  } else if (tecSign.id === 19) { 
+  } else if (tecSign.id === 19) {
     background = saoLeopoldo;
-  } else if (tecSign.id === 20) { 
+  } else if (tecSign.id === 20) {
     background = araras;
-  } else if (tecSign.id === 21) { 
+  } else if (tecSign.id === 21) {
     background = rioGrande;
+  } else if (tecSign.id === 22) {
+    background = farroupilha;
   } else {
-    background= undefined
+    background = undefined;
   }
 
   const docDefinition = {
@@ -161,9 +139,11 @@ export const LooseReajustmentPDF = (index, type, signOnContract, value, name, da
         margin: [0, 0, 0, 20],
       },
       {
-        text: `\nA presente proposta tem como objetivo, por parte da ${tecSign.socialReason}, o reajuste anual de seu contrato, previsto para o mês ${Formats.ExtenseMonth(
-            date
-          )} de ${new Date().getFullYear()}. Índice de ${index}%.`,
+        text: `\nA presente proposta tem como objetivo, por parte da ${
+          tecSign.socialReason
+        }, o reajuste anual de seu contrato, previsto para o mês ${Formats.ExtenseMonth(
+          date
+        )} de ${new Date().getFullYear()}. Índice de ${index}%.`,
         alignment: "justify",
         margin: [0, 0, 0, 20],
       },
