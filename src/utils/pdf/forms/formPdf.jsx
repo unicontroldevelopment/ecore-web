@@ -44,6 +44,24 @@ const getFormattedValue = (type, value) => {
       }
       return "Sem seleção";
 
+      case "ImagesField":
+        if (value) {
+          try {
+            const parsedValue = JSON.parse(value);
+            if (Array.isArray(parsedValue) && parsedValue.length > 0 && parsedValue[0].data) {
+              console.log("Entrou");
+              
+              const base64Data = parsedValue[0].data;
+              if (base64Data.startsWith("data:image")) {
+                return { image: base64Data, width: 200, height: 200 };
+              }
+            }
+          } catch (error) {
+            console.error("Error parsing image data:", error);
+          }
+        }
+        return "Imagem não disponível";
+
     default:
       return value || "N/A";
   }
@@ -112,6 +130,12 @@ export const formPdf = (submission, columns, form) => {
                     margin: [0, 5, 0, 15],
                     padding: [5, 5, 5, 5],
                     background: "#fff9e6",
+                  };
+                case "ImagesField":
+                  return {
+                    ...formattedValue,
+                    margin: [0, 5, 0, 15],
+                    alignment: "left",
                   };
                 default:
                   return {

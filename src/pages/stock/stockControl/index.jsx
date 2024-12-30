@@ -47,8 +47,8 @@ const StockControl = () => {
   const fetchStockData = async () => {
     try {
       const response = await service.buscaInsumos();
-      console.log(response);
-
+      const produtos = await service.buscarProdutos();
+      
       setStock(response.data);
     } catch (error) {
       console.error("Erro ao buscar dados do estoque:", error);
@@ -139,7 +139,7 @@ const StockControl = () => {
 
   return (
     <div>
-      <h1>Controle de Estoque</h1>
+      <h1>Controle de Estoques</h1>
       <Button
         type="primary"
         onClick={() => showModal("add")}

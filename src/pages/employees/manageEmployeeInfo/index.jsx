@@ -195,72 +195,53 @@ export default function ManageEmployeeInfo() {
         />
         {isModalVisibleView && (
           <Modal
-            title="Detalhes do Funcionário"
-            open={isModalVisibleView}
-            centered
-            width={1000}
-            onCancel={() => setIsModalVisibleView(false)}
-            footer={[
-              <Button key="back" onClick={() => setIsModalVisibleView(false)}>
-                Voltar
-              </Button>,
-            ]}
-          >
-            <CustomModal.Info label="Nome" value={selectUser.name} />
-            <CustomModal.Info label="Senha" value={selectUser.password} />
-            <CustomModal.Info
-              label="Perfil"
-              value={selectUser.role.map((roles) => roles.role.name).join(", ")}
-            />
-            <CustomModal.Info label="Setor" value={selectUser.department} />
-            <CustomModal.Info label="Empresa" value={selectUser.company} />
-            <CustomModal.Info label="Unidade" value={selectUser.unit} />
-            <CustomModal.Info
-              label="Usuário rede"
-              value={selectUser.networkUser}
-            />
-            <CustomModal.Info
-              label="Senha rede"
-              value={selectUser.networkPassword}
-            />
-            <CustomModal.Info label="Email" value={selectUser.email} />
-            <CustomModal.Info
-              label="Senha e-mail"
-              value={selectUser.emailPassword}
-            />
-            <CustomModal.Info
-              label="E-mail discord"
-              value={selectUser.discordEmail}
-            />
-            <CustomModal.Info
-              label="Senha discord"
-              value={selectUser.discordPassword}
-            />
-            <CustomModal.Info
-              label="Marca Notebook"
-              value={selectUser.notebookBrand}
-            />
-            <CustomModal.Info
-              label="Nome Notebook"
-              value={selectUser.notebookName}
-            />
-            <CustomModal.Info
-              label="Patrimônio notebook"
-              value={selectUser.notebookProperty}
-            />
-            <CustomModal.Info
-              label="Patrimônio cooler"
-              value={selectUser.coolerProperty}
-            />
-            <CustomModal.Info
-              label="Versão office"
-              value={selectUser.officeVersion}
-            />
-            <CustomModal.Info
-              label="Versão windows"
-              value={selectUser.windowsVersion}
-            />
-          </Modal>
+          title="Detalhes do Funcionário"
+          open={isModalVisibleView}
+          centered
+          width={1000}
+          onCancel={() => setIsModalVisibleView(false)}
+          footer={[
+            <Button key="back" onClick={() => setIsModalVisibleView(false)}>
+              Voltar
+            </Button>,
+          ]}
+        >
+          <h3 className="font-bold mb-2">Informações Pessoais</h3>
+          <CustomModal.Info label="Nome" value={selectUser.name} />
+          <CustomModal.Info label="Email" value={selectUser.email} />
+          <CustomModal.Info label="Setor" value={selectUser.department} />
+          <CustomModal.Info label="Empresa" value={selectUser.company} />
+          <CustomModal.Info label="Unidade" value={selectUser.unit} />
+          <CustomModal.Info
+            label="Perfil"
+            value={selectUser.role.map((roles) => roles.role.name).join(", ")}
+          />
+        
+          <h3 className="font-bold mb-2">Acesso à Rede</h3>
+          <CustomModal.Info label="Usuário rede" value={selectUser.networkUser} />
+          <CustomModal.Info label="Senha rede" value={selectUser.networkPassword} />
+        
+          <h3 className="font-bold mb-2">Acesso ao Email</h3>
+          <CustomModal.Info label="Email" value={selectUser.email} />
+          <CustomModal.Info label="Senha e-mail" value={selectUser.emailPassword} />
+        
+          <h3 className="font-bold mb-2">Acesso ao Discord</h3>
+          <CustomModal.Info label="E-mail discord" value={selectUser.discordEmail} />
+          <CustomModal.Info label="Senha discord" value={selectUser.discordPassword} />
+        
+          <h3 className="font-bold mb-2">Equipamento</h3>
+          <CustomModal.Info label="Marca Notebook" value={selectUser.notebookBrand} />
+          <CustomModal.Info label="Nome Notebook" value={selectUser.notebookName} />
+          <CustomModal.Info label="Patrimônio notebook" value={selectUser.notebookProperty} />
+          <CustomModal.Info label="Patrimônio cooler" value={selectUser.coolerProperty} />
+        
+          <h3 className="font-bold mb-2">Software</h3>
+          <CustomModal.Info label="Versão office" value={selectUser.officeVersion} />
+          <CustomModal.Info label="Versão windows" value={selectUser.windowsVersion} />
+        
+          <h3 className="font-bold mb-2">Acesso ao Sistema</h3>
+          <CustomModal.Info label="Senha" value={selectUser.password} />
+        </Modal>
         )}
         {isModalVisibleUpdate && (
           <Modal

@@ -147,4 +147,12 @@ export default class {
       return error;
     }
   }
+  async forgotPassword(email) {
+    try {
+      const response = await api.post("/forgotPassword", { email });
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }
