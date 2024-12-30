@@ -114,4 +114,12 @@ export default class {
       return error;
     }
   }
+  async resetPassword(token, newPassword) {
+    try {
+      const response = await api.post(`/resetPassword`, { token, newPassword });
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }

@@ -34,6 +34,7 @@ import Login from "./pages/login/Login";
 import PPA from "./pages/PPA-PPO/PPA";
 import PPC from "./pages/PPA-PPO/PPC";
 import PPO from "./pages/PPA-PPO/PPO";
+import ResetPassword from "./pages/resetPassword/ResetPassword";
 import RoomReservation from "./pages/roomReservation";
 import CreateAccess from "./pages/serverAccess/createAccess";
 import ListServerAccess from "./pages/serverAccess/listAccess";
@@ -74,6 +75,7 @@ const App = () => {
               <Routes>
                 <Route exact path="/" element={<Login />} />
                 <Route path="/submit/:id" element={<FormSubmit />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
                 <Route
                   path="/accessDenied"
                   element={

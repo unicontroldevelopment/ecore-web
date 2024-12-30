@@ -12,23 +12,34 @@ import TextField from "@mui/material/TextField";
 import { Button, Col, Row } from "antd";
 
 import { Toast } from "../../components/toasts";
+import Utils from "../../services/Utils";
 import { CenteredDiv, LeftDiv, RightDiv, Subtitle, Title } from "./styles";
 
 const Login = () => {
   const { loginAuth, logoutAuth } = React.useContext(AuthContext);
-
   const [loading, setLoading] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(false);
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
 
+  const service = new Utils();
+
   React.useEffect(() => {
     logoutAuth();
   }, []);
 
-  const forgetPassword = () => {
-    Toast.Info("E-mail enviado com as informações da sua senha")
+  const forgetPassword = async () => {
+    if(!email){
+      Toast.Error("Preencha o campo de e-mail, para solicitar a recuperação de senha.");
+    } else {
+      // Enviar email para recuperar senha
+      const response = await service.forgotPassword(email);
+      if(response.status === 200) {
+        Toast.Info(response.data.message);
+      }
+
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -110,7 +121,18 @@ const Login = () => {
               />
             </Col>
             <Col span={24}>
-              <label onClick={forgetPassword}>Esqueceu a senha?</label>
+              <Button
+                type="link"
+                onClick={forgetPassword}
+                style={{
+                  padding: 0,
+                  height: "auto",
+                  lineHeight: "normal",
+                  color: "black",
+                }}
+              >
+                Esqueceu a senha?
+              </Button>
             </Col>
             <Col span={8}>
               <Button type="primary" onClick={handleSubmit}>

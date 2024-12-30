@@ -18,4 +18,13 @@ export default class {
       return error;
     }
   }
+
+  async buscarProdutos() {
+    try {
+      const response = await api.get("/buscarProdutos");
+      return response;
+    } catch (error) {
+      return error;
+    }
+  }
 }
