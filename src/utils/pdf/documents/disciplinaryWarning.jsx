@@ -70,137 +70,121 @@ export const disciplinaryWarining = (employee, warningData, date) => {
   pdfMake.vfs = pdfFonts.pdfMake.vfs;
   const content = [
     {
-      image: verificaImagemDoDocumento(),
-      width: 150,
-      alignment: "center",
-    },
-    {
-      text: `\n\nADVERTÊNCIA DISCIPLINAR\n\n`,
-      alignment: "center",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      text: `\nEmpregador: ${employee.company}`,
-      alignment: "left",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      text: `CNPJ: ${verificaCNPJ()}\n\n`,
-      alignment: "left",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      text: `Empregado: ${employee.name}`,
-      alignment: "left",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      text: `CPF: ${employee.cpf}`,
-      alignment: "left",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      text: `CTPS: ${employee.ctps}`,
-      alignment: "left",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      text: `\n\nEsta tem a finalidade de aplicar-lhe a pena de Advertência Disciplinar, em razão da seguinte ocorrência:`,
-      alignment: "justify",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      text: `\n${warningData.reason}`,
-      alignment: "left",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      text: `\nEsclarecemos, ainda que a repetição de procedimentos como este poderá ser considerada ato faltoso, passível de dispensa por justa causa. Para que não tenhamos, no futuro, de tomar as medidas que nos facultam a legislação vigente, solicitamo-lhe que observe as normal reguladoras da declaração de emprego.`,
-      alignment: "justify",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      text: `\n${verificaEndereco()}, Canoas/RS, ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}\n\n\n\n\n`,
-      alignment: "center",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      canvas: [
+      columns: [
         {
-          type: "line",
-          x1: 0,
-          y1: 5,
-          x2: 300 - 2 * 40,
-          y2: 5,
-          lineWidth: 0.5,
+          image: verificaImagemDoDocumento(),
+          width: 200,
+          alignment: "left",
+        },
+        {
+          text: "ADVERTÊNCIA DISCIPLINAR",
+          alignment: "right",
+          fontSize: 20,
+          bold: true,
+        },
+        
+      ],
+      margin: [0, 0, 0, 20],
+    },
+    {
+      text: [
+        { text: `Empregador: `, bold: true },
+        `${employee.company}\n`,
+        { text: `CNPJ: `, bold: true },
+        `${verificaCNPJ()}\n`,
+        { text: `Empregado: `, bold: true },
+        `${employee.name}\n`,
+        { text: `CPF: `, bold: true },
+        `${employee.cpf}\n`,
+        { text: `CTPS: `, bold: true },
+        `${employee.ctps}\n`,
+      ],
+      fontSize: 10,
+      lineHeight: 1.2,
+      margin: [0, 0, 0, 15],
+    },
+    {
+      text: "Esta tem a finalidade de aplicar-lhe a pena de Advertência Disciplinar, em razão da seguinte ocorrência:",
+      fontSize: 10,
+      lineHeight: 1.2,
+      margin: [0, 0, 0, 40],
+    },
+    {
+      text: warningData.reason,
+      fontSize: 10,
+      lineHeight: 1.2,
+      margin: [0, 0, 0, 10],
+    },
+    {
+      text: "Esclarecemos, ainda que a repetição de procedimentos como este poderá ser considerada ato faltoso, passível de dispensa por justa causa. Para que não tenhamos, no futuro, de tomar as medidas que nos facultam a legislação vigente, solicitamo-lhe que observe as normas reguladoras da relação de emprego.",
+      fontSize: 10,
+      lineHeight: 1.2,
+      margin: [0, 0, 0, 10],
+    },
+    {
+      text: `${verificaEndereco()}, Canoas/RS, ${date.getDate()} de ${ExtenseMonth(date)} de ${date.getFullYear()}`,
+      alignment: "center",
+      fontSize: 10,
+      lineHeight: 1.2,
+      margin: [0, 0, 0, 70],
+    },
+    {
+      columns: [
+        {
+          width: "*",
+          text: "",
+        },
+        {
+          width: "auto",
+          stack: [
+            { canvas: [{ type: "line", x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 0.5 }] },
+            { text: employee.name, alignment: "center", fontSize: 10 },
+          ],
+        },
+        {
+          width: "*",
+          text: "",
         },
       ],
-      alignment: "center",
+      margin: [0, 0, 0, 60],
     },
     {
-      text: `${employee.name}`,
+      text: "TESTEMUNHAS:",
       alignment: "center",
-      fontSize: 13,
-      lineHeight: 1.2,
+      fontSize: 10,
+      bold: true,
+      margin: [0, 0, 0, 60],
     },
     {
-      text: `\n\nTESTEMUNHAS:\n\n\n`,
-      alignment: "center",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      canvas: [
+      columns: [
         {
-          type: "line",
-          x1: 0,
-          y1: 5,
-          x2: 300 - 2 * 40,
-          y2: 5,
-          lineWidth: 0.5,
+          width: "*",
+          stack: [
+            { canvas: [{ type: "line", x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 0.5 }] },
+            { text: `Nome: ${warningData.attestant_01}`, alignment: "center", fontSize: 9 },
+            { text: `CPF: ${warningData.cpf_01}`, alignment: "center", fontSize: 9 },
+          ],
+        },
+        {
+          width: 20,
+          text: "",
+        },
+        {
+          width: "*",
+          stack: [
+            { canvas: [{ type: "line", x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 0.5 }] },
+            { text: `Nome: ${warningData.attestant_02}`, alignment: "center", fontSize: 9 },
+            { text: `CPF: ${warningData.cpf_02}`, alignment: "center", fontSize: 9 },
+          ],
         },
       ],
-      alignment: "center",
-    },
-    {
-      text: `Nome: ${warningData.attestant_01}\nCPF: ${warningData.cpf_01}\n\n\n\n`,
-      alignment: "center",
-      fontSize: 13,
-      lineHeight: 1.2,
-    },
-    {
-      canvas: [
-        {
-          type: "line",
-          x1: 0,
-          y1: 5,
-          x2: 300 - 2 * 40,
-          y2: 5,
-          lineWidth: 0.5,
-        },
-      ],
-      alignment: "center",
-    },
-    {
-      text: `Nome: ${warningData.attestant_02}\nCPF: ${warningData.cpf_02}\n`,
-      alignment: "center",
-      fontSize: 13,
-      lineHeight: 1.2,
     },
   ];
+
   const docDefinition = {
     pageSize: "A4",
-    content: [content],
+    pageMargins: [40, 40, 40, 40],
+    content: content,
   };
 
   const pdfDoc = pdfMake.createPdf(docDefinition);
