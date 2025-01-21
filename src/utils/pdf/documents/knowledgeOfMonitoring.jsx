@@ -69,7 +69,7 @@ export const knowledgeOfMonitoring = (employee) => {
       lineHeight: 1.2,
     },
     {
-      text: `Eu, ${employee.name}, declaro que estou ciente que o EMPREGADOR (${employee.company}), e suas demais coligadas (quando aplicáveis), para fins de segurança e controle, utilizam-se de câmeras de monitoramento e rastreadores veiculares para o monitoramento das minhas atividades, bem como da minha localização.\n\n`,
+      text: `Eu, ${employee.name}, declaro que estou ciente que o EMPREGADOR (${employee.company}), e suas demais coligadas (quando aplicáveis), para fins de segurança e controle, utilizam-se de câmeras de monitoramento e rastreadores veiculares para o monitoramento das minhas atividades, bem como da minha localização. Declaro também que os VEÍCULOS DA EMPRESA, utilizados para fins de serviços, são munidos de câmeras, para fins de segurança dos empregados que utilizam veículos fins de execução de serviços e que tenho conhecimento do local onde a(s) câmera(s) esta(ão) instalada(s).\n\n`,
       alignment: "justify",
       fontSize: 13,
       lineHeight: 1.2,
