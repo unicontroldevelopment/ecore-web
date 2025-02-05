@@ -1,10 +1,16 @@
-/* eslint-disable react/prop-types */
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import { logo, logoFitoLog, logoNewsis } from "../../../assets/logos/logo";
-import { Formats } from "../../formats";
 
-export const knowledgeOfMonitoring = (employee) => {
+export const knowledgeOfMonitoring = (employee, currentDate) => {
+  const formatDate = (date) => {
+    return dayjs(date).locale('pt-br').format('DD [de] MMMM [de] YYYY');
+  };
+
+  const formattedDate = formatDate(currentDate);
+
   const verificaCNPJ = () => {
     if (employee.company === "NEWSIS SISTEMAS E SERVIÇOS DE INTERNET LTDA") {
       return "28.008.830/0001-84";
@@ -87,13 +93,7 @@ export const knowledgeOfMonitoring = (employee) => {
       lineHeight: 1.2,
     },
     {
-      text: `\n\nCanoas, ${new Date(
-        employee.dateAdmission
-      ).getDate()} de ${Formats.ExtenseMonth(
-        new Date(employee.dateAdmission).getMonth() + 1
-      )} de ${new Date(
-        employee.dateAdmission
-      ).getFullYear()}\n\n\n\n`,
+      text: `\n\nCanoas, ${formattedDate}\n\n\n\n`,
       alignment: "center",
       fontSize: 13,
       lineHeight: 1.2,
