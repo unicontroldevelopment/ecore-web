@@ -1,10 +1,12 @@
-import * as React from "react";
-
 import { Button } from "antd";
-import dayjs from "dayjs";
-import "dayjs/locale/pt-br";
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import localeData from "dayjs/plugin/localeData";
+import utc from 'dayjs/plugin/utc';
 import { PDFDocument } from "pdf-lib";
+import * as React from "react";
+import { useRef } from "react";
 import { CustomInput } from "../../../components/input";
 import { Toast } from "../../../components/toasts";
 import VerifyUserRole from "../../../hooks/VerifyUserRole";
@@ -20,16 +22,26 @@ import { discountAuthorization } from "../../../utils/pdf/documents/discountAuth
 import { experienceContract } from "../../../utils/pdf/documents/experienceContract";
 import { knowledgeOfMonitoring } from "../../../utils/pdf/documents/knowledgeOfMonitoring";
 import { renouncesVT } from "../../../utils/pdf/documents/renouncesVT";
+import { suspensionTerm } from "../../../utils/pdf/documents/suspensionTerm";
 import { termOfBenefit } from "../../../utils/pdf/documents/termOfBenefit";
 import { termOfCardTEU } from "../../../utils/pdf/documents/termOfCardTEU";
 import { termOfProrrogation } from "../../../utils/pdf/documents/termOfProrogation";
 
+dayjs.extend(customParseFormat);
 dayjs.extend(localeData);
+dayjs.extend(utc);
 dayjs.locale("pt-br");
 
 export default function CreateDocument() {
   VerifyUserRole(["Master", "Administrador", "RH"]);
   const service = new EmployeeService();
+  const [suspensionData, setSuspensionData] = React.useState({
+    reason: "",
+    startDate: null,
+    endDate: null,
+    days: "",
+  });
+  
   const [employees, setEmployees] = React.useState([]);
   const [values, setValues] = React.useState({
     employee: "",
@@ -44,6 +56,23 @@ export default function CreateDocument() {
     accessories: "",
     state: "",
   });
+  const MeuComponente = () => {
+    const inputRef = useRef(null);
+
+    const handleClick = () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+
+    return (
+      <div>
+        <input type="text" ref={inputRef} />
+        <button onClick={handleClick}>Focar Input</button>
+      </div>
+    );
+  };
+
   const [date, setDate] = React.useState();
   const [currentAccountData, setCurrentAccountData] = React.useState({
     sign: "",
@@ -231,11 +260,38 @@ export default function CreateDocument() {
     setDate(selectedDate);
   };
 
+  const handleSuspensionData = (event) => {
+    const { name, value } = event.target;
+    setSuspensionData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  // Add these date handlers
+  const handleSuspensionStartDate = (date) => {
+    setSuspensionData((prevState) => ({
+      ...prevState,
+      startDate: date,
+    }));
+  };
+
+  const handleSuspensionEndDate = (date) => {
+    setSuspensionData((prevState) => ({
+      ...prevState,
+      endDate: date,
+    }));
+  };
+
   const handleGenerate = async () => {
     let document;
     const dateObj = dayjs(date).toDate();
-    const extenseDate = new Date().getMonth() + 1;
-
+    const extenseDate = dayjs().month() + 1; // dayjs usa 0-11 para meses, então adicionamos 1
+    const currentDate = dayjs();
+    const currentDateFormatted = currentDate.format('DD/MM/YYYY');
+  
+  
+  
     if (values.document === "Cessão de uso de Notebook") {
       document = await cessationOfUseNotebook(
         values.employeeDetails,
@@ -283,6 +339,12 @@ export default function CreateDocument() {
           "Apenas funcionários da Unicontrol podem gerar o termo de adesão PPO"
         );
         return false;
+      } else if (values.document === "Termo de Suspensão Disciplinar") {
+        document = await suspensionTerm(
+          values.employeeDetails,
+          suspensionData,
+          dateObj
+        );
       } else if (
         values.employeeDetails.company === "UNICONTROL CONTROLE DE PRAGAS LTDA"
       ) {
@@ -302,7 +364,9 @@ export default function CreateDocument() {
       document = await knowledgeOfMonitoring(values.employeeDetails);
     } else if (values.document === "Termo de Responsabilidade TEU") {
       document = await termOfCardTEU(values.employeeDetails, teu, dateObj);
-    } else if (values.document === "Contrato de Trabalho Por Expêriencia Não Vendedor") {
+    } else if (
+      values.document === "Contrato de Trabalho Por Expêriencia Não Vendedor"
+    ) {
       document = await experienceContract(values.employeeDetails);
     } else if (values.document === "Termo de Prorrogação de Contrato") {
       document = await termOfProrrogation(values.employeeDetails);
@@ -721,6 +785,53 @@ export default function CreateDocument() {
                         label="Data"
                         value={date}
                         onChange={handleDate}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {values.document === "Termo de Suspensão Disciplinar" && (
+            <div className="mt-6 bg-white shadow overflow-hidden sm:rounded-lg">
+              <div className="px-4 py-5 sm:px-6">
+                <h2 className="text-lg leading-6 font-medium text-gray-900">
+                  Informações da Suspensão
+                </h2>
+              </div>
+              <div className="border-t border-gray-200">
+                <div className="px-4 py-5 sm:p-6">
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                      <CustomInput.Input
+                        label="Motivo da Suspensão"
+                        type="text"
+                        name="reason"
+                        value={suspensionData.reason}
+                        onChange={handleSuspensionData}
+                      />
+                    </div>
+                    <div>
+                      <CustomInput.DateInput
+                        label="Data de Início"
+                        value={suspensionData.startDate}
+                        onChange={handleSuspensionStartDate}
+                      />
+                    </div>
+                    <div>
+                      <CustomInput.DateInput
+                        label="Data de Término"
+                        value={suspensionData.endDate}
+                        onChange={handleSuspensionEndDate}
+                      />
+                    </div>
+                    <div>
+                      <CustomInput.Input
+                        label="Dias de Suspensão"
+                        type="number"
+                        name="days"
+                        value={suspensionData.days}
+                        onChange={handleSuspensionData}
                       />
                     </div>
                   </div>
